@@ -401,7 +401,7 @@ export default function OrdersPage() {
                       {new Date(order.createdAt).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.total.toFixed(2)} €
+                      {order.total.toFixed(2)} FCFA
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -615,10 +615,10 @@ export default function OrdersPage() {
                                       {item.quantity}
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                      {item.price.toFixed(2)} €
+                                      {item.price.toFixed(2)} FCFA
                                     </td>
                                     <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                      {item.total.toFixed(2)} €
+                                      {item.total.toFixed(2)} FCFA
                                     </td>
                                   </tr>
                                 ))}
@@ -627,7 +627,7 @@ export default function OrdersPage() {
                                     Total
                                   </td>
                                   <td className="whitespace-nowrap px-3 py-4 text-sm font-bold text-gray-900">
-                                    {selectedOrder.total.toFixed(2)} €
+                                    {selectedOrder.total.toFixed(2)} FCFA
                                   </td>
                                 </tr>
                               </tbody>

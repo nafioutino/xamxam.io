@@ -63,7 +63,7 @@ export default function DashboardNavbar() {
                 >
                   {user?.image ? (
                     <Image
-                      className="h-8 w-8 rounded-full"
+                      className="h-8 w-8 rounded-full object-cover border-2 border-blue-200"
                       src={user.image}
                       alt={user.name || 'Profile'}
                       width={32}
@@ -161,7 +161,7 @@ export default function DashboardNavbar() {
               {user?.image ? (
                 <div className="flex-shrink-0">
                   <Image
-                    className="h-10 w-10 rounded-full"
+                    className="h-10 w-10 rounded-full object-cover border-2 border-blue-200"
                     src={user.image}
                     alt={user.name || 'Profile'}
                     width={40}

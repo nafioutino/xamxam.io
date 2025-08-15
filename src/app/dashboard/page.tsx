@@ -90,7 +90,7 @@ export default function DashboardPage() {
     // In a real app, fetch data from API
     const timer = setTimeout(() => {
       setStats({
-        revenue: '12 500 €',
+        revenue: '12 500 FCFA',
         orders: 124,
         customers: 89,
         conversionRate: '3.2%',
@@ -203,35 +203,35 @@ export default function DashboardPage() {
               customer: 'Marie Diop',
               status: 'Livré',
               statusColor: 'green',
-              amount: '1 250 €',
+              amount: '1 250 FCFA',
             },
             {
               id: 'ORD-002',
               customer: 'Amadou Sow',
               status: 'En livraison',
               statusColor: 'blue',
-              amount: '890 €',
+              amount: '890 FCFA',
             },
             {
               id: 'ORD-003',
               customer: 'Fatou Ndiaye',
               status: 'Payé',
               statusColor: 'indigo',
-              amount: '2 100 €',
+              amount: '2 100 FCFA',
             },
             {
               id: 'ORD-004',
               customer: 'Ousmane Diallo',
               status: 'En préparation',
               statusColor: 'yellow',
-              amount: '750 €',
+              amount: '750 FCFA',
             },
             {
               id: 'ORD-005',
               customer: 'Aïda Mbaye',
               status: 'En attente',
               statusColor: 'gray',
-              amount: '1 500 €',
+              amount: '1 500 FCFA',
             },
           ].map((order, i) => (
             <div

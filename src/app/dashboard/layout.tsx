@@ -146,11 +146,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="flex-shrink-0 group block">
               <div className="flex items-center">
                 <div>
-                  <img
-                    className="inline-block h-10 w-10 rounded-full"
-                    src={user?.image || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=random`}
-                    alt=""
-                  />
+                  {profileImage ? (
+                    <img
+                      className="inline-block h-10 w-10 rounded-full object-cover border-2 border-blue-200"
+                      src={profileImage}
+                      alt={user?.name || 'Profile'}
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-bold border-2 border-blue-200">
+                      {user?.name?.charAt(0) || 'U'}
+                    </div>
+                  )}
                 </div>
                 <div className="ml-3">
                   <p className="text-base font-medium text-gray-700 group-hover:text-gray-900">

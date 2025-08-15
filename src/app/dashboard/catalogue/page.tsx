@@ -249,7 +249,7 @@ export default function CataloguePage() {
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg font-medium text-gray-900">{product.name}</h3>
                 <div className="mt-2 flex justify-between items-center">
-                  <p className="text-xl font-semibold text-gray-900">{product.price.toFixed(2)} €</p>
+                  <p className="text-xl font-semibold text-gray-900">{product.price.toFixed(2)} FCFA</p>
                   <p
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.stock > 10 ? 'bg-green-100 text-green-800' : product.stock > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}
                   >

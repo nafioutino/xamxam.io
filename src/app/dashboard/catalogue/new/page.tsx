@@ -207,7 +207,7 @@ export default function NewProductPage() {
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-                  Prix (€) *
+                  Prix (FCFA) *
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <input

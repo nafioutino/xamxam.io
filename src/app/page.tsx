@@ -145,6 +145,247 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section id="how-it-works" className="bg-gray-50 dark:bg-gray-800 py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Comment ça marche</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Commencez à utiliser ZOBA en quelques étapes simples et transformez votre commerce en ligne.
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto">
+            <div className="relative">
+              {/* Vertical line */}
+              <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-blue-200 dark:bg-blue-900"></div>
+              
+              {/* Step 1 */}
+              <div className="relative z-10 mb-12">
+                <div className="flex items-center">
+                  <div className="flex-1 text-right pr-8 md:pr-12">
+                    <h3 className="text-xl font-bold mb-2">Créez votre compte</h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Inscrivez-vous gratuitement et configurez votre profil d'entreprise en quelques minutes.
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold">
+                    1
+                  </div>
+                  <div className="flex-1 pl-8 md:pl-12"></div>
+                </div>
+              </div>
+              
+              {/* Step 2 */}
+              <div className="relative z-10 mb-12">
+                <div className="flex items-center">
+                  <div className="flex-1 pr-8 md:pr-12"></div>
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold">
+                    2
+                  </div>
+                  <div className="flex-1 text-left pl-8 md:pl-12">
+                    <h3 className="text-xl font-bold mb-2">Importez vos produits</h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Ajoutez vos produits manuellement ou importez-les en masse via CSV pour créer votre catalogue.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Step 3 */}
+              <div className="relative z-10 mb-12">
+                <div className="flex items-center">
+                  <div className="flex-1 text-right pr-8 md:pr-12">
+                    <h3 className="text-xl font-bold mb-2">Connectez vos canaux de vente</h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Intégrez vos comptes WhatsApp, Facebook, Instagram et autres plateformes de messagerie.
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold">
+                    3
+                  </div>
+                  <div className="flex-1 pl-8 md:pl-12"></div>
+                </div>
+              </div>
+              
+              {/* Step 4 */}
+              <div className="relative z-10">
+                <div className="flex items-center">
+                  <div className="flex-1 pr-8 md:pr-12"></div>
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold">
+                    4
+                  </div>
+                  <div className="flex-1 text-left pl-8 md:pl-12">
+                    <h3 className="text-xl font-bold mb-2">Commencez à vendre</h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Gérez vos conversations, suivez vos commandes et développez votre activité avec l'aide de notre IA.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="bg-white dark:bg-gray-900 py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Tarifs simples et transparents</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Choisissez le forfait qui correspond le mieux aux besoins de votre entreprise.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Starter Plan */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden transition hover:shadow-lg">
+              <div className="p-8">
+                <h3 className="text-xl font-bold mb-4">Débutant</h3>
+                <div className="flex items-baseline mb-4">
+                  <span className="text-4xl font-extrabold">15 000</span>
+                  <span className="text-xl font-medium ml-1">FCFA</span>
+                  <span className="text-gray-500 ml-2">/mois</span>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Parfait pour les petites entreprises qui débutent dans la vente en ligne.
+                </p>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Jusqu'à 100 produits</span>
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>2 canaux de messagerie</span>
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Assistant IA basique</span>
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Support par email</span>
+                  </li>
+                </ul>
+                <Link href="/auth/register" className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center px-4 py-3 rounded-md transition">
+                  Commencer l'essai gratuit
+                </Link>
+              </div>
+            </div>
+            
+            {/* Professional Plan */}
+            <div className="bg-blue-600 rounded-xl overflow-hidden transition hover:shadow-lg transform scale-105">
+              <div className="p-8">
+                <h3 className="text-xl font-bold mb-4 text-white">Professionnel</h3>
+                <div className="flex items-baseline mb-4 text-white">
+                  <span className="text-4xl font-extrabold">35 000</span>
+                  <span className="text-xl font-medium ml-1">FCFA</span>
+                  <span className="text-blue-200 ml-2">/mois</span>
+                </div>
+                <p className="text-blue-100 mb-6">
+                  Idéal pour les entreprises en croissance avec des besoins de vente plus avancés.
+                </p>
+                <ul className="space-y-3 mb-8 text-white">
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-blue-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Produits illimités</span>
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-blue-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>5 canaux de messagerie</span>
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-blue-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Assistant IA avancé</span>
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-blue-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Support prioritaire</span>
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-blue-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Analyses avancées</span>
+                  </li>
+                </ul>
+                <Link href="/auth/register" className="block w-full bg-white text-blue-600 hover:bg-blue-50 text-center px-4 py-3 rounded-md transition">
+                  Commencer l'essai gratuit
+                </Link>
+              </div>
+            </div>
+            
+            {/* Enterprise Plan */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden transition hover:shadow-lg">
+              <div className="p-8">
+                <h3 className="text-xl font-bold mb-4">Entreprise</h3>
+                <div className="flex items-baseline mb-4">
+                  <span className="text-4xl font-extrabold">75 000</span>
+                  <span className="text-xl font-medium ml-1">FCFA</span>
+                  <span className="text-gray-500 ml-2">/mois</span>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Solution complète pour les grandes entreprises avec des besoins personnalisés.
+                </p>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Produits illimités</span>
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Canaux illimités</span>
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>IA personnalisée</span>
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Support dédié 24/7</span>
+                  </li>
+                  <li className="flex items-center">
+                    <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>API & intégrations</span>
+                  </li>
+                </ul>
+                <Link href="/auth/register" className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center px-4 py-3 rounded-md transition">
+                  Contacter les ventes
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="bg-gradient-to-r from-blue-600 to-indigo-600 py-16 md:py-20">
         <div className="container mx-auto px-4 text-center">

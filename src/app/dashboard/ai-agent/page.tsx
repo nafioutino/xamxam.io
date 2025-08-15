@@ -67,7 +67,7 @@ export default function AIAgentPage() {
       } else if (input.toLowerCase().includes('prix') || input.toLowerCase().includes('tarif')) {
         responseContent = 'Les prix de nos produits varient selon les catégories. Souhaitez-vous des informations sur une catégorie spécifique ?';
       } else if (input.toLowerCase().includes('livraison')) {
-        responseContent = 'Nous proposons la livraison gratuite pour les commandes supérieures à 50€. Le délai de livraison est généralement de 2 à 3 jours ouvrables.';
+        responseContent = 'Nous proposons la livraison gratuite pour les commandes supérieures à 25 000 FCFA. Le délai de livraison est généralement de 2 à 3 jours ouvrables';
       } else if (input.toLowerCase().includes('stock') || input.toLowerCase().includes('disponible')) {
         responseContent = 'Je peux vérifier la disponibilité des produits pour vous. Quel produit vous intéresse ?';
       } else if (input.toLowerCase().includes('promotion') || input.toLowerCase().includes('réduction')) {

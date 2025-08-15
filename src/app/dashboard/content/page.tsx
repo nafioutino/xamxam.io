@@ -95,7 +95,7 @@ export default function ContentPage() {
   const generateMockText = (prompt: string) => {
     // Generate mock marketing text based on the prompt
     if (prompt.toLowerCase().includes('promotion')) {
-      return `🔥 PROMOTION EXCEPTIONNELLE 🔥\n\nNe manquez pas notre offre spéciale ! Jusqu'à 50% de réduction sur une sélection d'articles. Profitez de cette occasion unique pour renouveler votre garde-robe avec nos dernières tendances.\n\nOffre valable jusqu'au 30 juin. Livraison gratuite pour toute commande supérieure à 50€.\n\n#Promotion #Soldes #Shopping`;
+      return `🔥 PROMOTION EXCEPTIONNELLE 🔥\n\nNe manquez pas notre offre spéciale ! Jusqu'à 50% de réduction sur une sélection d'articles. Profitez de cette occasion unique pour renouveler votre garde-robe avec nos dernières tendances.\n\nOffre valable jusqu'au 30 juin. Livraison gratuite pour toute commande supérieure à 25 000 FCFA.\n\n#Promotion #Soldes #Shopping`;
     } else if (prompt.toLowerCase().includes('nouveau') || prompt.toLowerCase().includes('collection')) {
       return `✨ NOUVELLE COLLECTION ✨\n\nDécouvrez notre nouvelle collection été 2023 ! Des pièces uniques, des matières premium et des designs exclusifs vous attendent dans nos boutiques et sur notre site web.\n\nExprimez votre style avec nos créations inspirées des dernières tendances mondiales.\n\n#NouvelleCollection #Mode #Été2023`;
     } else {
