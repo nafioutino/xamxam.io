@@ -142,13 +142,13 @@ export default function ContentPage() {
     switch (content.type) {
       case 'text':
         return (
-          <div className="bg-white p-4 rounded-md shadow whitespace-pre-wrap">
+          <div className="bg-white p-5 rounded-md shadow-md border border-gray-100 whitespace-pre-wrap text-base">
             {content.result}
           </div>
         );
       case 'image':
         return (
-          <div className="bg-white p-4 rounded-md shadow">
+          <div className="bg-white p-5 rounded-md shadow-md border border-gray-100">
             <img
               src={content.result}
               alt={content.prompt}
@@ -158,11 +158,11 @@ export default function ContentPage() {
         );
       case 'video':
         return (
-          <div className="bg-white p-4 rounded-md shadow">
+          <div className="bg-white p-5 rounded-md shadow-md border border-gray-100">
             <div className="aspect-w-16 aspect-h-9 bg-gray-100 rounded-md flex items-center justify-center">
               <div className="text-center">
-                <VideoCameraIcon className="h-12 w-12 text-gray-400 mx-auto" />
-                <p className="mt-2 text-sm text-gray-500">
+                <VideoCameraIcon className="h-14 w-14 text-gray-400 mx-auto" />
+                <p className="mt-3 text-base text-gray-500">
                   Aperçu vidéo (simulation)
                 </p>
               </div>
@@ -183,7 +183,7 @@ export default function ContentPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-900">Création de contenu IA</h1>
+        <h1 className="text-3xl font-semibold text-gray-900">Création de contenu IA</h1>
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -193,7 +193,7 @@ export default function ContentPage() {
               <Tab
                 key={type}
                 className={({ selected }) =>
-                  `flex-1 py-4 px-1 text-sm font-medium text-center focus:outline-none ${selected ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`
+                  `flex-1 py-4 px-1 text-base font-medium text-center focus:outline-none ${selected ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`
                 }
               >
                 <div className="flex items-center justify-center space-x-2">
@@ -208,7 +208,7 @@ export default function ContentPage() {
               <Tab.Panel key={type} className="p-6">
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="prompt" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="prompt" className="block text-base font-medium text-gray-700">
                       {type === 'text'
                         ? 'Décrivez le texte marketing que vous souhaitez générer'
                         : type === 'image'
@@ -222,7 +222,7 @@ export default function ContentPage() {
                         id="prompt"
                         name="prompt"
                         rows={4}
-                        className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                        className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full text-base border-gray-300 rounded-md p-3"
                         placeholder={`Exemple : ${type === 'text' ? 'Une promotion pour notre nouvelle collection d\'été' : type === 'image' ? 'Un produit cosmétique élégant sur fond blanc avec des fleurs' : type === 'video' ? 'Une courte vidéo présentant notre boutique avec des clients satisfaits' : 'Analyser cette image de produit pour en extraire les informations'}`}
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
@@ -232,7 +232,7 @@ export default function ContentPage() {
 
                   {type === 'analysis' && (
                     <div className="mt-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-base font-medium text-gray-700 mb-2">
                         Fichier à analyser (optionnel)
                       </label>
                       <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
@@ -267,7 +267,7 @@ export default function ContentPage() {
                             </label>
                             <p className="pl-1">ou glisser-déposer</p>
                           </div>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-sm text-gray-500">
                             PNG, JPG, GIF jusqu'à 10MB ou PDF, DOCX jusqu'à 5MB
                           </p>
                         </div>
@@ -280,7 +280,7 @@ export default function ContentPage() {
                       type="button"
                       onClick={handleGenerate}
                       disabled={isGenerating || !prompt.trim()}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                     >
                       {isGenerating ? (
                         <>
@@ -319,13 +319,13 @@ export default function ContentPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 bg-white shadow rounded-lg overflow-hidden">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Historique de contenu</h3>
+        <div className="lg:col-span-1 bg-white shadow-lg border border-gray-100 rounded-lg overflow-hidden">
+          <div className="px-5 py-6 sm:px-6 border-b border-gray-200">
+            <h3 className="text-xl font-medium leading-6 text-gray-900">Historique de contenu</h3>
           </div>
           <ul className="divide-y divide-gray-200 max-h-[500px] overflow-y-auto">
             {generatedContents.length === 0 ? (
-              <li className="px-4 py-5 sm:px-6 text-center text-gray-500">
+              <li className="px-5 py-6 sm:px-6 text-center text-gray-500 text-base">
                 Aucun contenu généré
               </li>
             ) : (
@@ -333,17 +333,17 @@ export default function ContentPage() {
                 <li
                   key={content.id}
                   onClick={() => setSelectedContent(content)}
-                  className={`px-4 py-4 hover:bg-gray-50 cursor-pointer ${selectedContent?.id === content.id ? 'bg-blue-50' : ''}`}
+                  className={`px-5 py-5 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${selectedContent?.id === content.id ? 'bg-blue-50' : ''}`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       {getContentTypeIcon(content.type)}
-                      <span className="ml-2 text-sm font-medium text-gray-900">
+                      <span className="ml-2 text-base font-medium text-gray-900">
                         {getContentTypeLabel(content.type)}
                       </span>
                     </div>
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${content.status === 'completed' ? 'bg-green-100 text-green-800' : content.status === 'processing' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${content.status === 'completed' ? 'bg-green-100 text-green-800' : content.status === 'processing' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}
                     >
                       {content.status === 'completed'
                         ? 'Complété'
@@ -352,34 +352,34 @@ export default function ContentPage() {
                         : 'Échoué'}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-gray-500 truncate">{content.prompt}</p>
-                  <p className="mt-1 text-xs text-gray-400">{content.timestamp}</p>
+                  <p className="mt-1.5 text-base text-gray-500 truncate">{content.prompt}</p>
+                  <p className="mt-1.5 text-sm text-gray-400">{content.timestamp}</p>
                 </li>
               ))
             )}
           </ul>
         </div>
 
-        <div className="lg:col-span-2 bg-white shadow rounded-lg overflow-hidden">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Aperçu du contenu</h3>
+        <div className="lg:col-span-2 bg-white shadow-lg border border-gray-100 rounded-lg overflow-hidden">
+          <div className="px-5 py-6 sm:px-6 border-b border-gray-200">
+            <h3 className="text-xl font-medium leading-6 text-gray-900">Aperçu du contenu</h3>
           </div>
-          <div className="p-6">
+          <div className="p-7">
             {selectedContent ? (
               <div>
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-500">Description</h4>
-                  <p className="mt-1">{selectedContent.prompt}</p>
+                <div className="mb-5">
+                  <h4 className="text-base font-medium text-gray-500">Description</h4>
+                  <p className="mt-2 text-base">{selectedContent.prompt}</p>
                 </div>
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-500">Résultat</h4>
+                <div className="mb-5">
+                  <h4 className="text-base font-medium text-gray-500">Résultat</h4>
                   {selectedContent.status === 'completed' ? (
                     renderContentPreview(selectedContent)
                   ) : selectedContent.status === 'processing' ? (
-                    <div className="flex justify-center items-center h-40 bg-gray-50 rounded-md">
+                    <div className="flex justify-center items-center h-48 bg-gray-50 rounded-md border border-gray-100">
                       <div className="text-center">
                         <svg
-                          className="animate-spin h-8 w-8 text-gray-400 mx-auto"
+                          className="animate-spin h-10 w-10 text-gray-400 mx-auto"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
@@ -398,14 +398,14 @@ export default function ContentPage() {
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           ></path>
                         </svg>
-                        <p className="mt-2 text-sm text-gray-500">Génération en cours...</p>
+                        <p className="mt-3 text-base text-gray-500">Génération en cours...</p>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex justify-center items-center h-40 bg-gray-50 rounded-md">
+                    <div className="flex justify-center items-center h-48 bg-gray-50 rounded-md border border-gray-100">
                       <div className="text-center">
                         <svg
-                          className="h-8 w-8 text-red-400 mx-auto"
+                          className="h-10 w-10 text-red-400 mx-auto"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
@@ -418,7 +418,7 @@ export default function ContentPage() {
                             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <p className="mt-2 text-sm text-gray-500">
+                        <p className="mt-3 text-base text-gray-500">
                           La génération a échoué. Veuillez réessayer.
                         </p>
                       </div>
@@ -430,21 +430,21 @@ export default function ContentPage() {
                     <button
                       type="button"
                       onClick={() => toast.success('Contenu téléchargé')}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="inline-flex items-center px-4 py-2.5 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                     >
                       Télécharger
                     </button>
                     <button
                       type="button"
                       onClick={() => toast.success('Contenu partagé')}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="inline-flex items-center px-4 py-2.5 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                     >
                       Partager
                     </button>
                     <button
                       type="button"
                       onClick={() => toast.success('Contenu publié')}
-                      className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="inline-flex items-center px-4 py-2.5 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                     >
                       Publier
                     </button>
@@ -452,10 +452,10 @@ export default function ContentPage() {
                 )}
               </div>
             ) : (
-              <div className="flex justify-center items-center h-64">
+              <div className="flex justify-center items-center h-72">
                 <div className="text-center">
                   <svg
-                    className="mx-auto h-12 w-12 text-gray-400"
+                    className="mx-auto h-16 w-16 text-gray-400"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -468,10 +468,10 @@ export default function ContentPage() {
                       d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
                     />
                   </svg>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  <h3 className="mt-2 text-base font-medium text-gray-900">
                     Aucun contenu sélectionné
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-2 text-base text-gray-500">
                     Générez du contenu ou sélectionnez un élément dans l'historique.
                   </p>
                 </div>

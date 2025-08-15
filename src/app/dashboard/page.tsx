@@ -22,29 +22,29 @@ interface StatsCardProps {
 }
 
 const StatsCard = ({ title, value, icon, change, positive }: StatsCardProps) => (
-  <div className="bg-white overflow-hidden shadow rounded-lg">
-    <div className="p-5">
+  <div className="bg-white overflow-hidden shadow-lg rounded-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+    <div className="p-6">
       <div className="flex items-center">
-        <div className="flex-shrink-0 bg-blue-50 rounded-md p-3">{icon}</div>
-        <div className="ml-5 w-0 flex-1">
+        <div className="flex-shrink-0 bg-blue-50 rounded-md p-4 shadow-md">{icon}</div>
+        <div className="ml-6 w-0 flex-1">
           <dl>
-            <dt className="text-sm font-medium text-gray-500 truncate">{title}</dt>
+            <dt className="text-base font-medium text-gray-500 truncate">{title}</dt>
             <dd>
-              <div className="text-lg font-medium text-gray-900">{value}</div>
+              <div className="text-xl font-medium text-gray-900">{value}</div>
             </dd>
           </dl>
         </div>
       </div>
     </div>
     {change && (
-      <div className="bg-gray-50 px-5 py-3">
+      <div className="bg-gray-50 px-6 py-4 border-t border-gray-100">
         <div className="text-sm">
           <span
             className={`font-medium ${positive ? 'text-green-600' : 'text-red-600'}`}
           >
             {positive ? '↑' : '↓'} {change}
           </span>{' '}
-          <span className="text-gray-500">vs mois précédent</span>
+          <span className="text-gray-500 text-sm">vs mois précédent</span>
         </div>
       </div>
     )}
@@ -62,14 +62,14 @@ interface QuickActionProps {
 const QuickAction = ({ title, description, icon, href, color }: QuickActionProps) => (
   <Link
     href={href}
-    className={`relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-${color}-500`}
+    className={`relative rounded-lg border border-gray-300 bg-white px-6 py-6 shadow-md flex items-center space-x-4 hover:border-${color}-300 hover:shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-${color}-500`}
   >
-    <div className={`flex-shrink-0 h-10 w-10 rounded-full bg-${color}-50 flex items-center justify-center`}>
+    <div className={`flex-shrink-0 h-12 w-12 rounded-full bg-${color}-50 flex items-center justify-center shadow-sm`}>
       {icon}
     </div>
     <div className="flex-1 min-w-0">
       <span className="absolute inset-0" aria-hidden="true" />
-      <p className="text-sm font-medium text-gray-900">{title}</p>
+      <p className="text-base font-medium text-gray-900">{title}</p>
       <p className="text-sm text-gray-500 truncate">{description}</p>
     </div>
   </Link>
@@ -116,7 +116,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">
+      <h1 className="text-3xl font-semibold text-gray-900 mb-6">
         Bonjour, {session?.user?.name || 'Commerçant'}
       </h1>
 
@@ -151,7 +151,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      <h2 className="text-lg font-medium text-gray-900 mt-8 mb-4">Actions rapides</h2>
+      <h2 className="text-xl font-medium text-gray-900 mt-8 mb-4">Actions rapides</h2>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <QuickAction
           title="Ajouter un produit"
@@ -176,21 +176,21 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
-        <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
+      <div className="mt-8 bg-white shadow-lg overflow-hidden sm:rounded-lg border border-gray-100">
+        <div className="px-6 py-6 sm:px-8 flex justify-between items-center">
           <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Commandes récentes</h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">Vos 5 dernières commandes</p>
+            <h3 className="text-xl leading-6 font-medium text-gray-900">Commandes récentes</h3>
+            <p className="mt-1 max-w-2xl text-base text-gray-500">Vos 5 dernières commandes</p>
           </div>
           <Link
             href="/dashboard/orders"
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-5 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-blue-50 hover:border-blue-300 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Voir toutes les commandes
           </Link>
         </div>
         <div className="border-t border-gray-200">
-          <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6 font-medium text-gray-500 text-sm">
+          <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6 font-medium text-gray-500 text-base">
             <div>Commande</div>
             <div>Client</div>
             <div>Statut</div>
@@ -236,13 +236,13 @@ export default function DashboardPage() {
           ].map((order, i) => (
             <div
               key={order.id}
-              className={`${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'} px-4 py-4 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6 text-sm`}
+              className={`${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'} px-4 py-4 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6 text-base`}
             >
               <div className="font-medium text-blue-600">{order.id}</div>
               <div>{order.customer}</div>
               <div>
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${order.statusColor}-100 text-${order.statusColor}-800`}
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-${order.statusColor}-100 text-${order.statusColor}-800`}
                 >
                   {order.status}
                 </span>

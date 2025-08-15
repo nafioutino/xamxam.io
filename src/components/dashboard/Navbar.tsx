@@ -75,7 +75,7 @@ export default function DashboardNavbar() {
                     </div>
                   )}
                   <span className="ml-2 text-gray-700">{user?.name || 'Utilisateur'}</span>
-                  <ChevronDown className="ml-1 h-4 w-4 text-gray-500" />
+                  <ChevronDown className="ml-1 h-4 w-4 text-gray-600" />
                 </button>
               </div>
               {isProfileOpen && (
@@ -86,7 +86,7 @@ export default function DashboardNavbar() {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                       onClick={() => setIsProfileOpen(false)}
                     >
-                      <Settings className="mr-2 h-4 w-4" />
+                      <Settings className="mr-2 h-4 w-4 text-gray-600" />
                       Paramètres
                     </Link>
                     <Link 
@@ -94,14 +94,14 @@ export default function DashboardNavbar() {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                       onClick={() => setIsProfileOpen(false)}
                     >
-                      <User className="mr-2 h-4 w-4" />
+                      <User className="mr-2 h-4 w-4 text-gray-600" />
                       Profil
                     </Link>
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                     >
-                      <LogOut className="mr-2 h-4 w-4" />
+                      <LogOut className="mr-2 h-4 w-4 text-gray-600" />
                       Déconnexion
                     </button>
                   </div>
@@ -112,12 +112,12 @@ export default function DashboardNavbar() {
           <div className="-mr-2 flex items-center sm:hidden">
             <button
               onClick={toggleMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-600 transition duration-150 ease-in-out"
             >
               {isMenuOpen ? (
-                <X className="block h-6 w-6" />
+                <X className="block h-6 w-6 text-gray-600" />
               ) : (
-                <Menu className="block h-6 w-6" />
+                <Menu className="block h-6 w-6 text-gray-600" />
               )}
             </button>
           </div>

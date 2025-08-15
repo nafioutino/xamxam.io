@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Toaster } from 'react-hot-toast';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { profileImages } from './profile-data';
 import {
   HomeIcon,
   ShoppingBagIcon,
@@ -37,6 +38,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState('');
+  
+  useEffect(() => {
+    // Sélectionner une image de profil aléatoire parmi les images disponibles
+    if (profileImages && profileImages.length > 0) {
+      const randomIndex = Math.floor(Math.random() * profileImages.length);
+      setProfileImage(profileImages[randomIndex].image);
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -79,14 +89,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
             <div className="flex-shrink-0 flex items-center px-4">
-              <h1 className="text-2xl font-bold text-blue-600">ZOBA</h1>
+              <h1 className="text-3xl font-bold text-blue-600">ZOBA</h1>
             </div>
             <div className="px-4 py-3 border-t border-b border-gray-200 mt-2">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   {user?.image ? (
                     <img
-                      className="h-10 w-10 rounded-full"
+                      className="h-12 w-12 rounded-full object-cover border-2 border-blue-200"
                       src={user.image}
                       alt={user.name || 'Profile'}
                     />
@@ -97,8 +107,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   )}
                 </div>
                 <div className="ml-3">
-                  <div className="text-base font-medium text-gray-800">{user?.name || 'Utilisateur'}</div>
-                  <div className="text-sm font-medium text-gray-500">{user?.email || ''}</div>
+                  <div className="text-lg font-medium text-gray-800">{user?.name || 'Utilisateur'}</div>
+                  <div className="text-base font-medium text-gray-500">{user?.email || ''}</div>
                 </div>
               </div>
             </div>
@@ -109,7 +119,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`group flex items-center px-2 py-2 text-base font-medium rounded-md ${isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                    className={`group flex items-center px-3 py-3 text-base font-medium rounded-md ${isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                   >
                     <item.icon
                       className={`mr-4 flex-shrink-0 h-6 w-6 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'}`}
@@ -122,7 +132,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               
               <button
                 onClick={handleLogout}
-                className="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full mt-8"
+                className="group flex items-center px-3 py-3 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full mt-8"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="mr-4 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -172,14 +182,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="px-4 py-3 border-t border-b border-gray-200 mt-2">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    {user?.image ? (
+                    {profileImage ? (
                       <img
-                        className="h-10 w-10 rounded-full"
-                        src={user.image}
-                        alt={user.name || 'Profile'}
+                        className="h-12 w-12 rounded-full object-cover border-2 border-blue-200"
+                        src={profileImage}
+                        alt={user?.name || 'Profile'}
                       />
                     ) : (
-                      <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                      <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-bold border-2 border-blue-200">
                         {user?.name?.charAt(0) || 'U'}
                       </div>
                     )}
@@ -197,10 +207,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <Link
                       key={item.name}
                       href={item.href}
-                      className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                      className={`group flex items-center px-3 py-3 text-base font-medium rounded-md ${isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                       <item.icon
-                        className={`mr-3 flex-shrink-0 h-6 w-6 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'}`}
+                        className={`mr-3 flex-shrink-0 h-6 w-6 ${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-600'}`}
                         aria-hidden="true"
                       />
                       {item.name}
@@ -210,9 +220,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 
                 <button
                   onClick={handleLogout}
-                  className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full mt-8"
+                  className="group flex items-center px-3 py-3 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full mt-8"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 flex-shrink-0 h-6 w-6 text-gray-500 group-hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                   Déconnexion
@@ -224,18 +234,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="flex items-center">
                   <div>
                     <img
-                      className="inline-block h-9 w-9 rounded-full"
-                      src={user?.image || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=random`}
+                      className="inline-block h-12 w-12 rounded-full object-cover border-2 border-blue-200"
+                      src={profileImage || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=random`}
                       alt=""
                     />
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                    <p className="text-base font-medium text-gray-700 group-hover:text-gray-900">
                       {user?.name || 'Utilisateur'}
                     </p>
                     <Link
                       href="/api/auth/signout"
-                      className="text-xs font-medium text-gray-500 group-hover:text-gray-700"
+                      className="text-sm font-medium text-gray-500 group-hover:text-gray-700"
                     >
                       Déconnexion
                     </Link>
