@@ -1,0 +1,61 @@
+<svg width="600" height="400" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="600" height="400" fill="#f8fafc" rx="8" />
+  
+  <!-- Header -->
+  <rect width="600" height="60" fill="#f1f5f9" rx="8" />
+  <text x="30" y="38" font-family="Arial" font-size="20" font-weight="bold" fill="#3b82f6">ZOBA Dashboard</text>
+  
+  <!-- Sidebar -->
+  <rect x="0" y="60" width="180" height="340" fill="#f1f5f9" />
+  
+  <!-- Sidebar Menu Items -->
+  <rect x="20" y="90" width="140" height="40" fill="#dbeafe" rx="4" />
+  <text x="50" y="115" font-family="Arial" font-size="14" fill="#1e40af">Dashboard</text>
+  
+  <rect x="20" y="140" width="140" height="40" fill="#f1f5f9" rx="4" />
+  <text x="50" y="165" font-family="Arial" font-size="14" fill="#64748b">Inbox</text>
+  
+  <rect x="20" y="190" width="140" height="40" fill="#f1f5f9" rx="4" />
+  <text x="50" y="215" font-family="Arial" font-size="14" fill="#64748b">Catalogue</text>
+  
+  <rect x="20" y="240" width="140" height="40" fill="#f1f5f9" rx="4" />
+  <text x="50" y="265" font-family="Arial" font-size="14" fill="#64748b">AI Agent</text>
+  
+  <rect x="20" y="290" width="140" height="40" fill="#f1f5f9" rx="4" />
+  <text x="50" y="315" font-family="Arial" font-size="14" fill="#64748b">Analytics</text>
+  
+  <!-- Main Content -->
+  <!-- Stats Cards -->
+  <rect x="200" y="80" width="180" height="100" fill="#ffffff" rx="8" stroke="#e2e8f0" stroke-width="1" />
+  <text x="220" y="110" font-family="Arial" font-size="14" fill="#64748b">Total Revenue</text>
+  <text x="220" y="140" font-family="Arial" font-size="20" font-weight="bold" fill="#0f172a">€4,385.00</text>
+  <rect x="320" y="130" width="40" height="20" fill="#dcfce7" rx="4" />
+  <text x="328" y="144" font-family="Arial" font-size="12" fill="#16a34a">+12%</text>
+  
+  <rect x="400" y="80" width="180" height="100" fill="#ffffff" rx="8" stroke="#e2e8f0" stroke-width="1" />
+  <text x="420" y="110" font-family="Arial" font-size="14" fill="#64748b">Total Orders</text>
+  <text x="420" y="140" font-family="Arial" font-size="20" font-weight="bold" fill="#0f172a">156</text>
+  <rect x="480" y="130" width="40" height="20" fill="#dcfce7" rx="4" />
+  <text x="488" y="144" font-family="Arial" font-size="12" fill="#16a34a">+8%</text>
+  
+  <!-- Chart -->
+  <rect x="200" y="200" width="380" height="180" fill="#ffffff" rx="8" stroke="#e2e8f0" stroke-width="1" />
+  <text x="220" y="230" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">Performance</text>
+  
+  <!-- Chart Bars -->
+  <rect x="240" y="320" width="20" height="30" fill="#3b82f6" rx="2" />
+  <rect x="280" y="300" width="20" height="50" fill="#3b82f6" rx="2" />
+  <rect x="320" y="280" width="20" height="70" fill="#3b82f6" rx="2" />
+  <rect x="360" y="260" width="20" height="90" fill="#3b82f6" rx="2" />
+  <rect x="400" y="290" width="20" height="60" fill="#3b82f6" rx="2" />
+  <rect x="440" y="270" width="20" height="80" fill="#3b82f6" rx="2" />
+  <rect x="480" y="250" width="20" height="100" fill="#3b82f6" rx="2" />
+  
+  <!-- X-axis -->
+  <line x1="220" y1="350" x2="560" y2="350" stroke="#e2e8f0" stroke-width="1" />
+  
+  <!-- User Avatar -->
+  <circle cx="550" cy="30" r="20" fill="#bfdbfe" />
+  <text x="550" y="35" font-family="Arial" font-size="14" fill="#1e40af" text-anchor="middle">JD</text>
+</svg>
