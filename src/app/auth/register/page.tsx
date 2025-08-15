@@ -93,24 +93,24 @@ export default function RegisterPage() {
     <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">ZOBA</h1>
-          <h2 className="mt-6 text-2xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-5xl font-bold tracking-tight text-gray-900">ZOBA</h1>
+          <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
             Créer un compte
           </h2>
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block text-base font-medium text-gray-700">
               Nom
             </label>
-            <div className="mt-1">
+            <div className="mt-2">
               <input
                 id="name"
                 type="text"
                 autoComplete="name"
                 {...form.register('name')}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
                 placeholder="Votre nom"
               />
             </div>
@@ -120,16 +120,16 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-base font-medium text-gray-700">
               Email
             </label>
-            <div className="mt-1">
+            <div className="mt-2">
               <input
                 id="email"
                 type="email"
                 autoComplete="email"
                 {...form.register('email')}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
                 placeholder="exemple@email.com"
               />
             </div>
@@ -139,16 +139,16 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-base font-medium text-gray-700">
               Mot de passe
             </label>
-            <div className="mt-1">
+            <div className="mt-2">
               <input
                 id="password"
                 type="password"
                 autoComplete="new-password"
                 {...form.register('password')}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
               />
             </div>
             {form.formState.errors.password && (
@@ -157,16 +157,16 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="confirmPassword" className="block text-base font-medium text-gray-700">
               Confirmer le mot de passe
             </label>
-            <div className="mt-1">
+            <div className="mt-2">
               <input
                 id="confirmPassword"
                 type="password"
                 autoComplete="new-password"
                 {...form.register('confirmPassword')}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
               />
             </div>
             {form.formState.errors.confirmPassword && (
@@ -175,7 +175,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="flex items-center justify-end">
-            <div className="text-sm">
+            <div className="text-base">
               <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
                 Déjà un compte ? Se connecter
               </Link>
@@ -186,7 +186,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-3 px-5 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Inscription...' : 'S\'inscrire'}
             </button>
@@ -198,8 +198,8 @@ export default function RegisterPage() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300" />
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-gray-50 px-2 text-gray-500">Ou continuer avec</span>
+            <div className="relative flex justify-center text-base">
+              <span className="bg-gray-50 px-3 text-gray-500">Ou continuer avec</span>
             </div>
           </div>
 
@@ -207,7 +207,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => handleSocialSignIn('google')}
-              className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+              className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white py-3 px-5 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50"
             >
               <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -233,7 +233,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => handleSocialSignIn('facebook')}
-              className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+              className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white py-3 px-5 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50"
             >
               <svg className="h-5 w-5 mr-2" fill="#1877F2" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />

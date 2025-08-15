@@ -158,8 +158,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">ZOBA</h1>
-          <h2 className="mt-6 text-2xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-5xl font-bold tracking-tight text-gray-900">ZOBA</h1>
+          <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
             {authMethod === 'phone' ? 'Connexion par téléphone' : 'Connexion par email'}
           </h2>
         </div>
@@ -168,14 +168,14 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => setAuthMethod('phone')}
-            className={`px-4 py-2 rounded-md ${authMethod === 'phone' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+            className={`px-5 py-3 rounded-md text-base font-medium ${authMethod === 'phone' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
           >
             Téléphone
           </button>
           <button
             type="button"
             onClick={() => setAuthMethod('email')}
-            className={`px-4 py-2 rounded-md ${authMethod === 'email' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+            className={`px-5 py-3 rounded-md text-base font-medium ${authMethod === 'email' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
           >
             Email
           </button>
@@ -185,16 +185,16 @@ export default function LoginPage() {
           step === 'phone' ? (
             <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="mt-8 space-y-6">
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="phone" className="block text-base font-medium text-gray-700">
                   Numéro de téléphone
                 </label>
-                <div className="mt-1">
+                <div className="mt-2">
                   <input
                     id="phone"
                     type="tel"
                     autoComplete="tel"
                     {...phoneForm.register('phone')}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
                     placeholder="+221 XX XXX XX XX"
                   />
                 </div>
@@ -207,7 +207,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-3 px-5 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? 'Envoi en cours...' : 'Recevoir un code OTP'}
                 </button>
@@ -216,20 +216,20 @@ export default function LoginPage() {
           ) : (
             <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="mt-8 space-y-6">
               <div>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-base text-gray-600 mb-4">
                   Un code à 4 chiffres a été envoyé au {phoneNumber}
                 </p>
-                <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="otp" className="block text-base font-medium text-gray-700">
                   Code OTP
                 </label>
-                <div className="mt-1">
+                <div className="mt-2">
                   <input
                     id="otp"
                     type="text"
                     inputMode="numeric"
                     maxLength={4}
                     {...otpForm.register('otp')}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
                     placeholder="1234"
                   />
                 </div>
@@ -242,14 +242,14 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setStep('phone')}
-                  className="text-sm text-blue-600 hover:text-blue-500"
+                  className="text-base text-blue-600 hover:text-blue-500"
                 >
                   Changer de numéro
                 </button>
                 <button
                   type="button"
                   onClick={() => onPhoneSubmit({ phone: phoneNumber })}
-                  className="text-sm text-blue-600 hover:text-blue-500"
+                  className="text-base text-blue-600 hover:text-blue-500"
                 >
                   Renvoyer le code
                 </button>
@@ -259,7 +259,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-3 px-5 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? 'Vérification...' : 'Se connecter'}
                 </button>
@@ -269,16 +269,16 @@ export default function LoginPage() {
         ) : (
           <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="mt-8 space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-base font-medium text-gray-700">
                 Email
               </label>
-              <div className="mt-1">
+              <div className="mt-2">
                 <input
                   id="email"
                   type="email"
                   autoComplete="email"
                   {...emailForm.register('email')}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
                   placeholder="exemple@email.com"
                 />
               </div>
@@ -288,16 +288,16 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-base font-medium text-gray-700">
                 Mot de passe
               </label>
-              <div className="mt-1">
+              <div className="mt-2">
                 <input
                   id="password"
                   type="password"
                   autoComplete="current-password"
                   {...emailForm.register('password')}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
                 />
               </div>
               {emailForm.formState.errors.password && (
@@ -306,7 +306,7 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-end">
-              <div className="text-sm">
+              <div className="text-base">
                 <Link href="/auth/register" className="font-medium text-blue-600 hover:text-blue-500">
                   Pas encore de compte ? S'inscrire
                 </Link>
