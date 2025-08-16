@@ -1,35 +1,82 @@
+
+// ============================================================================
+// middleware.ts - Middleware optimisé
+// ============================================================================
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@supabase/ssr';
 
 export async function middleware(req: NextRequest) {
-  // Création du client Supabase basé sur les cookies de la requête
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
+  let res = NextResponse.next({
+    request: {
+      headers: req.headers,
+    },
+  });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          res.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+        },
+        remove(name: string, options: any) {
+          res.cookies.set({
+            name,
+            value: '',
+            ...options,
+          });
+        },
+      },
+    }
+  );
   
-  // Vérification de la session utilisateur
-  const { data: { session } } = await supabase.auth.getSession();
-  const isAuthenticated = !!session;
+  try {
+    // Récupération de la session avec gestion d'erreur
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('Middleware auth error:', error);
+    }
+    
+    const isAuthenticated = !!session && !error;
+    const { pathname } = req.nextUrl;
 
-  const { pathname } = req.nextUrl;
+    console.log('Middleware:', { pathname, isAuthenticated, userId: session?.user?.id });
 
-  // Protection du dashboard
-  if (pathname.startsWith('/dashboard') && !isAuthenticated) {
-    return NextResponse.redirect(new URL('/auth/login', req.url));
+    // Protection des routes dashboard
+    if (pathname.startsWith('/dashboard')) {
+      if (!isAuthenticated) {
+        console.log('Redirecting to login from dashboard');
+        return NextResponse.redirect(new URL('/auth/login', req.url));
+      }
+      return res;
+    }
+
+    // Redirection des utilisateurs authentifiés depuis les pages auth
+    if (pathname.startsWith('/auth/') && isAuthenticated) {
+      console.log('Redirecting authenticated user to dashboard');
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+
+    return res;
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return res;
   }
-
-  // Redirection des utilisateurs authentifiés
-  if ((pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register')) && isAuthenticated) {
-    return NextResponse.redirect(new URL('/dashboard', req.url));
-  }
-
-  return res;
 }
 
 export const config = {
   matcher: [
     '/dashboard/:path*',
-    '/auth/login',
-    '/auth/register',
+    '/auth/:path*',
   ],
 };

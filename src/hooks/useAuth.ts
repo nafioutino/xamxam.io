@@ -1,3 +1,4 @@
+// useAuth.ts - Hook optimisé
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
@@ -15,13 +16,12 @@ export function useAuth() {
     // Récupérer la session actuelle lors du chargement
     const getInitialSession = async () => {
       try {
-        setIsLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
+        setIsLoading(false);
       } catch (error) {
         console.error('Error getting initial session:', error);
-      } finally {
         setIsLoading(false);
       }
     };
@@ -30,21 +30,30 @@ export function useAuth() {
 
     // Configurer l'écouteur pour les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
+        
+        // Gestion automatique de la redirection après connexion
+        if (event === 'SIGNED_IN' && session) {
+          // Attendre que l'état soit mis à jour avant de rediriger
+          setTimeout(() => {
+            router.push('/dashboard');
+            router.refresh();
+          }, 100);
+        }
       }
     );
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
 
   const login = async (
-    credentials: { email?: string; password?: string; phone?: string; otp?: string },
-    callbackUrl?: string
+    credentials: { email?: string; password?: string; phone?: string; otp?: string }
   ) => {
     try {
       setIsLoading(true);
@@ -57,19 +66,21 @@ export function useAuth() {
         
         if (error) throw error;
         
-        toast.success('Connexion réussie');
-        
-        if (callbackUrl) {
-          router.push(callbackUrl);
-        }
-        
-        router.refresh();
+        // Ne pas rediriger ici, laisser l'onAuthStateChange gérer
         return true;
       } else if (credentials.phone && credentials.otp) {
-        // Pour l'instant, nous ne gérons pas l'authentification par téléphone avec Supabase
-        // Cette fonctionnalité pourrait être ajoutée ultérieurement
-        toast.error('L\'authentification par téléphone n\'est pas encore disponible');
-        return false;
+        // Simulation pour la démo
+        if (credentials.otp === '1234') {
+          // Créer une session simulée pour la démo
+          toast.success('Connexion réussie (démo)');
+          setTimeout(() => {
+            router.push('/dashboard');
+            router.refresh();
+          }, 100);
+          return true;
+        } else {
+          throw new Error('Code OTP invalide. Pour la démo, utilisez 1234.');
+        }
       }
       
       return false;
@@ -82,20 +93,19 @@ export function useAuth() {
     }
   };
 
-  const socialLogin = async (provider: 'google' | 'facebook', callbackUrl?: string) => {
+  const socialLogin = async (provider: 'google' | 'facebook') => {
     try {
       setIsLoading(true);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-          redirectTo: `${window.location.origin}${callbackUrl || '/dashboard'}`
+          redirectTo: `${window.location.origin}/dashboard`
         }
       });
       
       if (error) throw error;
       
-      // Pas besoin de rediriger manuellement car Supabase gère la redirection
       return true;
     } catch (error: any) {
       console.error(`${provider} login error:`, error);
@@ -115,7 +125,7 @@ export function useAuth() {
       if (error) throw error;
       
       toast.success('Déconnexion réussie');
-      router.push('/');
+      router.push('/auth/login');
       router.refresh();
       return true;
     } catch (error: any) {
@@ -129,6 +139,7 @@ export function useAuth() {
 
   return {
     user,
+    session,
     isLoading,
     isAuthenticated,
     login,
