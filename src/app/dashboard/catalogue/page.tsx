@@ -30,7 +30,7 @@ export default function CataloguePage() {
           name: 'T-shirt Premium',
           price: 25.99,
           stock: 45,
-          images: ['https://placehold.co/300x300?text=T-shirt'],
+          images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop&crop=center'],
           categories: ['Vêtements', 'Homme'],
         },
         {
@@ -38,7 +38,7 @@ export default function CataloguePage() {
           name: 'Robe d\'été',
           price: 39.99,
           stock: 20,
-          images: ['https://placehold.co/300x300?text=Robe'],
+          images: ['https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300&h=300&fit=crop&crop=center'],
           categories: ['Vêtements', 'Femme'],
         },
         {
@@ -46,7 +46,7 @@ export default function CataloguePage() {
           name: 'Baskets Sport',
           price: 79.99,
           stock: 15,
-          images: ['https://placehold.co/300x300?text=Baskets'],
+          images: ['https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=center'],
           categories: ['Chaussures', 'Sport'],
         },
         {
@@ -54,7 +54,7 @@ export default function CataloguePage() {
           name: 'Sac à main cuir',
           price: 129.99,
           stock: 8,
-          images: ['https://placehold.co/300x300?text=Sac'],
+          images: ['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop&crop=center'],
           categories: ['Accessoires', 'Femme'],
         },
         {
@@ -62,7 +62,7 @@ export default function CataloguePage() {
           name: 'Montre connectée',
           price: 199.99,
           stock: 12,
-          images: ['https://placehold.co/300x300?text=Montre'],
+          images: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop&crop=center'],
           categories: ['Électronique', 'Accessoires'],
         },
         {
@@ -70,7 +70,7 @@ export default function CataloguePage() {
           name: 'Pantalon chino',
           price: 49.99,
           stock: 30,
-          images: ['https://placehold.co/300x300?text=Pantalon'],
+          images: ['https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=300&h=300&fit=crop&crop=center'],
           categories: ['Vêtements', 'Homme'],
         },
       ];
