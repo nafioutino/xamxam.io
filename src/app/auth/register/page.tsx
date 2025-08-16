@@ -9,6 +9,7 @@ import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import UnauthGuard from '@/components/auth/UnauthGuard';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -40,44 +41,34 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          password: data.password,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Erreur lors de l\'inscription');
-      }
-
-      toast.success('Inscription réussie');
-      
-      // Auto login after registration
-      const success = await login({
+      // Inscription avec Supabase
+      const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-      }, '/dashboard');
+        options: {
+          data: {
+            name: data.name,
+          },
+        },
+      });
 
-      if (!success) {
-        throw new Error('Erreur lors de la connexion automatique');
-      }
-    } catch (error) {
+      if (error) throw error;
+
+      toast.success('Inscription réussie! Veuillez vérifier votre email pour confirmer votre compte.');
+      
+      // Redirection vers le tableau de bord
+      // Note: Supabase peut nécessiter une vérification d'email avant de permettre la connexion
+      // selon la configuration du projet
+      router.push('/dashboard');
+    } catch (error: any) {
       console.error('Registration error:', error);
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de l\'inscription');
+      toast.error(error.message || 'Erreur lors de l\'inscription');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialSignIn = async (provider: string) => {
+  const handleSocialSignIn = async (provider: 'google' | 'facebook') => {
     setIsLoading(true);
     try {
       await socialLogin(provider, '/dashboard');
