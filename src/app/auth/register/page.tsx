@@ -9,7 +9,6 @@ import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import UnauthGuard from '@/components/auth/UnauthGuard';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/lib/supabase';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -25,8 +24,10 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { login, socialLogin } = useAuth();
+  const { register, socialLogin, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  
+  const isFormLoading = isLoading || authLoading;
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -41,25 +42,16 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
-      // Inscription avec Supabase
-      const { data: authData, error } = await supabase.auth.signUp({
+      const success = await register({
+        name: data.name,
         email: data.email,
         password: data.password,
-        options: {
-          data: {
-            name: data.name,
-          },
-        },
       });
-
-      if (error) throw error;
-
-      toast.success('Inscription réussie! Veuillez vérifier votre email pour confirmer votre compte.');
       
-      // Redirection vers le tableau de bord
-      // Note: Supabase peut nécessiter une vérification d'email avant de permettre la connexion
-      // selon la configuration du projet
-      router.push('/dashboard');
+      if (success) {
+        // La redirection sera gérée automatiquement par le hook useAuth
+        // via onAuthStateChange si l'utilisateur est connecté automatiquement
+      }
     } catch (error: any) {
       console.error('Registration error:', error);
       toast.error(error.message || 'Erreur lors de l\'inscription');
@@ -69,13 +61,11 @@ export default function RegisterPage() {
   };
 
   const handleSocialSignIn = async (provider: 'google' | 'facebook') => {
-    setIsLoading(true);
     try {
-      await socialLogin(provider, '/dashboard');
+      await socialLogin(provider);
     } catch (error) {
       console.error(`${provider} sign in error:`, error);
       toast.error(`Erreur lors de la connexion avec ${provider}`);
-      setIsLoading(false);
     }
   };
 
@@ -176,10 +166,10 @@ export default function RegisterPage() {
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isFormLoading}
               className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-3 px-5 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Inscription...' : 'S\'inscrire'}
+              {isFormLoading ? 'Inscription...' : 'S\'inscrire'}
             </button>
           </div>
         </form>
@@ -198,7 +188,8 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => handleSocialSignIn('google')}
-              className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white py-3 px-5 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+              disabled={isFormLoading}
+              className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white py-3 px-5 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -224,7 +215,8 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => handleSocialSignIn('facebook')}
-              className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white py-3 px-5 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+              disabled={isFormLoading}
+              className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white py-3 px-5 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="h-5 w-5 mr-2" fill="#1877F2" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />

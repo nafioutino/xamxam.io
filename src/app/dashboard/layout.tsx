@@ -16,6 +16,7 @@ import {
   Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 interface NavItem {
   name: string;
@@ -61,8 +62,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Toaster position="top-right" />
+    <AuthGuard>
+      <div className="flex h-screen bg-gray-50">
+        <Toaster position="top-right" />
       {/* Mobile sidebar */}
       <div
         className={`fixed inset-0 z-40 flex md:hidden ${sidebarOpen ? 'block' : 'hidden'}`}
@@ -162,12 +164,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <p className="text-base font-medium text-gray-700 group-hover:text-gray-900">
                     {user?.name || 'Utilisateur'}
                   </p>
-                  <Link
-                    href="/api/auth/signout"
-                    className="text-sm font-medium text-gray-500 group-hover:text-gray-700"
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm font-medium text-gray-500 group-hover:text-gray-700 hover:underline"
                   >
                     Déconnexion
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>
@@ -249,12 +251,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <p className="text-base font-medium text-gray-700 group-hover:text-gray-900">
                       {user?.name || 'Utilisateur'}
                     </p>
-                    <Link
-                      href="/api/auth/signout"
-                      className="text-sm font-medium text-gray-500 group-hover:text-gray-700"
+                    <button
+                      onClick={handleLogout}
+                      className="text-sm font-medium text-gray-500 group-hover:text-gray-700 hover:underline"
                     >
                       Déconnexion
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -284,5 +286,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </div>
     </div>
+    </AuthGuard>
   );
 }

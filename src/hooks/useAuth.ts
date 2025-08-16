@@ -44,6 +44,15 @@ export function useAuth() {
             router.refresh();
           }, 100);
         }
+        
+        // Gestion automatique de la redirection après déconnexion
+        if (event === 'SIGNED_OUT') {
+          // Attendre que l'état soit mis à jour avant de rediriger
+          setTimeout(() => {
+            router.push('/auth/login');
+            router.refresh();
+          }, 100);
+        }
       }
     );
 
@@ -116,6 +125,41 @@ export function useAuth() {
     }
   };
 
+  const register = async (credentials: { name: string; email: string; password: string }) => {
+    try {
+      setIsLoading(true);
+      
+      const { data, error } = await supabase.auth.signUp({
+        email: credentials.email,
+        password: credentials.password,
+        options: {
+          data: {
+            name: credentials.name,
+          },
+        },
+      });
+      
+      if (error) throw error;
+      
+      // Si l'inscription réussit et que l'utilisateur est automatiquement connecté
+      if (data.user && data.session) {
+        toast.success('Inscription réussie! Redirection vers le dashboard...');
+        // La redirection sera gérée par onAuthStateChange
+        return true;
+      } else {
+        // Si une vérification d'email est requise
+        toast.success('Inscription réussie! Veuillez vérifier votre email pour confirmer votre compte.');
+        return true;
+      }
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      toast.error(error.message || 'Erreur lors de l\'inscription');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = async () => {
     try {
       setIsLoading(true);
@@ -125,8 +169,7 @@ export function useAuth() {
       if (error) throw error;
       
       toast.success('Déconnexion réussie');
-      router.push('/auth/login');
-      router.refresh();
+      // La redirection sera gérée automatiquement par onAuthStateChange
       return true;
     } catch (error: any) {
       console.error('Logout error:', error);
@@ -143,6 +186,7 @@ export function useAuth() {
     isLoading,
     isAuthenticated,
     login,
+    register,
     socialLogin,
     logout,
   };
