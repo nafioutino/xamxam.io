@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Tab } from '@headlessui/react';
-import { PencilIcon, PhotoIcon, VideoCameraIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, PhotoIcon, VideoCameraIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 
-type ContentType = 'text' | 'image' | 'video' | 'analysis';
+type ContentType = 'text' | 'image' | 'video' | 'customization';
 
 interface GeneratedContent {
   id: string;
@@ -60,8 +60,8 @@ export default function ContentPage() {
         case 'video':
           result = '#video-placeholder'; // In a real app, this would be a video URL
           break;
-        case 'analysis':
-          result = generateMockAnalysis(prompt);
+        case 'customization':
+          result = generateMockCustomization(prompt);
           break;
       }
 
@@ -103,9 +103,9 @@ export default function ContentPage() {
     }
   };
 
-  const generateMockAnalysis = (prompt: string) => {
-    // Generate mock analysis based on the prompt
-    return `Analyse de l'image/texte :\n\n- Type de contenu : ${prompt.includes('image') ? 'Image' : 'Texte'}\n- Éléments détectés : Produit, Logo, Texte promotionnel\n- Texte identifié : "${prompt.substring(0, 20)}..."\n- Sentiment général : Positif\n- Recommandations : Ajouter un appel à l'action plus visible, Optimiser les couleurs pour un meilleur contraste`;
+  const generateMockCustomization = (prompt: string) => {
+    // Generate mock customization options based on the prompt
+    return `Options de personnalisation :\n\n- Style : ${prompt.includes('moderne') ? 'Moderne' : prompt.includes('classique') ? 'Classique' : 'Contemporain'}\n- Palette de couleurs : ${prompt.includes('bleu') ? 'Tons bleus' : prompt.includes('rouge') ? 'Tons rouges' : 'Tons neutres'}\n- Éléments visuels : ${prompt.includes('photo') ? 'Photos' : 'Illustrations'}\n- Ton de communication : ${prompt.includes('formel') ? 'Formel' : 'Décontracté'}\n- Recommandations : Utiliser des visuels ${prompt.includes('minimaliste') ? 'minimalistes' : 'expressifs'}, Adapter le contenu pour ${prompt.includes('jeune') ? 'un public jeune' : 'tous les âges'}`;
   };
 
   const getContentTypeLabel = (type: ContentType): string => {
@@ -116,8 +116,8 @@ export default function ContentPage() {
         return 'Image';
       case 'video':
         return 'Vidéo';
-      case 'analysis':
-        return 'Analyse';
+      case 'customization':
+        return 'Personnalisation';
       default:
         return '';
     }
@@ -131,8 +131,8 @@ export default function ContentPage() {
         return <PhotoIcon className="h-5 w-5" />;
       case 'video':
         return <VideoCameraIcon className="h-5 w-5" />;
-      case 'analysis':
-        return <DocumentTextIcon className="h-5 w-5" />;
+      case 'customization':
+        return <AdjustmentsHorizontalIcon className="h-5 w-5" />;
       default:
         return null;
     }
@@ -169,9 +169,9 @@ export default function ContentPage() {
             </div>
           </div>
         );
-      case 'analysis':
+      case 'customization':
         return (
-          <div className="bg-white p-4 rounded-md shadow whitespace-pre-wrap">
+          <div className="bg-white p-5 rounded-md shadow-md border border-gray-100 whitespace-pre-wrap text-base">
             {content.result}
           </div>
         );
@@ -187,9 +187,9 @@ export default function ContentPage() {
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        <Tab.Group onChange={(index) => setActiveTab(['text', 'image', 'video', 'analysis'][index] as ContentType)}>
+        <Tab.Group onChange={(index) => setActiveTab(['text', 'image', 'video', 'customization'][index] as ContentType)}>
           <Tab.List className="flex bg-gray-50 border-b border-gray-200">
-            {['text', 'image', 'video', 'analysis'].map((type) => (
+            {['text', 'image', 'video', 'customization'].map((type) => (
               <Tab
                 key={type}
                 className={({ selected }) =>
@@ -204,18 +204,18 @@ export default function ContentPage() {
             ))}
           </Tab.List>
           <Tab.Panels>
-            {['text', 'image', 'video', 'analysis'].map((type) => (
+            {['text', 'image', 'video', 'customization'].map((type) => (
               <Tab.Panel key={type} className="p-6">
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="prompt" className="block text-base font-medium text-gray-700">
                       {type === 'text'
-                        ? 'Décrivez le texte marketing que vous souhaitez générer'
+                        ? 'Décrivez précisément le texte marketing que vous souhaitez générer (promotion, annonce, etc.)'
                         : type === 'image'
-                        ? 'Décrivez l\'image que vous souhaitez générer'
+                        ? 'Décrivez en détail l\'image que vous souhaitez générer (style, couleurs, éléments)'
                         : type === 'video'
-                        ? 'Décrivez la vidéo que vous souhaitez générer'
-                        : 'Téléchargez une image ou un texte à analyser'}
+                        ? 'Décrivez la vidéo que vous souhaitez générer (durée, style, message principal)'
+                        : 'Décrivez le style et les préférences pour personnaliser votre contenu'}
                     </label>
                     <div className="mt-1">
                       <textarea
@@ -223,17 +223,17 @@ export default function ContentPage() {
                         name="prompt"
                         rows={4}
                         className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full text-base border-gray-300 rounded-md p-3"
-                        placeholder={`Exemple : ${type === 'text' ? 'Une promotion pour notre nouvelle collection d\'été' : type === 'image' ? 'Un produit cosmétique élégant sur fond blanc avec des fleurs' : type === 'video' ? 'Une courte vidéo présentant notre boutique avec des clients satisfaits' : 'Analyser cette image de produit pour en extraire les informations'}`}
+                        placeholder={`Exemple : ${type === 'text' ? 'Une promotion spéciale pour notre nouvelle collection d\'été avec 30% de réduction' : type === 'image' ? 'Un produit cosmétique élégant sur fond blanc avec des fleurs et un effet de lumière douce' : type === 'video' ? 'Une vidéo de 30 secondes présentant notre boutique avec des clients satisfaits et nos produits phares' : 'Style moderne avec des tons bleus, des photos de qualité et un ton décontracté pour un public jeune'}`}
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                       />
                     </div>
                   </div>
 
-                  {type === 'analysis' && (
+                  {type === 'customization' && (
                     <div className="mt-1">
                       <label className="block text-base font-medium text-gray-700 mb-2">
-                        Fichier à analyser (optionnel)
+                        Référence visuelle pour la personnalisation (optionnel)
                       </label>
                       <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                         <div className="space-y-1 text-center">
@@ -268,7 +268,7 @@ export default function ContentPage() {
                             <p className="pl-1">ou glisser-déposer</p>
                           </div>
                           <p className="text-sm text-gray-500">
-                            PNG, JPG, GIF jusqu'à 10MB ou PDF, DOCX jusqu'à 5MB
+                            Téléchargez des images d'inspiration (PNG, JPG, GIF jusqu'à 10MB)
                           </p>
                         </div>
                       </div>
