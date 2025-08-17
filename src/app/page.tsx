@@ -429,7 +429,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-gray-200 dark:border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600 dark:text-gray-400 text-sm">© 2023 ZOBA. Tous droits réservés.</p>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">© 2025 ZOBA. Tous droits réservés.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="#" className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition text-sm">Confidentialité</a>
               <a href="#" className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition text-sm">Conditions d'utilisation</a>

@@ -117,7 +117,7 @@ export default function DashboardPage() {
   return (
     <div>
       <h1 className="text-3xl font-semibold text-gray-900 mb-6">
-        Bonjour, {session?.user?.name || 'Commerçant'}
+        Bonjour, {session?.user?.name || 'TINO Nafiou'}
       </h1>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
