@@ -23,7 +23,6 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const router = useRouter();
   const { register, socialLogin, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   
@@ -52,9 +51,10 @@ export default function RegisterPage() {
         // La redirection sera gérée automatiquement par le hook useAuth
         // via onAuthStateChange si l'utilisateur est connecté automatiquement
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Registration error:', error);
-      toast.error(error.message || 'Erreur lors de l\'inscription');
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de l\'inscription';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -34,7 +34,8 @@ const mockDb = {
 };
 
 // Remplacer db par mockDb
-const userDb = (db as any).user || mockDb.user;
+// Utiliser un type plus spécifique au lieu de 'any'
+const userDb = (db as { user?: typeof mockDb.user }).user || mockDb.user;
 
 const registerSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),

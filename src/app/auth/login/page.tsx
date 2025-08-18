@@ -346,7 +346,7 @@ export default function LoginPage() {
                   href="/auth/register" 
                   className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
                 >
-                  S'inscrire
+                  S&apos;inscrire
                 </Link>
               </div>
             </form>
@@ -423,7 +423,7 @@ export default function LoginPage() {
                   Démo
                 </h3>
                 <div className="mt-2 text-sm text-blue-700">
-                  <p>Pour tester l'authentification par téléphone, utilisez le code OTP : <strong>1234</strong></p>
+                  <p>Pour tester l&apos;authentification par téléphone, utilisez le code OTP : <strong>1234</strong></p>
                 </div>
               </div>
             </div>

@@ -1,10 +1,21 @@
 // import { PrismaAdapter } from "@auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
+import { Session } from "next-auth";
 // import { Adapter } from "next-auth/adapters";
 // import CredentialsProvider from "next-auth/providers/credentials";
 // import GoogleProvider from "next-auth/providers/google";
 // import FacebookProvider from "next-auth/providers/facebook";
 // import bcrypt from "bcryptjs";
+
+// Étendre le type User de next-auth pour inclure l'id
+declare module "next-auth" {
+  interface User {
+    id: string;
+  }
+  interface Session {
+    user: User;
+  }
+}
 
 import { db } from "@/lib/db";
 
