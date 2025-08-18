@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function AuthErrorPage() {
+function ErrorContent() {
   const searchParams = useSearchParams();
   const [error, setError] = useState<string>('');
 
@@ -13,16 +13,16 @@ export default function AuthErrorPage() {
     
     // Map error codes to user-friendly messages
     const errorMessages: Record<string, string> = {
-      'OAuthSignin': 'Erreur lors de la connexion avec le fournisseur d\'authentification.',
-      'OAuthCallback': 'Erreur lors de la réponse du fournisseur d\'authentification.',
+      'OAuthSignin': 'Erreur lors de la connexion avec le fournisseur d&apos;authentification.',
+      'OAuthCallback': 'Erreur lors de la réponse du fournisseur d&apos;authentification.',
       'OAuthCreateAccount': 'Impossible de créer un compte utilisateur avec ce fournisseur.',
       'EmailCreateAccount': 'Impossible de créer un compte utilisateur avec cet email.',
-      'Callback': 'Erreur lors du processus d\'authentification.',
+      'Callback': 'Erreur lors du processus d&apos;authentification.',
       'OAuthAccountNotLinked': 'Cet email est déjà associé à un autre compte.',
-      'EmailSignin': 'Erreur lors de l\'envoi de l\'email de connexion.',
+      'EmailSignin': 'Erreur lors de l&apos;envoi de l&apos;email de connexion.',
       'CredentialsSignin': 'Identifiants invalides.',
       'SessionRequired': 'Vous devez être connecté pour accéder à cette page.',
-      'default': 'Une erreur est survenue lors de l\'authentification.'
+      'default': 'Une erreur est survenue lors de l&apos;authentification.'
     };
 
     setError(errorParam ? (errorMessages[errorParam] || errorMessages.default) : errorMessages.default);
@@ -34,7 +34,7 @@ export default function AuthErrorPage() {
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900">ZOBA</h1>
           <h2 className="mt-6 text-2xl font-bold tracking-tight text-red-600">
-            Erreur d'authentification
+            Erreur d&apos;authentification
           </h2>
         </div>
 
@@ -58,5 +58,13 @@ export default function AuthErrorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Chargement...</div>}>
+      <ErrorContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 // import { PrismaClient } from "@prisma/client";
 
 declare global {
-  var prisma: any | undefined;
+  var prisma: unknown | undefined;
 }
 
 // Désactivation temporaire de Prisma pour permettre l'accès sans base de données

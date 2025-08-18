@@ -1,6 +1,5 @@
 // import { PrismaAdapter } from "@auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
-import { Session } from "next-auth";
 // import { Adapter } from "next-auth/adapters";
 // import CredentialsProvider from "next-auth/providers/credentials";
 // import GoogleProvider from "next-auth/providers/google";
@@ -17,7 +16,7 @@ declare module "next-auth" {
   }
 }
 
-import { db } from "@/lib/db";
+// import { db } from "@/lib/db";
 
 // Désactivation temporaire de l'authentification pour permettre l'accès sans base de données
 export const authOptions: NextAuthOptions = {

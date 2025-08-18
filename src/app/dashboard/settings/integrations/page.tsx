@@ -167,7 +167,7 @@ export default function IntegrationsPage() {
           {integrations.map((integration) => (
             <div key={integration.id} className="p-6 flex items-start space-x-4">
               <div className="flex-shrink-0 h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
-                {/* Placeholder pour l'icône - dans une vraie application, utilisez l'image réelle */}
+                {/* Placeholder pour l&apos;icône - dans une vraie application, utilisez l&apos;image réelle */}
                 <ChatBubbleLeftRightIcon className="h-6 w-6 text-gray-500" />
               </div>
               
@@ -306,7 +306,7 @@ export default function IntegrationsPage() {
                     </div>
                     <div>
                       <label htmlFor="whatsapp-token" className="block text-sm font-medium text-gray-700">
-                        Token d'accès
+                        Token d&apos;accès
                       </label>
                       <div className="mt-1">
                         <input
@@ -342,7 +342,7 @@ export default function IntegrationsPage() {
                     </div>
                     <div>
                       <label htmlFor="facebook-token" className="block text-sm font-medium text-gray-700">
-                        Token d'accès
+                        Token d&apos;accès
                       </label>
                       <div className="mt-1">
                         <input

@@ -37,7 +37,7 @@ export default function AIAgentSettingsPage() {
     {
       id: 'gpt4',
       name: 'GPT-4',
-      description: 'Modèle de langage avancé d\'OpenAI pour la génération de texte.',
+      description: 'Modèle de langage avancé d&apos;OpenAI pour la génération de texte.',
       type: 'text',
       provider: 'OpenAI',
       enabled: true,
@@ -55,7 +55,7 @@ export default function AIAgentSettingsPage() {
     {
       id: 'dalle3',
       name: 'DALL·E 3',
-      description: 'Modèle de génération d\'images d\'OpenAI.',
+      description: 'Modèle de génération d&apos;images d&apos;OpenAI.',
       type: 'image',
       provider: 'OpenAI',
       enabled: true,
@@ -64,7 +64,7 @@ export default function AIAgentSettingsPage() {
     {
       id: 'stablediffusion',
       name: 'Stable Diffusion',
-      description: 'Modèle alternatif pour la génération d\'images.',
+      description: 'Modèle alternatif pour la génération d&apos;images.',
       type: 'image',
       provider: 'Stability AI',
       enabled: false,
@@ -102,7 +102,7 @@ export default function AIAgentSettingsPage() {
   // Paramètres de l'agent IA
   const [agentSettings, setAgentSettings] = useState({
     name: 'ZOBA Assistant',
-    welcomeMessage: 'Bonjour ! Je suis l\'assistant virtuel de la boutique. Comment puis-je vous aider aujourd\'hui ?',
+    welcomeMessage: 'Bonjour ! Je suis l&apos;assistant virtuel de la boutique. Comment puis-je vous aider aujourd&apos;hui ?',
     transferMessage: 'Je vais transférer votre demande à un conseiller humain. Veuillez patienter un instant.',
     responseTime: 'fast',
     personality: 'professional',
@@ -140,14 +140,14 @@ export default function AIAgentSettingsPage() {
 
   // Fonction pour sauvegarder les paramètres
   const saveSettings = () => {
-    toast.success('Paramètres de l\'agent IA enregistrés avec succès');
+    toast.success('Paramètres de l&apos;agent IA enregistrés avec succès');
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Paramètres de l'Agent IA</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Paramètres de l&apos;Agent IA</h1>
           <p className="mt-1 text-sm text-gray-500">
             Configurez le comportement et les capacités de votre assistant virtuel.
           </p>
@@ -172,7 +172,7 @@ export default function AIAgentSettingsPage() {
             <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
               <div className="sm:col-span-3">
                 <label htmlFor="agent-name" className="block text-sm font-medium text-gray-700">
-                  Nom de l'assistant
+                  Nom de l&apos;assistant
                 </label>
                 <div className="mt-1">
                   <input
@@ -210,7 +210,7 @@ export default function AIAgentSettingsPage() {
 
               <div className="sm:col-span-6">
                 <label htmlFor="welcome-message" className="block text-sm font-medium text-gray-700">
-                  Message d'accueil
+                  Message d&apos;accueil
                 </label>
                 <div className="mt-1">
                   <textarea
@@ -271,7 +271,7 @@ export default function AIAgentSettingsPage() {
                     Réponse automatique
                   </label>
                   <p className="text-gray-500">
-                    L'agent IA répondra automatiquement aux messages entrants sans intervention humaine.
+                    L&apos;agent IA répondra automatiquement aux messages entrants sans intervention humaine.
                   </p>
                 </div>
               </div>
@@ -294,7 +294,7 @@ export default function AIAgentSettingsPage() {
                     Suggestion de produits
                   </label>
                   <p className="text-gray-500">
-                    L'agent IA suggérera des produits pertinents en fonction de la conversation.
+                    L&apos;agent IA suggérera des produits pertinents en fonction de la conversation.
                   </p>
                 </div>
               </div>
@@ -317,7 +317,7 @@ export default function AIAgentSettingsPage() {
                     Collecte de feedback
                   </label>
                   <p className="text-gray-500">
-                    L'agent IA demandera un feedback après avoir résolu une demande client.
+                    L&apos;agent IA demandera un feedback après avoir résolu une demande client.
                   </p>
                 </div>
               </div>
@@ -343,7 +343,7 @@ export default function AIAgentSettingsPage() {
                   </select>
                 </div>
                 <p className="mt-2 text-sm text-gray-500">
-                  Contrôle la vitesse à laquelle l'agent IA répond aux messages.
+                  Contrôle la vitesse à laquelle l&apos;agent IA répond aux messages.
                 </p>
               </div>
 
@@ -419,11 +419,11 @@ export default function AIAgentSettingsPage() {
           <div>
             <h3 className="text-lg font-medium leading-6 text-gray-900 flex items-center">
               <SparklesIcon className="h-5 w-5 mr-2 text-blue-500" />
-              Modèles d'IA
+              Modèles d&apos;IA
             </h3>
             <div className="mt-6 space-y-4">
               <p className="text-sm text-gray-500">
-                Configurez les modèles d'IA que vous souhaitez utiliser pour différentes tâches.
+                Configurez les modèles d&apos;IA que vous souhaitez utiliser pour différentes tâches.
               </p>
 
               {/* Modèles pour le texte */}
@@ -479,7 +479,7 @@ export default function AIAgentSettingsPage() {
 
               {/* Modèles pour les images */}
               <div>
-                <h4 className="text-base font-medium text-gray-900 mb-3">Modèles d'image</h4>
+                <h4 className="text-base font-medium text-gray-900 mb-3">Modèles d&apos;image</h4>
                 <div className="space-y-4">
                   {aiModels
                     .filter((model) => model.type === 'image')
@@ -579,9 +579,9 @@ export default function AIAgentSettingsPage() {
                 </div>
               </div>
 
-              {/* Modèles pour l'audio */}
+              {/* Modèles pour l&apos;audio */}
               <div>
-                <h4 className="text-base font-medium text-gray-900 mb-3">Modèles d'audio</h4>
+                <h4 className="text-base font-medium text-gray-900 mb-3">Modèles d&apos;audio</h4>
                 <div className="space-y-4">
                   {aiModels
                     .filter((model) => model.type === 'audio')

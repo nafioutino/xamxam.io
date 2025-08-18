@@ -197,7 +197,7 @@ export default function AnalyticsPage() {
   const getPeriodLabel = (period: StatPeriod) => {
     switch (period) {
       case 'day':
-        return 'Aujourd\'hui';
+        return 'Aujourd&apos;hui';
       case 'week':
         return 'Cette semaine';
       case 'month':
@@ -222,7 +222,7 @@ export default function AnalyticsPage() {
               value={period}
               onChange={(e) => setPeriod(e.target.value as StatPeriod)}
             >
-              <option value="day">Aujourd'hui</option>
+              <option value="day">Aujourd&apos;hui</option>
               <option value="week">Cette semaine</option>
               <option value="month">Ce mois</option>
               <option value="year">Cette année</option>
@@ -321,7 +321,7 @@ export default function AnalyticsPage() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Chiffre d'affaires</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Chiffre d&apos;affaires</dt>
                   <dd>
                     <div className="flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{formatCurrency(totalRevenue)}</div>
@@ -383,7 +383,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Graphique d'évolution (simulé avec des barres) */}
+      {/* Graphique d&apos;évolution (simulé avec des barres) */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
           <h3 className="text-lg font-medium leading-6 text-gray-900">Évolution des performances</h3>
@@ -466,7 +466,7 @@ export default function AnalyticsPage() {
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Chiffre d'affaires
+                  Chiffre d&apos;affaires
                 </th>
                 <th
                   scope="col"
@@ -529,7 +529,7 @@ export default function AnalyticsPage() {
         <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
           <h3 className="text-lg font-medium leading-6 text-gray-900">Recommandations IA</h3>
           <p className="mt-1 text-sm text-gray-500">
-            Suggestions basées sur l'analyse de vos données
+            Suggestions basées sur l&apos;analyse de vos données
           </p>
         </div>
         <div className="p-6 space-y-4">
@@ -542,7 +542,7 @@ export default function AnalyticsPage() {
               </div>
               <div className="ml-3 flex-1 md:flex md:justify-between">
                 <p className="text-sm text-blue-700">
-                  Instagram a le meilleur taux de conversion (28.2%). Envisagez d'augmenter votre présence sur cette plateforme.
+                  Instagram a le meilleur taux de conversion (28.2%). Envisagez d&apos;augmenter votre présence sur cette plateforme.
                 </p>
                 <p className="mt-3 text-sm md:mt-0 md:ml-6">
                   <a href="#" className="whitespace-nowrap font-medium text-blue-700 hover:text-blue-600">
@@ -580,7 +580,7 @@ export default function AnalyticsPage() {
               </div>
               <div className="ml-3 flex-1 md:flex md:justify-between">
                 <p className="text-sm text-green-700">
-                  Votre chiffre d'affaires a augmenté de 15.7%. Continuez à promouvoir vos produits les plus vendus.
+                  Votre chiffre d&apos;affaires a augmenté de 15.7%. Continuez à promouvoir vos produits les plus vendus.
                 </p>
                 <p className="mt-3 text-sm md:mt-0 md:ml-6">
                   <a href="#" className="whitespace-nowrap font-medium text-green-700 hover:text-green-600">

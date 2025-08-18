@@ -1,14 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import {
   ShoppingBagIcon,
   ChatBubbleLeftRightIcon,
   SparklesIcon,
-  DocumentTextIcon,
   ChartBarIcon,
   CurrencyDollarIcon,
   UserGroupIcon,

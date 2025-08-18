@@ -212,7 +212,7 @@ export default function ContentPage() {
                       {type === 'text'
                         ? 'Décrivez précisément le texte marketing que vous souhaitez générer (promotion, annonce, etc.)'
                         : type === 'image'
-                        ? 'Décrivez en détail l\'image que vous souhaitez générer (style, couleurs, éléments)'
+                        ? 'Décrivez en détail l&apos;image que vous souhaitez générer (style, couleurs, éléments)'
                         : type === 'video'
                         ? 'Décrivez la vidéo que vous souhaitez générer (durée, style, message principal)'
                         : 'Décrivez le style et les préférences pour personnaliser votre contenu'}
@@ -223,7 +223,7 @@ export default function ContentPage() {
                         name="prompt"
                         rows={4}
                         className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full text-base border-gray-300 rounded-md p-3"
-                        placeholder={`Exemple : ${type === 'text' ? 'Une promotion spéciale pour notre nouvelle collection d\'été avec 30% de réduction' : type === 'image' ? 'Un produit cosmétique élégant sur fond blanc avec des fleurs et un effet de lumière douce' : type === 'video' ? 'Une vidéo de 30 secondes présentant notre boutique avec des clients satisfaits et nos produits phares' : 'Style moderne avec des tons bleus, des photos de qualité et un ton décontracté pour un public jeune'}`}
+                        placeholder={`Exemple : ${type === 'text' ? 'Une promotion spéciale pour notre nouvelle collection d&apos;été avec 30% de réduction' : type === 'image' ? 'Un produit cosmétique élégant sur fond blanc avec des fleurs et un effet de lumière douce' : type === 'video' ? 'Une vidéo de 30 secondes présentant notre boutique avec des clients satisfaits et nos produits phares' : 'Style moderne avec des tons bleus, des photos de qualité et un ton décontracté pour un public jeune'}`}
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                       />
@@ -268,7 +268,7 @@ export default function ContentPage() {
                             <p className="pl-1">ou glisser-déposer</p>
                           </div>
                           <p className="text-sm text-gray-500">
-                            Téléchargez des images d'inspiration (PNG, JPG, GIF jusqu'à 10MB)
+                            Téléchargez des images d&apos;inspiration (PNG, JPG, GIF jusqu&apos;à 10MB)
                           </p>
                         </div>
                       </div>
@@ -472,7 +472,7 @@ export default function ContentPage() {
                     Aucun contenu sélectionné
                   </h3>
                   <p className="mt-2 text-base text-gray-500">
-                    Générez du contenu ou sélectionnez un élément dans l'historique.
+                    Générez du contenu ou sélectionnez un élément dans l&apos;historique.
                   </p>
                 </div>
               </div>

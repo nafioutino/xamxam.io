@@ -35,7 +35,6 @@ interface FAQItem {
 }
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [isSaving, setIsSaving] = useState(false);
 
   // Profil utilisateur
@@ -94,12 +93,12 @@ export default function SettingsPage() {
     {
       id: 'faq2',
       question: 'Comment puis-je suivre ma commande ?',
-      answer: 'Vous recevrez un lien de suivi par SMS dès que votre commande sera en préparation. Vous pourrez suivre en temps réel l\'état de votre commande.',
+      answer: 'Vous recevrez un lien de suivi par SMS dès que votre commande sera en préparation. Vous pourrez suivre en temps réel l&apos;état de votre commande.',
     },
     {
       id: 'faq3',
       question: 'Quelles sont vos conditions de retour ?',
-      answer: 'Vous disposez de 14 jours pour retourner un article. Il doit être dans son état d\'origine, non utilisé et dans son emballage d\'origine.',
+      answer: 'Vous disposez de 14 jours pour retourner un article. Il doit être dans son état d&apos;origine, non utilisé et dans son emballage d&apos;origine.',
     },
   ]);
 
@@ -121,14 +120,14 @@ export default function SettingsPage() {
     dataEncryption: true,
   });
 
-  // Gestion des horaires d'ouverture
-  const handleHoursChange = (index: number, field: keyof StoreHours, value: any) => {
+  // Gestion des horaires d&apos;ouverture
+  const handleHoursChange = (index: number, field: keyof StoreHours, value: string | boolean) => {
     const updatedHours = [...storeHours];
     updatedHours[index] = { ...updatedHours[index], [field]: value };
     setStoreHours(updatedHours);
   };
 
-  // Ajout d'une zone de livraison
+  // Ajout d&apos;une zone de livraison
   const handleAddDeliveryZone = () => {
     const newZone: DeliveryZone = {
       id: `zone${deliveryZones.length + 1}`,
@@ -140,19 +139,19 @@ export default function SettingsPage() {
     setDeliveryZones([...deliveryZones, newZone]);
   };
 
-  // Suppression d'une zone de livraison
+  // Suppression d&apos;une zone de livraison
   const handleRemoveDeliveryZone = (id: string) => {
     setDeliveryZones(deliveryZones.filter((zone) => zone.id !== id));
   };
 
-  // Mise à jour d'une zone de livraison
-  const handleUpdateDeliveryZone = (id: string, field: keyof DeliveryZone, value: any) => {
+  // Mise à jour d&apos;une zone de livraison
+  const handleUpdateDeliveryZone = (id: string, field: keyof DeliveryZone, value: string | number) => {
     setDeliveryZones(
       deliveryZones.map((zone) => (zone.id === id ? { ...zone, [field]: value } : zone))
     );
   };
 
-  // Ajout d'un élément FAQ
+  // Ajout d&apos;un élément FAQ
   const handleAddFAQItem = () => {
     const newItem: FAQItem = {
       id: `faq${faqItems.length + 1}`,
@@ -162,12 +161,12 @@ export default function SettingsPage() {
     setFaqItems([...faqItems, newItem]);
   };
 
-  // Suppression d'un élément FAQ
+  // Suppression d&apos;un élément FAQ
   const handleRemoveFAQItem = (id: string) => {
     setFaqItems(faqItems.filter((item) => item.id !== id));
   };
 
-  // Mise à jour d'un élément FAQ
+  // Mise à jour d&apos;un élément FAQ
   const handleUpdateFAQItem = (id: string, field: keyof FAQItem, value: string) => {
     setFaqItems(faqItems.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
   };
@@ -224,7 +223,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        <Tab.Group onChange={(index) => setActiveTab(['profile', 'store', 'notifications', 'security', 'payments', 'faq'][index] as TabType)}>
+        <Tab.Group>
           <Tab.List className="flex bg-gray-50 border-b border-gray-200">
             <Tab
               className={({ selected }) =>
@@ -532,9 +531,9 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium leading-6 text-gray-900 mt-8">Horaires d'ouverture</h3>
+                  <h3 className="text-lg font-medium leading-6 text-gray-900 mt-8">Horaires d&apos;ouverture</h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    Définissez les horaires d'ouverture de votre boutique.
+                    Définissez les horaires d&apos;ouverture de votre boutique.
                   </p>
 
                   <div className="mt-4 space-y-4">
@@ -697,7 +696,7 @@ export default function SettingsPage() {
                       <label htmlFor="newOrder" className="font-medium text-gray-700">
                         Nouvelles commandes
                       </label>
-                      <p className="text-gray-500">Recevez une notification lorsqu'une nouvelle commande est passée.</p>
+                      <p className="text-gray-500">Recevez une notification lorsqu&apos;une nouvelle commande est passée.</p>
                     </div>
                   </div>
 
@@ -722,7 +721,7 @@ export default function SettingsPage() {
                         Changements de statut des commandes
                       </label>
                       <p className="text-gray-500">
-                        Recevez une notification lorsque le statut d'une commande change.
+                        Recevez une notification lorsque le statut d&apos;une commande change.
                       </p>
                     </div>
                   </div>
@@ -748,7 +747,7 @@ export default function SettingsPage() {
                         Messages clients
                       </label>
                       <p className="text-gray-500">
-                        Recevez une notification lorsqu'un client vous envoie un message.
+                        Recevez une notification lorsqu&apos;un client vous envoie un message.
                       </p>
                     </div>
                   </div>
@@ -774,7 +773,7 @@ export default function SettingsPage() {
                         Confirmations de paiement
                       </label>
                       <p className="text-gray-500">
-                        Recevez une notification lorsqu'un paiement est confirmé.
+                        Recevez une notification lorsqu&apos;un paiement est confirmé.
                       </p>
                     </div>
                   </div>
@@ -866,7 +865,7 @@ export default function SettingsPage() {
                         Authentification à deux facteurs
                       </label>
                       <p className="text-gray-500">
-                        Activez l'authentification à deux facteurs pour renforcer la sécurité de votre compte.
+                        Activez l&apos;authentification à deux facteurs pour renforcer la sécurité de votre compte.
                       </p>
                     </div>
                   </div>
@@ -889,10 +888,10 @@ export default function SettingsPage() {
                     </div>
                     <div className="ml-3 text-sm">
                       <label htmlFor="ipRestriction" className="font-medium text-gray-700">
-                        Restriction d'adresse IP
+                        Restriction d&apos;adresse IP
                       </label>
                       <p className="text-gray-500">
-                        Limitez l'accès à votre compte à des adresses IP spécifiques.
+                        Limitez l&apos;accès à votre compte à des adresses IP spécifiques.
                       </p>
                     </div>
                   </div>
@@ -925,7 +924,7 @@ export default function SettingsPage() {
 
                   <div>
                     <label htmlFor="sessionTimeout" className="block text-sm font-medium text-gray-700">
-                      Délai d'expiration de session (minutes)
+                      Délai d&apos;expiration de session (minutes)
                     </label>
                     <div className="mt-1">
                       <select
@@ -957,10 +956,10 @@ export default function SettingsPage() {
                   <div className="flex justify-end">
                     <button
                       type="button"
-                      onClick={() => toast.success('Journal d\'activité ouvert')}
+                      onClick={() => toast.success('Journal d&apos;activité ouvert')}
                       className="ml-3 inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
-                      Voir le journal d'activité
+                      Voir le journal d&apos;activité
                     </button>
                   </div>
                 </div>
@@ -1025,7 +1024,7 @@ export default function SettingsPage() {
                 <div>
                   <h3 className="text-lg font-medium leading-6 text-gray-900">FAQ personnalisée</h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    Configurez les questions fréquemment posées pour votre boutique. Ces informations seront utilisées par l'agent IA pour répondre aux questions des clients.
+                    Configurez les questions fréquemment posées pour votre boutique. Ces informations seront utilisées par l&apos;agent IA pour répondre aux questions des clients.
                   </p>
                 </div>
 

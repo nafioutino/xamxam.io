@@ -34,7 +34,7 @@ export default function Home() {
           <div className="md:w-1/2 mb-10 md:mb-0">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
               <span className="block">Gérez votre commerce</span>
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">avec l'IA à vos côtés</span>
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">avec l&apos;IA à vos côtés</span>
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
               ZOBA transforme votre façon de vendre en ligne en intégrant messagerie, catalogue et IA dans une seule plateforme puissante.  
@@ -166,7 +166,7 @@ export default function Home() {
                   <div className="flex-1 text-right pr-8 md:pr-12">
                     <h3 className="text-xl font-bold mb-2">Créez votre compte</h3>
                     <p className="text-gray-600 dark:text-gray-300">
-                      Inscrivez-vous gratuitement et configurez votre profil d'entreprise en quelques minutes.
+                      Inscrivez-vous gratuitement et configurez votre profil d&apos;entreprise en quelques minutes.
                     </p>
                   </div>
                   <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-bold">
@@ -218,7 +218,7 @@ export default function Home() {
                   <div className="flex-1 text-left pl-8 md:pl-12">
                     <h3 className="text-xl font-bold mb-2">Commencez à vendre</h3>
                     <p className="text-gray-600 dark:text-gray-300">
-                      Gérez vos conversations, suivez vos commandes et développez votre activité avec l'aide de notre IA.
+                      Gérez vos conversations, suivez vos commandes et développez votre activité avec l&apos;aide de notre IA.
                     </p>
                   </div>
                 </div>
@@ -256,7 +256,7 @@ export default function Home() {
                     <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Jusqu'à 100 produits</span>
+                    <span>Jusqu&apos;à 100 produits</span>
                   </li>
                   <li className="flex items-center">
                     <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -278,7 +278,7 @@ export default function Home() {
                   </li>
                 </ul>
                 <Link href="/auth/register" className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center px-4 py-3 rounded-md transition">
-                  Commencer l'essai gratuit
+                  Commencer l&apos;essai gratuit
                 </Link>
               </div>
             </div>
@@ -328,7 +328,7 @@ export default function Home() {
                   </li>
                 </ul>
                 <Link href="/auth/register" className="block w-full bg-white text-blue-600 hover:bg-blue-50 text-center px-4 py-3 rounded-md transition">
-                  Commencer l'essai gratuit
+                  Commencer l&apos;essai gratuit
                 </Link>
               </div>
             </div>
@@ -391,7 +391,7 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Prêt à transformer votre commerce en ligne?</h2>
           <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-            Rejoignez des milliers d'entrepreneurs qui utilisent ZOBA pour développer leur activité.
+            Rejoignez des milliers d&apos;entrepreneurs qui utilisent ZOBA pour développer leur activité.
           </p>
           <Link href="/auth/register" className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-md text-lg font-medium transition inline-block">
             Commencer gratuitement
@@ -432,7 +432,7 @@ export default function Home() {
             <p className="text-gray-600 dark:text-gray-400 text-sm">© 2025 ZOBA. Tous droits réservés.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="#" className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition text-sm">Confidentialité</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition text-sm">Conditions d'utilisation</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition text-sm">Conditions d&apos;utilisation</a>
               <a href="#" className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition text-sm">Contact</a>
             </div>
           </div>

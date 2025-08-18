@@ -68,7 +68,7 @@ export function useAuth() {
       setIsLoading(true);
       
       if (credentials.email && credentials.password) {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email: credentials.email,
           password: credentials.password,
         });
@@ -93,9 +93,10 @@ export function useAuth() {
       }
       
       return false;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      toast.error(error.message || 'Une erreur est survenue lors de la connexion');
+      const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue lors de la connexion';
+      toast.error(errorMessage);
       return false;
     } finally {
       setIsLoading(false);
@@ -106,7 +107,7 @@ export function useAuth() {
     try {
       setIsLoading(true);
       
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
           redirectTo: `${window.location.origin}/dashboard`
@@ -116,9 +117,10 @@ export function useAuth() {
       if (error) throw error;
       
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`${provider} login error:`, error);
-      toast.error(error.message || `Erreur lors de la connexion avec ${provider}`);
+      const errorMessage = error instanceof Error ? error.message : `Erreur lors de la connexion avec ${provider}`;
+      toast.error(errorMessage);
       return false;
     } finally {
       setIsLoading(false);
@@ -152,9 +154,10 @@ export function useAuth() {
         toast.success('Inscription réussie! Veuillez vérifier votre email pour confirmer votre compte.');
         return true;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Registration error:', error);
-      toast.error(error.message || 'Erreur lors de l\'inscription');
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de l\'inscription';
+      toast.error(errorMessage);
       return false;
     } finally {
       setIsLoading(false);
@@ -172,9 +175,10 @@ export function useAuth() {
       toast.success('Déconnexion réussie');
       // La redirection sera gérée automatiquement par onAuthStateChange
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Logout error:', error);
-      toast.error(error.message || 'Une erreur est survenue lors de la déconnexion');
+      const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue lors de la déconnexion';
+      toast.error(errorMessage);
       return false;
     } finally {
       setIsLoading(false);
