@@ -100,16 +100,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <img
                       className="h-12 w-12 rounded-full object-cover border-2 border-blue-200"
                       src={user.image}
-                      alt={user.name || 'Profile'}
+                      alt={user.display_name || user.name || 'Profile'}
                     />
                   ) : (
                     <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
-                      {user?.name?.charAt(0) || 'U'}
+                      {user?.display_name?.charAt(0) || user?.name?.charAt(0) || 'U'}
                     </div>
                   )}
                 </div>
                 <div className="ml-3">
-                  <div className="text-lg font-medium text-gray-800">{user?.name || 'Utilisateur'}</div>
+                  <div className="text-lg font-medium text-gray-800">{user?.display_name || user?.name || 'Utilisateur'}</div>
                   <div className="text-base font-medium text-gray-500">{user?.email || ''}</div>
                 </div>
               </div>
@@ -243,13 +243,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <div>
                     <img
                       className="inline-block h-12 w-12 rounded-full object-cover border-2 border-blue-200"
-                      src={profileImage || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=random`}
+                      src={profileImage || `https://ui-avatars.com/api/?name=${user?.display_name || user?.name || 'User'}&background=random`}
                       alt=""
                     />
                   </div>
                   <div className="ml-3">
                     <p className="text-base font-medium text-gray-700 group-hover:text-gray-900">
-                      {user?.name || 'Utilisateur'}
+                      {user?.display_name || user?.name || 'Utilisateur'}
                     </p>
                     <button
                       onClick={handleLogout}

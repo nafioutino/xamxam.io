@@ -71,10 +71,10 @@ export default function DashboardNavbar() {
                     />
                   ) : (
                     <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
-                      {user?.name?.charAt(0) || 'U'}
+                      {user?.display_name?.charAt(0) || user?.name?.charAt(0) || 'U'}
                     </div>
                   )}
-                  <span className="ml-2 text-gray-700">{user?.name || 'Utilisateur'}</span>
+                  <span className="ml-2 text-gray-700">{user?.display_name || user?.name || 'Utilisateur'}</span>
                   <ChevronDown className="ml-1 h-4 w-4 text-gray-600" />
                 </button>
               </div>
@@ -163,18 +163,18 @@ export default function DashboardNavbar() {
                   <Image
                     className="h-10 w-10 rounded-full object-cover border-2 border-blue-200"
                     src={user.image}
-                    alt={user.name || 'Profile'}
+                    alt={user.display_name || user.name || 'Profile'}
                     width={40}
                     height={40}
                   />
                 </div>
               ) : (
                 <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
-                  {user?.name?.charAt(0) || 'U'}
+                  {user?.display_name?.charAt(0) || user?.name?.charAt(0) || 'U'}
                 </div>
               )}
               <div className="ml-3">
-                <div className="text-base font-medium text-gray-800">{user?.name || 'Utilisateur'}</div>
+                <div className="text-base font-medium text-gray-800">{user?.display_name || user?.name || 'Utilisateur'}</div>
                 <div className="text-sm font-medium text-gray-500">{user?.email || ''}</div>
               </div>
             </div>

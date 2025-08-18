@@ -135,6 +135,7 @@ export function useAuth() {
         options: {
           data: {
             name: credentials.name,
+            display_name: credentials.name,
           },
         },
       });
