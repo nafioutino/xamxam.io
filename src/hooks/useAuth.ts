@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 
 export function useAuth() {
@@ -11,6 +11,7 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const isAuthenticated = !!user;
+  const supabase = createClient();
 
   useEffect(() => {
     // Récupérer la session actuelle lors du chargement
