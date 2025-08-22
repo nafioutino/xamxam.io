@@ -97,7 +97,13 @@ export function useAuth() {
     } catch (error: unknown) {
       console.error('Login error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue lors de la connexion';
-      toast.error(errorMessage);
+      
+      // Rediriger vers la page d'erreur personnalisée pour les erreurs d'authentification
+      if (error instanceof Error && error.message.includes('Invalid login credentials')) {
+        router.push('/auth/error?error=InvalidLoginCredentials');
+      } else {
+        toast.error(errorMessage);
+      }
       return false;
     } finally {
       setIsLoading(false);
