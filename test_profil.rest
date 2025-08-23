@@ -1,0 +1,146 @@
+### Tests API Profil
+
+# Variables
+@baseUrl = http://localhost:3000
+@profileId = 550e8400-e29b-41d4-a716-446655440000
+@profileId2 = 550e8400-e29b-41d4-a716-446655440001
+
+### 1. GET - Récupérer tous les profils (table vide)
+GET {{baseUrl}}/api/profil
+Content-Type: application/json
+
+###
+
+### 2. POST - Créer un nouveau profil
+POST {{baseUrl}}/api/profil
+Content-Type: application/json
+
+{
+  "id": "{{profileId}}",
+  "fullName": "Jean Dupont",
+  "avatarUrl": "https://example.com/avatar1.jpg"
+}
+
+###
+
+### 3. POST - Créer un deuxième profil
+POST {{baseUrl}}/api/profil
+Content-Type: application/json
+
+{
+  "id": "{{profileId2}}",
+  "fullName": "Marie Martin",
+  "avatarUrl": "https://example.com/avatar2.jpg"
+}
+
+###
+
+### 4. GET - Récupérer tous les profils (avec données)
+GET {{baseUrl}}/api/profil
+Content-Type: application/json
+
+###
+
+### 5. PATCH - Modifier un profil existant
+PATCH {{baseUrl}}/api/profil
+Content-Type: application/json
+
+{
+  "id": "{{profileId}}",
+  "fullName": "Jean Dupont Modifié",
+  "avatarUrl": "https://example.com/new-avatar.jpg"
+}
+
+###
+
+### 6. PATCH - Modifier partiellement un profil (seulement le nom)
+PATCH {{baseUrl}}/api/profil
+Content-Type: application/json
+
+{
+  "id": "{{profileId2}}",
+  "fullName": "Marie Martin-Dubois"
+}
+
+###
+
+### 7. DELETE - Supprimer un profil
+DELETE {{baseUrl}}/api/profil
+Content-Type: application/json
+
+{
+  "id": "{{profileId}}"
+}
+
+###
+
+### 8. GET - Vérifier la suppression
+GET {{baseUrl}}/api/profil
+Content-Type: application/json
+
+###
+
+### 9. DELETE - Supprimer le deuxième profil
+DELETE {{baseUrl}}/api/profil
+Content-Type: application/json
+
+{
+  "id": "{{profileId2}}"
+}
+
+###
+
+### Tests d'erreurs
+
+### 10. POST - Créer un profil sans ID (erreur)
+POST {{baseUrl}}/api/profil
+Content-Type: application/json
+
+{
+  "fullName": "Test Sans ID"
+}
+
+###
+
+### 11. POST - Créer un profil avec ID invalide (erreur)
+POST {{baseUrl}}/api/profil
+Content-Type: application/json
+
+{
+  "id": 123,
+  "fullName": "Test ID Invalide"
+}
+
+###
+
+### 12. PATCH - Modifier un profil inexistant (erreur)
+PATCH {{baseUrl}}/api/profil
+Content-Type: application/json
+
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "fullName": "Profil Inexistant"
+}
+
+###
+
+### 13. DELETE - Supprimer un profil inexistant (erreur)
+DELETE {{baseUrl}}/api/profil
+Content-Type: application/json
+
+{
+  "id": "00000000-0000-0000-0000-000000000000"
+}
+
+###
+
+### 14. POST - Créer un profil avec ID déjà existant (erreur de duplication)
+POST {{baseUrl}}/api/profil
+Content-Type: application/json
+
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "fullName": "Doublon"
+}
+
+###

@@ -1,73 +1,224 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-const prisma = new PrismaClient();
-
-// LIRE
+// LIRE - Récupérer tous les profils
 export async function GET(request: Request) {
   try {
-    const profiles = await prisma.profile.findMany();
-    return NextResponse.json(profiles, { status: 200 });
+    console.log('Récupération des profils...');
+    const profiles = await prisma.profile.findMany({
+      orderBy: { fullName: 'asc' }
+    });
+    
+    console.log(`${profiles.length} profil(s) récupéré(s)`);
+    return NextResponse.json({
+      success: true,
+      data: profiles,
+      message: `${profiles.length} profil(s) trouvé(s)`
+    }, { status: 200 });
+    
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch profiles' }, { status: 500 });
+    console.error('Erreur lors de la récupération des profils:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Impossible de récupérer les profils',
+      message: 'Une erreur est survenue lors de la récupération des données'
+    }, { status: 500 });
   }
 }
 
-// AJOUTER
-// AJOUTER
+// AJOUTER - Créer un nouveau profil
 export async function POST(request: Request) {
   try {
-    const { firstName, lastName, email, position } = await request.json();
+    const body = await request.json();
+    const { id, fullName, avatarUrl } = body;
 
-    // Vérifier que l'email est une chaîne de caractères valide
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json({ error: 'Email is required and must be a string' }, { status: 400 });
+    // Validation des données
+    if (!id || typeof id !== 'string') {
+      return NextResponse.json({
+        success: false,
+        error: 'Données invalides',
+        message: 'L\'ID est requis et doit être une chaîne de caractères (UUID)'
+      }, { status: 400 });
     }
 
-    // Créer un nouvel employé avec Prisma
-    const newprofile = await prisma.profile.create({
-      data: { fullName, avatarUrl},
+    // Vérifier si le profil existe déjà
+    const existingProfile = await prisma.profile.findUnique({
+      where: { id }
     });
 
-    // Retourner la réponse avec le nouvel employé créé
-    return NextResponse.json(newprofile, { status: 201 });
-  } catch (error) {
-    console.error('Failed to create profile:', error);
-    // Retourner une réponse d'erreur avec un statut 500 en cas d'échec
-    return NextResponse.json({ error: 'Failed to create profile' }, { status: 500 });
+    if (existingProfile) {
+      return NextResponse.json({
+        success: false,
+        error: 'Profil existant',
+        message: 'Un profil avec cet ID existe déjà'
+      }, { status: 409 });
+    }
+
+    // Créer le nouveau profil
+    const newProfile = await prisma.profile.create({
+      data: { 
+        id,
+        fullName: fullName?.trim() || null,
+        avatarUrl: avatarUrl?.trim() || null
+      },
+    });
+
+    console.log('Nouveau profil créé:', newProfile.id);
+    return NextResponse.json({
+      success: true,
+      data: newProfile,
+      message: 'Profil créé avec succès'
+    }, { status: 201 });
+    
+  } catch (error: any) {
+    console.error('Erreur lors de la création du profil:', error);
+    
+    // Gestion des erreurs Prisma spécifiques
+    if (error.code === 'P2002') {
+      return NextResponse.json({
+        success: false,
+        error: 'Conflit de données',
+        message: 'Ce profil existe déjà'
+      }, { status: 409 });
+    }
+    
+    return NextResponse.json({
+      success: false,
+      error: 'Erreur de création',
+      message: 'Impossible de créer le profil'
+    }, { status: 500 });
   }
 }
 
-
-// MODIFIER
+// MODIFIER - Mettre à jour un profil existant
 export async function PATCH(request: Request) {
   try {
-    const { id, ...data } = await request.json();
-    if (!id || typeof id !== 'number') {
-      return NextResponse.json({ error: 'ID is required and must be a number' }, { status: 400 });
+    const body = await request.json();
+    const { id, ...data } = body;
+    
+    if (!id || typeof id !== 'string') {
+      return NextResponse.json({
+        success: false,
+        error: 'Données invalides',
+        message: 'L\'ID est requis et doit être une chaîne de caractères (UUID)'
+      }, { status: 400 });
     }
-    const updatedprofile = await prisma.profile.update({
-      where: { id },
-      data,
+
+    // Vérifier si le profil existe
+    const existingProfile = await prisma.profile.findUnique({
+      where: { id }
     });
-    return NextResponse.json(updatedprofile, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+
+    if (!existingProfile) {
+      return NextResponse.json({
+        success: false,
+        error: 'Profil introuvable',
+        message: 'Aucun profil trouvé avec cet ID'
+      }, { status: 404 });
+    }
+    
+    // Filtrer et nettoyer les données valides
+    const validData: { fullName?: string | null; avatarUrl?: string | null } = {};
+    if ('fullName' in data) {
+      validData.fullName = data.fullName?.trim() || null;
+    }
+    if ('avatarUrl' in data) {
+      validData.avatarUrl = data.avatarUrl?.trim() || null;
+    }
+
+    // Vérifier qu'il y a au moins une donnée à modifier
+    if (Object.keys(validData).length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'Aucune modification',
+        message: 'Aucune donnée valide à modifier'
+      }, { status: 400 });
+    }
+    
+    const updatedProfile = await prisma.profile.update({
+      where: { id },
+      data: validData,
+    });
+
+    console.log('Profil mis à jour:', updatedProfile.id);
+    return NextResponse.json({
+      success: true,
+      data: updatedProfile,
+      message: 'Profil mis à jour avec succès'
+    }, { status: 200 });
+    
+  } catch (error: any) {
+    console.error('Erreur lors de la mise à jour du profil:', error);
+    
+    if (error.code === 'P2025') {
+      return NextResponse.json({
+        success: false,
+        error: 'Profil introuvable',
+        message: 'Le profil à modifier n\'existe pas'
+      }, { status: 404 });
+    }
+    
+    return NextResponse.json({
+      success: false,
+      error: 'Erreur de modification',
+      message: 'Impossible de modifier le profil'
+    }, { status: 500 });
   }
 }
 
-// SUPPRIMER
+// SUPPRIMER - Supprimer un profil
 export async function DELETE(request: Request) {
   try {
-    const { id } = await request.json();
-    if (!id || typeof id !== 'number') {
-      return NextResponse.json({ error: 'ID is required and must be a number' }, { status: 400 });
+    const body = await request.json();
+    const { id } = body;
+    
+    if (!id || typeof id !== 'string') {
+      return NextResponse.json({
+        success: false,
+        error: 'Données invalides',
+        message: 'L\'ID est requis et doit être une chaîne de caractères (UUID)'
+      }, { status: 400 });
     }
-    const deletedprofile = await prisma.profile.delete({
+
+    // Vérifier si le profil existe avant de le supprimer
+    const existingProfile = await prisma.profile.findUnique({
+      where: { id }
+    });
+
+    if (!existingProfile) {
+      return NextResponse.json({
+        success: false,
+        error: 'Profil introuvable',
+        message: 'Aucun profil trouvé avec cet ID'
+      }, { status: 404 });
+    }
+    
+    const deletedProfile = await prisma.profile.delete({
       where: { id },
     });
-    return NextResponse.json(deletedprofile, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete profile' }, { status: 500 });
+
+    console.log('Profil supprimé:', deletedProfile.id);
+    return NextResponse.json({
+      success: true,
+      data: deletedProfile,
+      message: 'Profil supprimé avec succès'
+    }, { status: 200 });
+    
+  } catch (error: any) {
+    console.error('Erreur lors de la suppression du profil:', error);
+    
+    if (error.code === 'P2025') {
+      return NextResponse.json({
+        success: false,
+        error: 'Profil introuvable',
+        message: 'Le profil à supprimer n\'existe pas'
+      }, { status: 404 });
+    }
+    
+    return NextResponse.json({
+      success: false,
+      error: 'Erreur de suppression',
+      message: 'Impossible de supprimer le profil'
+    }, { status: 500 });
   }
 }
