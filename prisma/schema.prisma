@@ -50,6 +50,22 @@ model Shop {
 
   // Relation : Une boutique peut avoir plusieurs canaux
   channels      Channel[]
+  
+  // Relation : Une boutique peut avoir plusieurs catégories
+  categories    Category[]
+  
+  // Relation : Une boutique peut avoir plusieurs produits
+  products      Product[]
+  
+  // Relation : Une boutique peut avoir plusieurs clients
+  customers     Customer[]
+  
+  // Relation : Une boutique peut avoir plusieurs commandes
+  orders        Order[]
+  
+  // Relation : Une boutique peut avoir plusieurs conversations
+  conversations Conversation[]
+
 }
 
 // Stocke les identifiants des canaux de communication d'une boutique.
@@ -76,4 +92,255 @@ enum ChannelType {
   TELEGRAM
   TIKTOK
   EMAIL
+}
+
+// ===============================================
+// ===         GESTION DES PRODUITS           ===
+// ===============================================
+
+// Représente une catégorie de produits
+model Category {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  imageUrl    String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relation : Une catégorie appartient à une boutique
+  shopId      String    @db.Uuid
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  // Relation : Une catégorie peut avoir plusieurs produits
+  products    Product[]
+
+  @@unique([shopId, name]) // Empêche les doublons de noms dans une même boutique
+}
+
+// Représente un produit dans le catalogue
+model Product {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  price       Decimal   @db.Decimal(10, 2)
+  stock       Int       @default(0)
+  images      String[]  // Array d'URLs d'images
+  isActive    Boolean   @default(true)
+  sku         String?   // Code produit unique
+  weight      Decimal?  @db.Decimal(8, 3) // Poids en kg
+  dimensions  Json?     // {"length": 10, "width": 5, "height": 2}
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relation : Un produit appartient à une boutique
+  shopId      String    @db.Uuid
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  // Relation : Un produit appartient à une catégorie
+  categoryId  String    @db.Uuid
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  // Relation : Un produit peut être dans plusieurs articles de commande
+  orderItems  OrderItem[]
+
+  @@unique([shopId, sku]) // SKU unique par boutique
+
+}
+
+// ===============================================
+// ===         GESTION DES COMMANDES          ===
+// ===============================================
+
+// Représente un client
+model Customer {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  phone       String
+  email       String?
+  address     String?
+  city        String?
+  country     String?
+  notes       String?   // Notes internes sur le client
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relation : Un client appartient à une boutique
+  shopId      String    @db.Uuid
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  // Relation : Un client peut avoir plusieurs commandes
+  orders      Order[]
+  
+  // Relation : Un client peut avoir plusieurs conversations
+  conversations Conversation[]
+
+  @@unique([shopId, phone]) // Numéro de téléphone unique par boutique
+}
+
+// Représente une commande
+model Order {
+  id              String      @id @default(uuid()) @db.Uuid
+  orderNumber     String      // Numéro de commande lisible (ex: ORD-001)
+  status          OrderStatus @default(PENDING)
+  total           Decimal     @db.Decimal(10, 2)
+  subtotal        Decimal     @db.Decimal(10, 2)
+  shippingCost    Decimal?    @db.Decimal(10, 2)
+  taxAmount       Decimal?    @db.Decimal(10, 2)
+  paymentMethod   String?
+  paymentStatus   PaymentStatus @default(PENDING)
+  shippingAddress String?
+  trackingNumber  String?
+  notes           String?     // Notes de la commande
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relation : Une commande appartient à une boutique
+  shopId          String      @db.Uuid
+  shop            Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  // Relation : Une commande appartient à un client
+  customerId      String      @db.Uuid
+  customer        Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  // Relation : Une commande peut avoir plusieurs articles
+  items           OrderItem[]
+  
+  // Relation : Une commande peut avoir une conversation associée
+  conversation    Conversation?
+
+  @@unique([shopId, orderNumber]) // Numéro de commande unique par boutique
+
+}
+
+// Représente un article dans une commande
+model OrderItem {
+  id          String    @id @default(uuid()) @db.Uuid
+  quantity    Int
+  unitPrice   Decimal   @db.Decimal(10, 2)
+  totalPrice  Decimal   @db.Decimal(10, 2)
+  productName String    // Nom du produit au moment de la commande
+  productSku  String?   // SKU du produit au moment de la commande
+  createdAt   DateTime  @default(now())
+
+  // Relation : Un article appartient à une commande
+  orderId     String    @db.Uuid
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Relation : Un article fait référence à un produit (optionnel si produit supprimé)
+  productId   String?   @db.Uuid
+  product     Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+}
+
+// Enum pour les statuts de commande
+enum OrderStatus {
+  PENDING     // En attente
+  CONFIRMED   // Confirmée
+  PROCESSING  // En préparation
+  SHIPPED     // Expédiée
+  DELIVERED   // Livrée
+  CANCELLED   // Annulée
+  RETURNED    // Retournée
+
+}
+
+// Enum pour les statuts de paiement
+enum PaymentStatus {
+  PENDING     // En attente
+  PAID        // Payé
+  FAILED      // Échec
+  REFUNDED    // Remboursé
+  PARTIAL     // Partiel
+}
+
+// ===============================================
+// ===         GESTION DES MESSAGES           ===
+// ===============================================
+
+// Représente une conversation avec un client
+model Conversation {
+  id              String      @id @default(uuid()) @db.Uuid
+  title           String?     // Titre de la conversation
+  platform        ChannelType // Plateforme d'origine (WhatsApp, Facebook, etc.)
+  externalId      String?     // ID externe de la conversation sur la plateforme
+  isActive        Boolean     @default(true)
+  lastMessageAt   DateTime?   // Timestamp du dernier message
+  unreadCount     Int         @default(0) // Nombre de messages non lus
+  tags            String[]    // Tags pour organiser les conversations
+  priority        ConversationPriority @default(NORMAL)
+  status          ConversationStatus @default(OPEN)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relation : Une conversation appartient à une boutique
+  shopId          String      @db.Uuid
+  shop            Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  // Relation : Une conversation peut être liée à un client
+  customerId      String?     @db.Uuid
+  customer        Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  // Relation : Une conversation peut être liée à une commande
+  orderId         String?     @unique @db.Uuid
+  order           Order?      @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  // Relation : Une conversation peut avoir plusieurs messages
+  messages        Message[]
+
+  @@unique([shopId, platform, externalId]) // Conversation unique par plateforme
+}
+
+// Représente un message dans une conversation
+model Message {
+  id              String      @id @default(uuid()) @db.Uuid
+  content         String      // Contenu du message
+  messageType     MessageType @default(TEXT)
+  mediaUrl        String?     // URL du média (image, audio, vidéo)
+  mediaType       String?     // Type MIME du média
+  isFromCustomer  Boolean     // true si envoyé par le client, false si par la boutique
+  isRead          Boolean     @default(false)
+  externalId      String?     // ID externe du message sur la plateforme
+  metadata        Json?       // Métadonnées additionnelles (réactions, etc.)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relation : Un message appartient à une conversation
+  conversationId  String      @db.Uuid
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Relation : Un message peut être une réponse à un autre message
+  replyToId       String?     @db.Uuid
+  replyTo         Message?    @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies         Message[]   @relation("MessageReply")
+}
+
+// Enum pour les priorités de conversation
+enum ConversationPriority {
+  LOW     // Basse
+  NORMAL  // Normale
+  HIGH    // Haute
+  URGENT  // Urgente
+}
+
+// Enum pour les statuts de conversation
+enum ConversationStatus {
+  OPEN      // Ouverte
+  PENDING   // En attente
+  RESOLVED  // Résolue
+  CLOSED    // Fermée
+  ARCHIVED  // Archivée
+}
+
+// Enum pour les types de message
+enum MessageType {
+  TEXT      // Texte
+  IMAGE     // Image
+  AUDIO     // Audio
+  VIDEO     // Vidéo
+  DOCUMENT  // Document
+  LOCATION  // Localisation
+  CONTACT   // Contact
+  STICKER   // Autocollant
+  SYSTEM    // Message système
 }
