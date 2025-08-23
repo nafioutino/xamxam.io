@@ -67,7 +67,7 @@ model Profile {
   fullName  String?
   avatarUrl String?
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime  @default(now()) @updatedAt
   
   // Relation : Un profil peut posséder plusieurs boutiques
   shops     Shop[]
