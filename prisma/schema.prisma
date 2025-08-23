@@ -1,29 +1,69 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+  schemas   = ["auth", "public"]
 }
 
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model User {
+  instance_id                 String?           @db.Uuid
+  id                          String            @id @db.Uuid
+  aud                         String?           @db.VarChar(255)
+  role                        String?           @db.VarChar(255)
+  email                       String?           @db.VarChar(255)
+  encrypted_password          String?           @db.VarChar(255)
+  email_confirmed_at          DateTime?         @db.Timestamptz(6)
+  invited_at                  DateTime?         @db.Timestamptz(6)
+  confirmation_token          String?           @db.VarChar(255)
+  confirmation_sent_at        DateTime?         @db.Timestamptz(6)
+  recovery_token              String?           @db.VarChar(255)
+  recovery_sent_at            DateTime?         @db.Timestamptz(6)
+  email_change_token_new      String?           @db.VarChar(255)
+  email_change                String?           @db.VarChar(255)
+  email_change_sent_at        DateTime?         @db.Timestamptz(6)
+  last_sign_in_at             DateTime?         @db.Timestamptz(6)
+  raw_app_meta_data           Json?
+  raw_user_meta_data          Json?
+  is_super_admin              Boolean?
+  created_at                  DateTime?         @db.Timestamptz(6)
+  updated_at                  DateTime?         @db.Timestamptz(6)
+  phone                       String?           @unique
+  phone_confirmed_at          DateTime?         @db.Timestamptz(6)
+  phone_change                String?           @default("")
+  phone_change_token          String?           @default("") @db.VarChar(255)
+  phone_change_sent_at        DateTime?         @db.Timestamptz(6)
+  confirmed_at                DateTime?         @default(dbgenerated("LEAST(email_confirmed_at, phone_confirmed_at)")) @db.Timestamptz(6)
+  email_change_token_current  String?           @default("") @db.VarChar(255)
+  email_change_confirm_status Int?              @default(0) @db.SmallInt
+  banned_until                DateTime?         @db.Timestamptz(6)
+  reauthentication_token      String?           @default("") @db.VarChar(255)
+  reauthentication_sent_at    DateTime?         @db.Timestamptz(6)
+  is_sso_user                 Boolean           @default(false)
+  deleted_at                  DateTime?         @db.Timestamptz(6)
+  is_anonymous                Boolean           @default(false)
+  identities                  identities[]
+  mfa_factors                 mfa_factors[]
+  one_time_tokens             one_time_tokens[]
+  sessions                    sessions[]
 
-// ===============================================
-// ===      MODÈLES DE L'APPLICATION ZOBA      ===
-// ===============================================
+   // === AJOUT DE LA RELATION ===
+  // Relation : Un utilisateur a un profil
+  profile   Profile?
 
-// Stocke les informations publiques des utilisateurs (commerçants).
-// Lié 1-à-1 avec la table auth.users de Supabase via l'ID.
+  @@index([instance_id])
+  @@index([is_anonymous])
+  @@map("users")
+  @@schema("auth")
+}
+
 model Profile {
-  id        String    @id @db.Uuid
+  id        String    @id @db.Uuid // ON RETIRE LE DEFAULT, L'ID VIENT DE AUTH.USERS
   fullName  String?
   avatarUrl String?
   createdAt DateTime  @default(now())
@@ -31,74 +71,49 @@ model Profile {
   
   // Relation : Un profil peut posséder plusieurs boutiques
   shops     Shop[]
-}
 
-// Représente une boutique, notre "tenant" principal.
+  // === AJOUT DE LA RELATION ===
+  // Relation : Un profil appartient à un utilisateur
+  user      User      @relation(fields: [id], references: [id], onDelete: Cascade)
+  // ============================
+
+  @@schema("public")
+}
 model Shop {
-  id            String    @id @default(uuid()) @db.Uuid
+  id            String         @id @default(uuid()) @db.Uuid
   name          String
   description   String?
   address       String?
-  openingHours  Json?     // Pour stocker les horaires {"lundi": "9h-18h"}
-  faq           Json?     // Pour stocker la FAQ [{"q": "...", "a": "..."}]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Relation : La boutique appartient à un profil (owner)
-  ownerId       String    @db.Uuid
-  owner         Profile   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-
-  // Relation : Une boutique peut avoir plusieurs canaux
-  channels      Channel[]
-  
-  // Relation : Une boutique peut avoir plusieurs catégories
+  openingHours  Json?
+  faq           Json?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  ownerId       String         @db.Uuid
   categories    Category[]
-  
-  // Relation : Une boutique peut avoir plusieurs produits
-  products      Product[]
-  
-  // Relation : Une boutique peut avoir plusieurs clients
-  customers     Customer[]
-  
-  // Relation : Une boutique peut avoir plusieurs commandes
-  orders        Order[]
-  
-  // Relation : Une boutique peut avoir plusieurs conversations
+  channels      Channel[]
   conversations Conversation[]
+  customers     Customer[]
+  orders        Order[]
+  products      Product[]
+  owner         Profile        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
+  @@schema("public")
 }
 
-// Stocke les identifiants des canaux de communication d'une boutique.
 model Channel {
-  id            String      @id @default(uuid()) @db.Uuid
-  type          ChannelType // Utilisation d'un Enum pour la validation
-  externalId    String      // Ex: ID de la page Facebook, numéro WhatsApp
-  accessToken   String?     // ATTENTION SÉCURITÉ: Chiffrer avant de stocker
-  isActive      Boolean     @default(true)
-  createdAt     DateTime    @default(now())
+  id          String      @id @default(uuid()) @db.Uuid
+  type        ChannelType
+  externalId  String
+  accessToken String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  shopId      String      @db.Uuid
+  shop        Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
-  // Relation : Le canal appartient à une boutique
-  shopId        String      @db.Uuid
-  shop          Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
-
-  @@unique([shopId, type, externalId]) // Empêche de connecter le même canal deux fois
+  @@unique([shopId, type, externalId])
+  @@schema("public")
 }
 
-// Enum pour garantir la cohérence des types de canaux
-enum ChannelType {
-  FACEBOOK_PAGE
-  INSTAGRAM_DM
-  WHATSAPP
-  TELEGRAM
-  TIKTOK
-  EMAIL
-}
-
-// ===============================================
-// ===         GESTION DES PRODUITS           ===
-// ===============================================
-
-// Représente une catégorie de produits
 model Category {
   id          String    @id @default(uuid()) @db.Uuid
   name        String
@@ -107,240 +122,516 @@ model Category {
   isActive    Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
-  // Relation : Une catégorie appartient à une boutique
   shopId      String    @db.Uuid
   shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
-
-  // Relation : Une catégorie peut avoir plusieurs produits
   products    Product[]
 
-  @@unique([shopId, name]) // Empêche les doublons de noms dans une même boutique
+  @@unique([shopId, name])
+  @@schema("public")
 }
 
-// Représente un produit dans le catalogue
 model Product {
-  id          String    @id @default(uuid()) @db.Uuid
+  id          String      @id @default(uuid()) @db.Uuid
   name        String
   description String?
-  price       Decimal   @db.Decimal(10, 2)
-  stock       Int       @default(0)
-  images      String[]  // Array d'URLs d'images
-  isActive    Boolean   @default(true)
-  sku         String?   // Code produit unique
-  weight      Decimal?  @db.Decimal(8, 3) // Poids en kg
-  dimensions  Json?     // {"length": 10, "width": 5, "height": 2}
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relation : Un produit appartient à une boutique
-  shopId      String    @db.Uuid
-  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
-
-  // Relation : Un produit appartient à une catégorie
-  categoryId  String    @db.Uuid
-  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-
-  // Relation : Un produit peut être dans plusieurs articles de commande
+  price       Decimal     @db.Decimal(10, 2)
+  stock       Int         @default(0)
+  images      String[]
+  isActive    Boolean     @default(true)
+  sku         String?
+  weight      Decimal?    @db.Decimal(8, 3)
+  dimensions  Json?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  shopId      String      @db.Uuid
+  categoryId  String      @db.Uuid
   orderItems  OrderItem[]
+  category    Category    @relation(fields: [categoryId], references: [id])
+  shop        Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
-  @@unique([shopId, sku]) // SKU unique par boutique
-
+  @@unique([shopId, sku])
+  @@schema("public")
 }
 
-// ===============================================
-// ===         GESTION DES COMMANDES          ===
-// ===============================================
-
-// Représente un client
 model Customer {
-  id          String    @id @default(uuid()) @db.Uuid
-  name        String
-  phone       String
-  email       String?
-  address     String?
-  city        String?
-  country     String?
-  notes       String?   // Notes internes sur le client
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relation : Un client appartient à une boutique
-  shopId      String    @db.Uuid
-  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
-
-  // Relation : Un client peut avoir plusieurs commandes
-  orders      Order[]
-  
-  // Relation : Un client peut avoir plusieurs conversations
+  id            String         @id @default(uuid()) @db.Uuid
+  name          String
+  phone         String
+  email         String?
+  address       String?
+  city          String?
+  country       String?
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  shopId        String         @db.Uuid
   conversations Conversation[]
+  shop          Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  orders        Order[]
 
-  @@unique([shopId, phone]) // Numéro de téléphone unique par boutique
+  @@unique([shopId, phone])
+  @@schema("public")
 }
 
-// Représente une commande
 model Order {
-  id              String      @id @default(uuid()) @db.Uuid
-  orderNumber     String      // Numéro de commande lisible (ex: ORD-001)
-  status          OrderStatus @default(PENDING)
-  total           Decimal     @db.Decimal(10, 2)
-  subtotal        Decimal     @db.Decimal(10, 2)
-  shippingCost    Decimal?    @db.Decimal(10, 2)
-  taxAmount       Decimal?    @db.Decimal(10, 2)
+  id              String        @id @default(uuid()) @db.Uuid
+  orderNumber     String
+  status          OrderStatus   @default(PENDING)
+  total           Decimal       @db.Decimal(10, 2)
+  subtotal        Decimal       @db.Decimal(10, 2)
+  shippingCost    Decimal?      @db.Decimal(10, 2)
+  taxAmount       Decimal?      @db.Decimal(10, 2)
   paymentMethod   String?
   paymentStatus   PaymentStatus @default(PENDING)
   shippingAddress String?
   trackingNumber  String?
-  notes           String?     // Notes de la commande
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
-  // Relation : Une commande appartient à une boutique
-  shopId          String      @db.Uuid
-  shop            Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
-
-  // Relation : Une commande appartient à un client
-  customerId      String      @db.Uuid
-  customer        Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
-
-  // Relation : Une commande peut avoir plusieurs articles
-  items           OrderItem[]
-  
-  // Relation : Une commande peut avoir une conversation associée
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  shopId          String        @db.Uuid
+  customerId      String        @db.Uuid
   conversation    Conversation?
+  customer        Customer      @relation(fields: [customerId], references: [id])
+  shop            Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  items           OrderItem[]
 
-  @@unique([shopId, orderNumber]) // Numéro de commande unique par boutique
-
+  @@unique([shopId, orderNumber])
+  @@schema("public")
 }
 
-// Représente un article dans une commande
 model OrderItem {
-  id          String    @id @default(uuid()) @db.Uuid
+  id          String   @id @default(uuid()) @db.Uuid
   quantity    Int
-  unitPrice   Decimal   @db.Decimal(10, 2)
-  totalPrice  Decimal   @db.Decimal(10, 2)
-  productName String    // Nom du produit au moment de la commande
-  productSku  String?   // SKU du produit au moment de la commande
-  createdAt   DateTime  @default(now())
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  totalPrice  Decimal  @db.Decimal(10, 2)
+  productName String
+  productSku  String?
+  createdAt   DateTime @default(now())
+  orderId     String   @db.Uuid
+  productId   String?  @db.Uuid
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product? @relation(fields: [productId], references: [id])
 
-  // Relation : Un article appartient à une commande
-  orderId     String    @db.Uuid
-  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  // Relation : Un article fait référence à un produit (optionnel si produit supprimé)
-  productId   String?   @db.Uuid
-  product     Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
-
+  @@schema("public")
 }
 
-// Enum pour les statuts de commande
-enum OrderStatus {
-  PENDING     // En attente
-  CONFIRMED   // Confirmée
-  PROCESSING  // En préparation
-  SHIPPED     // Expédiée
-  DELIVERED   // Livrée
-  CANCELLED   // Annulée
-  RETURNED    // Retournée
-
-}
-
-// Enum pour les statuts de paiement
-enum PaymentStatus {
-  PENDING     // En attente
-  PAID        // Payé
-  FAILED      // Échec
-  REFUNDED    // Remboursé
-  PARTIAL     // Partiel
-}
-
-// ===============================================
-// ===         GESTION DES MESSAGES           ===
-// ===============================================
-
-// Représente une conversation avec un client
 model Conversation {
-  id              String      @id @default(uuid()) @db.Uuid
-  title           String?     // Titre de la conversation
-  platform        ChannelType // Plateforme d'origine (WhatsApp, Facebook, etc.)
-  externalId      String?     // ID externe de la conversation sur la plateforme
-  isActive        Boolean     @default(true)
-  lastMessageAt   DateTime?   // Timestamp du dernier message
-  unreadCount     Int         @default(0) // Nombre de messages non lus
-  tags            String[]    // Tags pour organiser les conversations
-  priority        ConversationPriority @default(NORMAL)
-  status          ConversationStatus @default(OPEN)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id            String               @id @default(uuid()) @db.Uuid
+  title         String?
+  platform      ChannelType
+  externalId    String?
+  isActive      Boolean              @default(true)
+  lastMessageAt DateTime?
+  unreadCount   Int                  @default(0)
+  tags          String[]
+  priority      ConversationPriority @default(NORMAL)
+  status        ConversationStatus   @default(OPEN)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  shopId        String               @db.Uuid
+  customerId    String?              @db.Uuid
+  orderId       String?              @unique @db.Uuid
+  customer      Customer?            @relation(fields: [customerId], references: [id])
+  order         Order?               @relation(fields: [orderId], references: [id])
+  shop          Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  messages      Message[]
 
-  // Relation : Une conversation appartient à une boutique
-  shopId          String      @db.Uuid
-  shop            Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
-
-  // Relation : Une conversation peut être liée à un client
-  customerId      String?     @db.Uuid
-  customer        Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
-
-  // Relation : Une conversation peut être liée à une commande
-  orderId         String?     @unique @db.Uuid
-  order           Order?      @relation(fields: [orderId], references: [id], onDelete: SetNull)
-
-  // Relation : Une conversation peut avoir plusieurs messages
-  messages        Message[]
-
-  @@unique([shopId, platform, externalId]) // Conversation unique par plateforme
+  @@unique([shopId, platform, externalId])
+  @@schema("public")
 }
 
-// Représente un message dans une conversation
 model Message {
-  id              String      @id @default(uuid()) @db.Uuid
-  content         String      // Contenu du message
-  messageType     MessageType @default(TEXT)
-  mediaUrl        String?     // URL du média (image, audio, vidéo)
-  mediaType       String?     // Type MIME du média
-  isFromCustomer  Boolean     // true si envoyé par le client, false si par la boutique
-  isRead          Boolean     @default(false)
-  externalId      String?     // ID externe du message sur la plateforme
-  metadata        Json?       // Métadonnées additionnelles (réactions, etc.)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id             String       @id @default(uuid()) @db.Uuid
+  content        String
+  messageType    MessageType  @default(TEXT)
+  mediaUrl       String?
+  mediaType      String?
+  isFromCustomer Boolean
+  isRead         Boolean      @default(false)
+  externalId     String?
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  conversationId String       @db.Uuid
+  replyToId      String?      @db.Uuid
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  replyTo        Message?     @relation("MessageReply", fields: [replyToId], references: [id])
+  replies        Message[]    @relation("MessageReply")
 
-  // Relation : Un message appartient à une conversation
-  conversationId  String      @db.Uuid
-  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  // Relation : Un message peut être une réponse à un autre message
-  replyToId       String?     @db.Uuid
-  replyTo         Message?    @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
-  replies         Message[]   @relation("MessageReply")
+  @@schema("public")
 }
 
-// Enum pour les priorités de conversation
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model audit_log_entries {
+  instance_id String?   @db.Uuid
+  id          String    @id @db.Uuid
+  payload     Json?     @db.Json
+  created_at  DateTime? @db.Timestamptz(6)
+  ip_address  String    @default("") @db.VarChar(64)
+
+  @@index([instance_id], map: "audit_logs_instance_id_idx")
+  @@schema("auth")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model flow_state {
+  id                     String                @id @db.Uuid
+  user_id                String?               @db.Uuid
+  auth_code              String
+  code_challenge_method  code_challenge_method
+  code_challenge         String
+  provider_type          String
+  provider_access_token  String?
+  provider_refresh_token String?
+  created_at             DateTime?             @db.Timestamptz(6)
+  updated_at             DateTime?             @db.Timestamptz(6)
+  authentication_method  String
+  auth_code_issued_at    DateTime?             @db.Timestamptz(6)
+  saml_relay_states      saml_relay_states[]
+
+  @@index([created_at(sort: Desc)])
+  @@index([auth_code], map: "idx_auth_code")
+  @@index([user_id, authentication_method], map: "idx_user_id_auth_method")
+  @@schema("auth")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model identities {
+  provider_id     String
+  user_id         String    @db.Uuid
+  identity_data   Json
+  provider        String
+  last_sign_in_at DateTime? @db.Timestamptz(6)
+  created_at      DateTime? @db.Timestamptz(6)
+  updated_at      DateTime? @db.Timestamptz(6)
+  email           String?   @default(dbgenerated("lower((identity_data ->> 'email'::text))"))
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  users           User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([provider_id, provider], map: "identities_provider_id_provider_unique")
+  @@index([email])
+  @@index([user_id])
+  @@schema("auth")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model instances {
+  id              String    @id @db.Uuid
+  uuid            String?   @db.Uuid
+  raw_base_config String?
+  created_at      DateTime? @db.Timestamptz(6)
+  updated_at      DateTime? @db.Timestamptz(6)
+
+  @@schema("auth")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model mfa_amr_claims {
+  session_id            String   @db.Uuid
+  created_at            DateTime @db.Timestamptz(6)
+  updated_at            DateTime @db.Timestamptz(6)
+  authentication_method String
+  id                    String   @id(map: "amr_id_pk") @db.Uuid
+  sessions              sessions @relation(fields: [session_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([session_id, authentication_method], map: "mfa_amr_claims_session_id_authentication_method_pkey")
+  @@schema("auth")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model mfa_challenges {
+  id                     String      @id @db.Uuid
+  factor_id              String      @db.Uuid
+  created_at             DateTime    @db.Timestamptz(6)
+  verified_at            DateTime?   @db.Timestamptz(6)
+  ip_address             String      @db.Inet
+  otp_code               String?
+  web_authn_session_data Json?
+  mfa_factors            mfa_factors @relation(fields: [factor_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "mfa_challenges_auth_factor_id_fkey")
+
+  @@index([created_at(sort: Desc)], map: "mfa_challenge_created_at_idx")
+  @@schema("auth")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model mfa_factors {
+  id                   String           @id @db.Uuid
+  user_id              String           @db.Uuid
+  friendly_name        String?
+  factor_type          factor_type
+  status               factor_status
+  created_at           DateTime         @db.Timestamptz(6)
+  updated_at           DateTime         @db.Timestamptz(6)
+  secret               String?
+  phone                String?
+  last_challenged_at   DateTime?        @unique @db.Timestamptz(6)
+  web_authn_credential Json?
+  web_authn_aaguid     String?          @db.Uuid
+  mfa_challenges       mfa_challenges[]
+  users                User             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, phone], map: "unique_phone_factor_per_user")
+  @@index([user_id, created_at], map: "factor_id_created_at_idx")
+  @@index([user_id])
+  @@schema("auth")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model one_time_tokens {
+  id         String              @id @db.Uuid
+  user_id    String              @db.Uuid
+  token_type one_time_token_type
+  token_hash String
+  relates_to String
+  created_at DateTime            @default(now()) @db.Timestamp(6)
+  updated_at DateTime            @default(now()) @db.Timestamp(6)
+  users      User                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, token_type])
+  @@index([relates_to], map: "one_time_tokens_relates_to_hash_idx", type: Hash)
+  @@index([token_hash], map: "one_time_tokens_token_hash_hash_idx", type: Hash)
+  @@schema("auth")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model refresh_tokens {
+  instance_id String?   @db.Uuid
+  id          BigInt    @id @default(autoincrement())
+  token       String?   @unique(map: "refresh_tokens_token_unique") @db.VarChar(255)
+  user_id     String?   @db.VarChar(255)
+  revoked     Boolean?
+  created_at  DateTime? @db.Timestamptz(6)
+  updated_at  DateTime? @db.Timestamptz(6)
+  parent      String?   @db.VarChar(255)
+  session_id  String?   @db.Uuid
+  sessions    sessions? @relation(fields: [session_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([instance_id])
+  @@index([instance_id, user_id])
+  @@index([parent])
+  @@index([session_id, revoked])
+  @@index([updated_at(sort: Desc)])
+  @@schema("auth")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model saml_providers {
+  id                String        @id @db.Uuid
+  sso_provider_id   String        @db.Uuid
+  entity_id         String        @unique
+  metadata_xml      String
+  metadata_url      String?
+  attribute_mapping Json?
+  created_at        DateTime?     @db.Timestamptz(6)
+  updated_at        DateTime?     @db.Timestamptz(6)
+  name_id_format    String?
+  sso_providers     sso_providers @relation(fields: [sso_provider_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([sso_provider_id])
+  @@schema("auth")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model saml_relay_states {
+  id              String        @id @db.Uuid
+  sso_provider_id String        @db.Uuid
+  request_id      String
+  for_email       String?
+  redirect_to     String?
+  created_at      DateTime?     @db.Timestamptz(6)
+  updated_at      DateTime?     @db.Timestamptz(6)
+  flow_state_id   String?       @db.Uuid
+  flow_state      flow_state?   @relation(fields: [flow_state_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  sso_providers   sso_providers @relation(fields: [sso_provider_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([created_at(sort: Desc)])
+  @@index([for_email])
+  @@index([sso_provider_id])
+  @@schema("auth")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model schema_migrations {
+  version String @id @db.VarChar(255)
+
+  @@schema("auth")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sessions {
+  id             String           @id @db.Uuid
+  user_id        String           @db.Uuid
+  created_at     DateTime?        @db.Timestamptz(6)
+  updated_at     DateTime?        @db.Timestamptz(6)
+  factor_id      String?          @db.Uuid
+  aal            aal_level?
+  not_after      DateTime?        @db.Timestamptz(6)
+  refreshed_at   DateTime?        @db.Timestamp(6)
+  user_agent     String?
+  ip             String?          @db.Inet
+  tag            String?
+  mfa_amr_claims mfa_amr_claims[]
+  refresh_tokens refresh_tokens[]
+  users          User             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([not_after(sort: Desc)])
+  @@index([user_id])
+  @@index([user_id, created_at], map: "user_id_created_at_idx")
+  @@schema("auth")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model sso_domains {
+  id              String        @id @db.Uuid
+  sso_provider_id String        @db.Uuid
+  domain          String
+  created_at      DateTime?     @db.Timestamptz(6)
+  updated_at      DateTime?     @db.Timestamptz(6)
+  sso_providers   sso_providers @relation(fields: [sso_provider_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([sso_provider_id])
+  @@schema("auth")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model sso_providers {
+  id                String              @id @db.Uuid
+  resource_id       String?
+  created_at        DateTime?           @db.Timestamptz(6)
+  updated_at        DateTime?           @db.Timestamptz(6)
+  disabled          Boolean?
+  saml_providers    saml_providers[]
+  saml_relay_states saml_relay_states[]
+  sso_domains       sso_domains[]
+
+  @@index([resource_id], map: "sso_providers_resource_id_pattern_idx")
+  @@schema("auth")
+}
+
+enum ChannelType {
+  FACEBOOK_PAGE
+  INSTAGRAM_DM
+  WHATSAPP
+  TELEGRAM
+  TIKTOK
+  EMAIL
+
+  @@schema("public")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+
+  @@schema("public")
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIAL
+
+  @@schema("public")
+}
+
 enum ConversationPriority {
-  LOW     // Basse
-  NORMAL  // Normale
-  HIGH    // Haute
-  URGENT  // Urgente
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+
+  @@schema("public")
 }
 
-// Enum pour les statuts de conversation
 enum ConversationStatus {
-  OPEN      // Ouverte
-  PENDING   // En attente
-  RESOLVED  // Résolue
-  CLOSED    // Fermée
-  ARCHIVED  // Archivée
+  OPEN
+  PENDING
+  RESOLVED
+  CLOSED
+  ARCHIVED
+
+  @@schema("public")
 }
 
-// Enum pour les types de message
 enum MessageType {
-  TEXT      // Texte
-  IMAGE     // Image
-  AUDIO     // Audio
-  VIDEO     // Vidéo
-  DOCUMENT  // Document
-  LOCATION  // Localisation
-  CONTACT   // Contact
-  STICKER   // Autocollant
-  SYSTEM    // Message système
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+  DOCUMENT
+  LOCATION
+  CONTACT
+  STICKER
+  SYSTEM
+
+  @@schema("public")
+}
+
+enum aal_level {
+  aal1
+  aal2
+  aal3
+
+  @@schema("auth")
+}
+
+enum code_challenge_method {
+  s256
+  plain
+
+  @@schema("auth")
+}
+
+enum factor_status {
+  unverified
+  verified
+
+  @@schema("auth")
+}
+
+enum factor_type {
+  totp
+  webauthn
+  phone
+
+  @@schema("auth")
+}
+
+enum one_time_token_type {
+  confirmation_token
+  reauthentication_token
+  recovery_token
+  email_change_token_new
+  email_change_token_current
+  phone_change_token
+
+  @@schema("auth")
 }
