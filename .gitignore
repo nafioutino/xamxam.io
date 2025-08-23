@@ -41,3 +41,5 @@ next-env.d.ts
 
 # n8n
 .n8n/
+
+/src/generated/prisma
