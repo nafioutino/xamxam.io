@@ -69,8 +69,8 @@ model Profile {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now()) @updatedAt
   
-  // Relation : Un profil peut posséder plusieurs boutiques
-  shops     Shop[]
+  // Relation : Un profil a une seule boutique
+  shop     Shop?
 
   // === AJOUT DE LA RELATION ===
   // Relation : Un profil appartient à un utilisateur
@@ -98,6 +98,7 @@ model Shop {
   owner         Profile        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@schema("public")
+  @@unique([ownerId])
 }
 
 model Channel {
