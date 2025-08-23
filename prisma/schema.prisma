@@ -16,18 +16,64 @@ datasource db {
 }
 
 
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean @default(false)
-  author    User?   @relation(fields: [authorId], references: [id])
-  authorId  Int?
+// ===============================================
+// ===      MODÈLES DE L'APPLICATION ZOBA      ===
+// ===============================================
+
+// Stocke les informations publiques des utilisateurs (commerçants).
+// Lié 1-à-1 avec la table auth.users de Supabase via l'ID.
+model Profile {
+  id        String    @id @db.Uuid
+  fullName  String?
+  avatarUrl String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  // Relation : Un profil peut posséder plusieurs boutiques
+  shops     Shop[]
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
+// Représente une boutique, notre "tenant" principal.
+model Shop {
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String
+  description   String?
+  address       String?
+  openingHours  Json?     // Pour stocker les horaires {"lundi": "9h-18h"}
+  faq           Json?     // Pour stocker la FAQ [{"q": "...", "a": "..."}]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relation : La boutique appartient à un profil (owner)
+  ownerId       String    @db.Uuid
+  owner         Profile   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Relation : Une boutique peut avoir plusieurs canaux
+  channels      Channel[]
+}
+
+// Stocke les identifiants des canaux de communication d'une boutique.
+model Channel {
+  id            String      @id @default(uuid()) @db.Uuid
+  type          ChannelType // Utilisation d'un Enum pour la validation
+  externalId    String      // Ex: ID de la page Facebook, numéro WhatsApp
+  accessToken   String?     // ATTENTION SÉCURITÉ: Chiffrer avant de stocker
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+
+  // Relation : Le canal appartient à une boutique
+  shopId        String      @db.Uuid
+  shop          Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, type, externalId]) // Empêche de connecter le même canal deux fois
+}
+
+// Enum pour garantir la cohérence des types de canaux
+enum ChannelType {
+  FACEBOOK_PAGE
+  INSTAGRAM_DM
+  WHATSAPP
+  TELEGRAM
+  TIKTOK
+  EMAIL
 }
