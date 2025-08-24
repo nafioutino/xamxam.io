@@ -1,0 +1,254 @@
+### Tests API Shop
+
+# Variables
+@baseUrl = http://localhost:3000
+@shopId = 550e8400-e29b-41d4-a716-446655440000
+@shopId2 = 550e8400-e29b-41d4-a716-446655440001
+@ownerId = 23c3f8c0-d9bb-4f69-9f98-7ed6eecab906
+@ownerId2 = 47e60e20-d8cf-4bbb-a643-01c06ee88235
+### 1. GET - Récupérer toutes les boutiques (table vide)
+GET {{baseUrl}}/api/shop
+Content-Type: application/json
+
+###
+
+### 2. POST - Créer une nouvelle boutique
+POST {{baseUrl}}/api/shop
+Content-Type: application/json
+
+{
+  "name": "Boutique Tech",
+  "description": "Boutique spécialisée en électronique et gadgets",
+  "address": "123 Rue de la Technologie, Paris",
+  "openingHours": {
+    "lundi": "09:00-18:00",
+    "mardi": "09:00-18:00",
+    "mercredi": "09:00-18:00",
+    "jeudi": "09:00-18:00",
+    "vendredi": "09:00-18:00",
+    "samedi": "10:00-17:00",
+    "dimanche": "fermé"
+  },
+  "faq": [
+    {
+      "question": "Livrez-vous ?",
+      "answer": "Oui, nous livrons dans toute la France"
+    },
+    {
+      "question": "Acceptez-vous les retours ?",
+      "answer": "Oui, retours possibles sous 30 jours"
+    }
+  ],
+  "ownerId": "{{ownerId}}"
+}
+
+###
+
+### 3. POST - Créer une deuxième boutique
+POST {{baseUrl}}/api/shop
+Content-Type: application/json
+
+{
+  "name": "Mode & Style",
+  "description": "Boutique de vêtements tendance",
+  "address": "456 Avenue de la Mode, Lyon",
+  "openingHours": {
+    "lundi": "10:00-19:00",
+    "mardi": "10:00-19:00",
+    "mercredi": "10:00-19:00",
+    "jeudi": "10:00-19:00",
+    "vendredi": "10:00-20:00",
+    "samedi": "10:00-20:00",
+    "dimanche": "14:00-18:00"
+  },
+  "ownerId": "{{ownerId2}}"
+}
+
+###
+
+### 4. GET - Récupérer toutes les boutiques (avec données)
+GET {{baseUrl}}/api/shop
+Content-Type: application/json
+
+###
+
+### 5. GET - Récupérer une boutique spécifique par ID
+GET {{baseUrl}}/api/shop/{{shopId}}
+Content-Type: application/json
+
+###
+
+### 6. PATCH - Modifier une boutique existante (route principale)
+PATCH {{baseUrl}}/api/shop
+Content-Type: application/json
+
+{
+  "id": "{{shopId}}",
+  "name": "Boutique Tech Pro",
+  "description": "Boutique professionnelle en électronique et gadgets high-tech",
+  "address": "123 Rue de la Technologie Avancée, Paris"
+}
+
+###
+
+### 7. PATCH - Modifier une boutique par ID (route spécifique)
+PATCH {{baseUrl}}/api/shop/{{shopId2}}
+Content-Type: application/json
+
+{
+  "name": "Mode & Style Premium",
+  "faq": [
+    {
+      "question": "Avez-vous un service de stylisme ?",
+      "answer": "Oui, consultation gratuite sur rendez-vous"
+    }
+  ]
+}
+
+###
+
+### 8. PATCH - Modification partielle (seulement la description)
+PATCH {{baseUrl}}/api/shop/{{shopId}}
+Content-Type: application/json
+
+{
+  "description": "La meilleure boutique tech de Paris"
+}
+
+###
+
+### 9. DELETE - Supprimer une boutique (route principale)
+DELETE {{baseUrl}}/api/shop
+Content-Type: application/json
+
+{
+  "id": "{{shopId}}"
+}
+
+###
+
+### 10. DELETE - Supprimer une boutique par ID (route spécifique)
+DELETE {{baseUrl}}/api/shop/{{shopId2}}
+Content-Type: application/json
+
+###
+
+### 11. GET - Vérifier la suppression
+GET {{baseUrl}}/api/shop
+Content-Type: application/json
+
+###
+
+### Tests d'erreurs
+
+### 12. POST - Créer une boutique sans nom (erreur)
+POST {{baseUrl}}/api/shop
+Content-Type: application/json
+
+{
+  "description": "Boutique sans nom",
+  "ownerId": "{{ownerId}}"
+}
+
+###
+
+### 13. POST - Créer une boutique sans ownerId (erreur)
+POST {{baseUrl}}/api/shop
+Content-Type: application/json
+
+{
+  "name": "Boutique Sans Propriétaire",
+  "description": "Test erreur"
+}
+
+###
+
+### 14. POST - Créer une boutique avec ownerId invalide (erreur)
+POST {{baseUrl}}/api/shop
+Content-Type: application/json
+
+{
+  "name": "Boutique Test",
+  "ownerId": "invalid-uuid"
+}
+
+###
+
+### 15. POST - Créer une boutique avec ownerId inexistant (erreur)
+POST {{baseUrl}}/api/shop
+Content-Type: application/json
+
+{
+  "name": "Boutique Test",
+  "ownerId": "00000000-0000-0000-0000-000000000000"
+}
+
+###
+
+### 16. POST - Créer une deuxième boutique pour le même propriétaire (erreur contrainte unique)
+POST {{baseUrl}}/api/shop
+Content-Type: application/json
+
+{
+  "name": "Deuxième Boutique",
+  "ownerId": "{{ownerId}}"
+}
+
+###
+
+### 17. GET - Récupérer une boutique avec ID invalide (erreur)
+GET {{baseUrl}}/api/shop/invalid-id
+Content-Type: application/json
+
+###
+
+### 18. GET - Récupérer une boutique inexistante (erreur)
+GET {{baseUrl}}/api/shop/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+###
+
+### 19. PATCH - Modifier une boutique inexistante (erreur)
+PATCH {{baseUrl}}/api/shop
+Content-Type: application/json
+
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "name": "Boutique Inexistante"
+}
+
+###
+
+### 20. PATCH - Modifier avec nom vide (erreur)
+PATCH {{baseUrl}}/api/shop/{{shopId}}
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+###
+
+### 21. PATCH - Modifier sans données (erreur)
+PATCH {{baseUrl}}/api/shop/{{shopId}}
+Content-Type: application/json
+
+{}
+
+###
+
+### 22. DELETE - Supprimer une boutique inexistante (erreur)
+DELETE {{baseUrl}}/api/shop
+Content-Type: application/json
+
+{
+  "id": "00000000-0000-0000-0000-000000000000"
+}
+
+###
+
+### 23. DELETE - Supprimer avec ID invalide (erreur)
+DELETE {{baseUrl}}/api/shop/invalid-id
+Content-Type: application/json
+
+###
