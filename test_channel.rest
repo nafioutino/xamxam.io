@@ -1,0 +1,565 @@
+### Channel API Tests
+### Base URL: http://localhost:3000/api
+
+### Variables
+@baseUrl = http://localhost:3000/api
+@shopId = 550e8400-e29b-41d4-a716-446655440000
+@channelId = 550e8400-e29b-41d4-a716-446655440001
+@nonExistentId = 550e8400-e29b-41d4-a716-446655440999
+
+### 1. GET /api/channel - Get all channels
+GET {{baseUrl}}/channel
+Content-Type: application/json
+
+###
+
+### 2. GET /api/channel - Filter by shopId
+GET {{baseUrl}}/channel?shopId={{shopId}}
+Content-Type: application/json
+
+###
+
+### 3. GET /api/channel - Filter by type
+GET {{baseUrl}}/channel?type=WHATSAPP
+Content-Type: application/json
+
+###
+
+### 4. GET /api/channel - Filter by isActive
+GET {{baseUrl}}/channel?isActive=true
+Content-Type: application/json
+
+###
+
+### 5. GET /api/channel - Filter by externalId
+GET {{baseUrl}}/channel?externalId=test123
+Content-Type: application/json
+
+###
+
+### 6. GET /api/channel - With pagination
+GET {{baseUrl}}/channel?page=1&limit=5
+Content-Type: application/json
+
+###
+
+### 7. GET /api/channel - With sorting
+GET {{baseUrl}}/channel?sortBy=createdAt&sortOrder=asc
+Content-Type: application/json
+
+###
+
+### 8. GET /api/channel - Complex filtering
+GET {{baseUrl}}/channel?shopId={{shopId}}&type=WHATSAPP&isActive=true&page=1&limit=10
+Content-Type: application/json
+
+###
+
+### 9. POST /api/channel - Create new channel (WhatsApp)
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "WHATSAPP",
+  "externalId": "whatsapp_12345",
+  "accessToken": "wa_token_abc123",
+  "isActive": true,
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 10. POST /api/channel - Create new channel (Facebook)
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "FACEBOOK",
+  "externalId": "facebook_67890",
+  "accessToken": "fb_token_def456",
+  "isActive": true,
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 11. POST /api/channel - Create new channel (Instagram)
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "INSTAGRAM",
+  "externalId": "instagram_11111",
+  "accessToken": "ig_token_ghi789",
+  "isActive": false,
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 12. POST /api/channel - Create channel without accessToken
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "TELEGRAM",
+  "externalId": "telegram_22222",
+  "isActive": true,
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 13. GET /api/channel/[id] - Get specific channel
+GET {{baseUrl}}/channel/{{channelId}}
+Content-Type: application/json
+
+###
+
+### 14. PATCH /api/channel/[id] - Update specific channel
+PATCH {{baseUrl}}/channel/{{channelId}}
+Content-Type: application/json
+
+{
+  "accessToken": "updated_token_123",
+  "isActive": false
+}
+
+###
+
+### 15. PATCH /api/channel/[id] - Update channel type and externalId
+PATCH {{baseUrl}}/channel/{{channelId}}
+Content-Type: application/json
+
+{
+  "type": "WHATSAPP",
+  "externalId": "updated_external_id"
+}
+
+###
+
+### 16. PATCH /api/channel - Bulk update channels
+PATCH {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "ids": ["{{channelId}}"],
+  "data": {
+    "isActive": true
+  }
+}
+
+###
+
+### 17. DELETE /api/channel/[id] - Delete specific channel
+DELETE {{baseUrl}}/channel/{{channelId}}
+Content-Type: application/json
+
+###
+
+### 18. DELETE /api/channel - Bulk delete channels
+DELETE {{baseUrl}}/channel?ids={{channelId}}
+Content-Type: application/json
+
+###
+
+### Error Cases
+
+### 19. GET /api/channel - Invalid shopId format
+GET {{baseUrl}}/channel?shopId=invalid-uuid
+Content-Type: application/json
+
+###
+
+### 20. GET /api/channel - Invalid channel type
+GET {{baseUrl}}/channel?type=INVALID_TYPE
+Content-Type: application/json
+
+###
+
+### 21. GET /api/channel - Invalid isActive value
+GET {{baseUrl}}/channel?isActive=maybe
+Content-Type: application/json
+
+###
+
+### 22. GET /api/channel - Invalid pagination
+GET {{baseUrl}}/channel?page=0&limit=101
+Content-Type: application/json
+
+###
+
+### 23. GET /api/channel - Invalid sort field
+GET {{baseUrl}}/channel?sortBy=invalidField
+Content-Type: application/json
+
+###
+
+### 24. POST /api/channel - Missing required fields
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "WHATSAPP"
+}
+
+###
+
+### 25. POST /api/channel - Invalid channel type
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "INVALID_TYPE",
+  "externalId": "test123",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 26. POST /api/channel - Invalid shopId format
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "WHATSAPP",
+  "externalId": "test123",
+  "shopId": "invalid-uuid"
+}
+
+###
+
+### 27. POST /api/channel - Empty externalId
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "WHATSAPP",
+  "externalId": "",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 28. POST /api/channel - Non-existent shop
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "WHATSAPP",
+  "externalId": "test123",
+  "shopId": "{{nonExistentId}}"
+}
+
+###
+
+### 29. POST /api/channel - Duplicate channel (same shop, type, externalId)
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "WHATSAPP",
+  "externalId": "whatsapp_12345",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 30. GET /api/channel/[id] - Invalid ID format
+GET {{baseUrl}}/channel/invalid-uuid
+Content-Type: application/json
+
+###
+
+### 31. GET /api/channel/[id] - Non-existent channel
+GET {{baseUrl}}/channel/{{nonExistentId}}
+Content-Type: application/json
+
+###
+
+### 32. PATCH /api/channel/[id] - Invalid ID format
+PATCH {{baseUrl}}/channel/invalid-uuid
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+###
+
+### 33. PATCH /api/channel/[id] - Non-existent channel
+PATCH {{baseUrl}}/channel/{{nonExistentId}}
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+###
+
+### 34. PATCH /api/channel/[id] - Invalid channel type
+PATCH {{baseUrl}}/channel/{{channelId}}
+Content-Type: application/json
+
+{
+  "type": "INVALID_TYPE"
+}
+
+###
+
+### 35. PATCH /api/channel/[id] - Empty externalId
+PATCH {{baseUrl}}/channel/{{channelId}}
+Content-Type: application/json
+
+{
+  "externalId": ""
+}
+
+###
+
+### 36. PATCH /api/channel/[id] - Duplicate constraint violation
+PATCH {{baseUrl}}/channel/{{channelId}}
+Content-Type: application/json
+
+{
+  "type": "WHATSAPP",
+  "externalId": "whatsapp_12345"
+}
+
+###
+
+### 37. PATCH /api/channel - Missing IDs array
+PATCH {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "data": {
+    "isActive": false
+  }
+}
+
+###
+
+### 38. PATCH /api/channel - Empty IDs array
+PATCH {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "ids": [],
+  "data": {
+    "isActive": false
+  }
+}
+
+###
+
+### 39. PATCH /api/channel - Invalid ID format in array
+PATCH {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "ids": ["invalid-uuid"],
+  "data": {
+    "isActive": false
+  }
+}
+
+###
+
+### 40. PATCH /api/channel - Non-existent channels
+PATCH {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "ids": ["{{nonExistentId}}"],
+  "data": {
+    "isActive": false
+  }
+}
+
+###
+
+### 41. PATCH /api/channel - Invalid validation data
+PATCH {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "ids": ["{{channelId}}"],
+  "data": {
+    "type": "INVALID_TYPE"
+  }
+}
+
+###
+
+### 42. DELETE /api/channel/[id] - Invalid ID format
+DELETE {{baseUrl}}/channel/invalid-uuid
+Content-Type: application/json
+
+###
+
+### 43. DELETE /api/channel/[id] - Non-existent channel
+DELETE {{baseUrl}}/channel/{{nonExistentId}}
+Content-Type: application/json
+
+###
+
+### 44. DELETE /api/channel/[id] - Channel with linked conversations
+# First create a conversation linked to the channel
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "externalId": "conv_123",
+  "customerId": "{{shopId}}",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+# Then try to delete the channel
+DELETE {{baseUrl}}/channel/{{channelId}}
+Content-Type: application/json
+
+###
+
+### 45. DELETE /api/channel - Missing IDs parameter
+DELETE {{baseUrl}}/channel
+Content-Type: application/json
+
+###
+
+### 46. DELETE /api/channel - Invalid ID format in parameter
+DELETE {{baseUrl}}/channel?ids=invalid-uuid
+Content-Type: application/json
+
+###
+
+### 47. DELETE /api/channel - Non-existent channels
+DELETE {{baseUrl}}/channel?ids={{nonExistentId}}
+Content-Type: application/json
+
+###
+
+### 48. DELETE /api/channel - Channels with linked conversations
+DELETE {{baseUrl}}/channel?ids={{channelId}}
+Content-Type: application/json
+
+###
+
+### Edge Cases and Performance Tests
+
+### 49. POST /api/channel - Very long externalId
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "WHATSAPP",
+  "externalId": "very_long_external_id_that_might_cause_issues_in_database_or_validation_12345678901234567890123456789012345678901234567890",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 50. POST /api/channel - Very long accessToken
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "FACEBOOK",
+  "externalId": "fb_test",
+  "accessToken": "very_long_access_token_that_might_cause_issues_in_database_or_validation_abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 51. POST /api/channel - Special characters in externalId
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "TELEGRAM",
+  "externalId": "special_chars_!@#$%^&*()_+-=[]{}|;:,.<>?",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 52. GET /api/channel - Search with special characters
+GET {{baseUrl}}/channel?externalId=special_chars_!@#$
+Content-Type: application/json
+
+###
+
+### 53. GET /api/channel - High pagination limit
+GET {{baseUrl}}/channel?page=1&limit=100
+Content-Type: application/json
+
+###
+
+### 54. GET /api/channel - Very high page number
+GET {{baseUrl}}/channel?page=9999&limit=10
+Content-Type: application/json
+
+###
+
+### 55. GET /api/channel - Multiple filters combination
+GET {{baseUrl}}/channel?shopId={{shopId}}&type=WHATSAPP&isActive=true&externalId=test&sortBy=createdAt&sortOrder=desc&page=1&limit=5
+Content-Type: application/json
+
+###
+
+### 56. PATCH /api/channel - Update with null values
+PATCH {{baseUrl}}/channel/{{channelId}}
+Content-Type: application/json
+
+{
+  "accessToken": null
+}
+
+###
+
+### 57. POST /api/channel - Boolean as string
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "WHATSAPP",
+  "externalId": "bool_test",
+  "isActive": "true",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 58. POST /api/channel - Numeric externalId
+POST {{baseUrl}}/channel
+Content-Type: application/json
+
+{
+  "type": "INSTAGRAM",
+  "externalId": 123456789,
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### Final Verification Tests
+
+### 59. GET /api/channel - Retrieve all channels for verification
+GET {{baseUrl}}/channel
+Content-Type: application/json
+
+###
+
+### 60. GET /api/channel - Count channels by shop
+GET {{baseUrl}}/channel?shopId={{shopId}}
+Content-Type: application/json
+
+###
+
+### 61. GET /api/channel - Verify data consistency
+GET {{baseUrl}}/channel?sortBy=createdAt&sortOrder=desc&limit=50
+Content-Type: application/json

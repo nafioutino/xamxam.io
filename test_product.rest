@@ -1,0 +1,438 @@
+###
+# Tests API Product - CRUD Operations
+# Base URL: http://localhost:3000/api/product
+###
+
+# Variables pour les tests
+@baseUrl = http://localhost:3000
+@productId = {{productId}}
+@shopId = {{shopId}}
+@categoryId = {{categoryId}}
+
+###
+# 1. RÉCUPÉRER TOUS LES PRODUITS
+GET {{baseUrl}}/api/product
+Content-Type: application/json
+
+###
+# 2. RÉCUPÉRER LES PRODUITS D'UNE BOUTIQUE SPÉCIFIQUE
+GET {{baseUrl}}/api/product?shopId={{shopId}}
+Content-Type: application/json
+
+###
+# 3. RÉCUPÉRER LES PRODUITS D'UNE CATÉGORIE SPÉCIFIQUE
+GET {{baseUrl}}/api/product?categoryId={{categoryId}}
+Content-Type: application/json
+
+###
+# 4. RÉCUPÉRER LES PRODUITS ACTIFS SEULEMENT
+GET {{baseUrl}}/api/product?isActive=true
+Content-Type: application/json
+
+###
+# 5. RÉCUPÉRER LES PRODUITS AVEC FILTRES COMBINÉS
+GET {{baseUrl}}/api/product?shopId={{shopId}}&isActive=true
+Content-Type: application/json
+
+###
+# 6. CRÉER UN NOUVEAU PRODUIT
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Smartphone Galaxy S24",
+  "description": "Dernier smartphone Samsung avec écran AMOLED 6.1 pouces",
+  "price": 899.99,
+  "stock": 50,
+  "images": [
+    "https://example.com/galaxy-s24-front.jpg",
+    "https://example.com/galaxy-s24-back.jpg"
+  ],
+  "sku": "GALAXY-S24-128GB",
+  "weight": 167.0,
+  "dimensions": {
+    "length": 147.0,
+    "width": 70.6,
+    "height": 7.6
+  },
+  "isActive": true,
+  "shopId": "{{shopId}}",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 7. CRÉER UN PRODUIT AVEC DONNÉES MINIMALES
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Casque Audio Bluetooth",
+  "price": 79.99,
+  "shopId": "{{shopId}}",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 8. RÉCUPÉRER UN PRODUIT SPÉCIFIQUE PAR ID
+GET {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+###
+# 9. METTRE À JOUR UN PRODUIT (PATCH - route générale)
+PATCH {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "id": "{{productId}}",
+  "name": "Smartphone Galaxy S24 Ultra",
+  "description": "Version Ultra avec S Pen inclus",
+  "price": 1199.99,
+  "stock": 25
+}
+
+###
+# 10. METTRE À JOUR UN PRODUIT (PATCH - route spécifique)
+PATCH {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+{
+  "price": 849.99,
+  "stock": 75,
+  "isActive": true
+}
+
+###
+# 11. METTRE À JOUR LE STOCK D'UN PRODUIT
+PATCH {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+{
+  "stock": 100
+}
+
+###
+# 12. DÉSACTIVER UN PRODUIT
+PATCH {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+###
+# 13. METTRE À JOUR LES IMAGES D'UN PRODUIT
+PATCH {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+{
+  "images": [
+    "https://example.com/new-image-1.jpg",
+    "https://example.com/new-image-2.jpg",
+    "https://example.com/new-image-3.jpg"
+  ]
+}
+
+###
+# 14. SUPPRIMER UN PRODUIT (DELETE - route générale)
+DELETE {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "id": "{{productId}}"
+}
+
+###
+# 15. SUPPRIMER UN PRODUIT (DELETE - route spécifique)
+DELETE {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+###
+# ========================================
+# TESTS D'ERREURS ET CAS LIMITES
+# ========================================
+
+###
+# 16. ERREUR - Créer un produit sans nom
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "description": "Produit sans nom",
+  "price": 99.99,
+  "shopId": "{{shopId}}",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 17. ERREUR - Créer un produit avec nom vide
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "",
+  "price": 99.99,
+  "shopId": "{{shopId}}",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 18. ERREUR - Créer un produit sans prix
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Produit sans prix",
+  "shopId": "{{shopId}}",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 19. ERREUR - Créer un produit avec prix négatif
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Produit prix négatif",
+  "price": -50.00,
+  "shopId": "{{shopId}}",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 20. ERREUR - Créer un produit sans shopId
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Produit sans boutique",
+  "price": 99.99,
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 21. ERREUR - Créer un produit sans categoryId
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Produit sans catégorie",
+  "price": 99.99,
+  "shopId": "{{shopId}}"
+}
+
+###
+# 22. ERREUR - Créer un produit avec shopId inexistant
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Produit boutique inexistante",
+  "price": 99.99,
+  "shopId": "00000000-0000-0000-0000-000000000000",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 23. ERREUR - Créer un produit avec categoryId inexistant
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Produit catégorie inexistante",
+  "price": 99.99,
+  "shopId": "{{shopId}}",
+  "categoryId": "00000000-0000-0000-0000-000000000000"
+}
+
+###
+# 24. ERREUR - Créer un produit avec SKU en doublon
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Produit SKU doublon",
+  "price": 99.99,
+  "sku": "GALAXY-S24-128GB",
+  "shopId": "{{shopId}}",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 25. ERREUR - Récupérer un produit avec ID invalide
+GET {{baseUrl}}/api/product/invalid-id
+Content-Type: application/json
+
+###
+# 26. ERREUR - Récupérer un produit inexistant
+GET {{baseUrl}}/api/product/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+###
+# 27. ERREUR - Modifier un produit sans ID
+PATCH {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Nouveau nom"
+}
+
+###
+# 28. ERREUR - Modifier un produit avec ID invalide
+PATCH {{baseUrl}}/api/product/invalid-id
+Content-Type: application/json
+
+{
+  "name": "Nouveau nom"
+}
+
+###
+# 29. ERREUR - Modifier un produit inexistant
+PATCH {{baseUrl}}/api/product/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "name": "Nouveau nom"
+}
+
+###
+# 30. ERREUR - Modifier un produit avec nom vide
+PATCH {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+###
+# 31. ERREUR - Modifier un produit avec prix négatif
+PATCH {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+{
+  "price": -100.00
+}
+
+###
+# 32. ERREUR - Modifier un produit avec stock négatif
+PATCH {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+{
+  "stock": -10
+}
+
+###
+# 33. ERREUR - Modifier un produit avec categoryId inexistant
+PATCH {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+{
+  "categoryId": "00000000-0000-0000-0000-000000000000"
+}
+
+###
+# 34. ERREUR - Modifier un produit avec SKU en doublon
+PATCH {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+{
+  "sku": "EXISTING-SKU-123"
+}
+
+###
+# 35. ERREUR - Modifier un produit sans données
+PATCH {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+{}
+
+###
+# 36. ERREUR - Supprimer un produit sans ID
+DELETE {{baseUrl}}/api/product
+Content-Type: application/json
+
+{}
+
+###
+# 37. ERREUR - Supprimer un produit avec ID invalide
+DELETE {{baseUrl}}/api/product/invalid-id
+Content-Type: application/json
+
+###
+# 38. ERREUR - Supprimer un produit inexistant
+DELETE {{baseUrl}}/api/product/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+###
+# 39. ERREUR - Supprimer un produit avec commandes liées
+# (Ce test nécessite un produit qui fait partie de commandes existantes)
+DELETE {{baseUrl}}/api/product/{{productId}}
+Content-Type: application/json
+
+###
+# ========================================
+# TESTS DE PERFORMANCE ET LIMITES
+# ========================================
+
+###
+# 40. TEST - Créer un produit avec description très longue
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Produit description longue",
+  "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.",
+  "price": 99.99,
+  "shopId": "{{shopId}}",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 41. TEST - Créer un produit avec beaucoup d'images
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Produit multi-images",
+  "price": 199.99,
+  "images": [
+    "https://example.com/image1.jpg",
+    "https://example.com/image2.jpg",
+    "https://example.com/image3.jpg",
+    "https://example.com/image4.jpg",
+    "https://example.com/image5.jpg",
+    "https://example.com/image6.jpg",
+    "https://example.com/image7.jpg",
+    "https://example.com/image8.jpg",
+    "https://example.com/image9.jpg",
+    "https://example.com/image10.jpg"
+  ],
+  "shopId": "{{shopId}}",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 42. TEST - Créer un produit avec dimensions complexes
+POST {{baseUrl}}/api/product
+Content-Type: application/json
+
+{
+  "name": "Produit dimensions complexes",
+  "price": 299.99,
+  "weight": 1250.75,
+  "dimensions": {
+    "length": 45.5,
+    "width": 32.8,
+    "height": 15.2,
+    "unit": "cm",
+    "volume": 24.3,
+    "notes": "Dimensions avec emballage inclus"
+  },
+  "shopId": "{{shopId}}",
+  "categoryId": "{{categoryId}}"
+}
+
+###
+# 43. TEST - Récupérer les produits avec filtres multiples
+GET {{baseUrl}}/api/product?shopId={{shopId}}&categoryId={{categoryId}}&isActive=true
+Content-Type: application/json

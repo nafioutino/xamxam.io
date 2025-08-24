@@ -1,0 +1,801 @@
+### Order API Tests
+### Base URL and Variables
+@baseUrl = http://localhost:3000/api
+@shopId = 550e8400-e29b-41d4-a716-446655440000
+@customerId = 550e8400-e29b-41d4-a716-446655440001
+@productId = 550e8400-e29b-41d4-a716-446655440002
+@orderId = 550e8400-e29b-41d4-a716-446655440003
+@orderNumber = ORD-2024-001
+@invalidId = invalid-uuid
+@nonExistentId = 550e8400-e29b-41d4-a716-446655440999
+
+### ========================================
+### BASIC CRUD OPERATIONS
+### ========================================
+
+### 1. GET all orders
+GET {{baseUrl}}/order
+
+###
+
+### 2. GET orders with shopId filter
+GET {{baseUrl}}/order?shopId={{shopId}}
+
+###
+
+### 3. GET orders with customerId filter
+GET {{baseUrl}}/order?customerId={{customerId}}
+
+###
+
+### 4. GET orders with status filter
+GET {{baseUrl}}/order?status=PENDING
+
+###
+
+### 5. GET orders with paymentStatus filter
+GET {{baseUrl}}/order?paymentStatus=PAID
+
+###
+
+### 6. GET orders with orderNumber search
+GET {{baseUrl}}/order?orderNumber=ORD-2024
+
+###
+
+### 7. GET orders with pagination
+GET {{baseUrl}}/order?page=1&limit=5
+
+###
+
+### 8. GET orders with sorting
+GET {{baseUrl}}/order?sortBy=total&sortOrder=desc
+
+###
+
+### 9. GET orders with multiple filters
+GET {{baseUrl}}/order?shopId={{shopId}}&status=PENDING&page=1&limit=10
+
+###
+
+### 10. GET specific order by ID
+GET {{baseUrl}}/order/{{orderId}}
+
+###
+
+### 11. CREATE new order with single item
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "{{orderNumber}}",
+  "status": "PENDING",
+  "total": 150.00,
+  "subtotal": 120.00,
+  "shippingCost": 20.00,
+  "taxAmount": 10.00,
+  "paymentMethod": "Credit Card",
+  "paymentStatus": "PENDING",
+  "shippingAddress": "123 Main St, City, Country",
+  "notes": "Handle with care",
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "productId": "{{productId}}",
+      "quantity": 2,
+      "unitPrice": 60.00,
+      "totalPrice": 120.00,
+      "productName": "Test Product",
+      "productSku": "TEST-001"
+    }
+  ]
+}
+
+###
+
+### 12. CREATE new order with multiple items
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-2024-002",
+  "status": "CONFIRMED",
+  "total": 300.00,
+  "subtotal": 250.00,
+  "shippingCost": 30.00,
+  "taxAmount": 20.00,
+  "paymentMethod": "PayPal",
+  "paymentStatus": "PAID",
+  "shippingAddress": "456 Oak Ave, Another City, Country",
+  "trackingNumber": "TRK123456789",
+  "notes": "Express delivery requested",
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "productId": "{{productId}}",
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Premium Product",
+      "productSku": "PREM-001"
+    },
+    {
+      "quantity": 3,
+      "unitPrice": 50.00,
+      "totalPrice": 150.00,
+      "productName": "Custom Item",
+      "productSku": "CUSTOM-001"
+    }
+  ]
+}
+
+###
+
+### 13. CREATE order without optional fields
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-2024-003",
+  "total": 75.00,
+  "subtotal": 75.00,
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": 75.00,
+      "totalPrice": 75.00,
+      "productName": "Simple Product"
+    }
+  ]
+}
+
+###
+
+### 14. UPDATE order status
+PATCH {{baseUrl}}/order/{{orderId}}
+Content-Type: application/json
+
+{
+  "status": "SHIPPED",
+  "paymentStatus": "PAID",
+  "trackingNumber": "TRK987654321"
+}
+
+###
+
+### 15. UPDATE order with new items
+PATCH {{baseUrl}}/order/{{orderId}}
+Content-Type: application/json
+
+{
+  "total": 200.00,
+  "subtotal": 180.00,
+  "items": [
+    {
+      "productId": "{{productId}}",
+      "quantity": 3,
+      "unitPrice": 60.00,
+      "totalPrice": 180.00,
+      "productName": "Updated Product",
+      "productSku": "UPD-001"
+    }
+  ]
+}
+
+###
+
+### 16. UPDATE order shipping information
+PATCH {{baseUrl}}/order/{{orderId}}
+Content-Type: application/json
+
+{
+  "shippingAddress": "789 New Street, Updated City, New Country",
+  "shippingCost": 25.00,
+  "notes": "Updated delivery instructions"
+}
+
+###
+
+### 17. BULK UPDATE orders
+PATCH {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "ids": ["{{orderId}}"],
+  "data": {
+    "status": "DELIVERED",
+    "paymentStatus": "PAID"
+  }
+}
+
+###
+
+### 18. DELETE specific order
+DELETE {{baseUrl}}/order/{{orderId}}
+
+###
+
+### 19. BULK DELETE orders
+DELETE {{baseUrl}}/order?ids={{orderId}}
+
+###
+
+### ========================================
+### ERROR HANDLING TESTS
+### ========================================
+
+### 20. GET order with invalid ID format
+GET {{baseUrl}}/order/{{invalidId}}
+
+###
+
+### 21. GET order with non-existent ID
+GET {{baseUrl}}/order/{{nonExistentId}}
+
+###
+
+### 22. GET orders with invalid shopId
+GET {{baseUrl}}/order?shopId={{invalidId}}
+
+###
+
+### 23. GET orders with invalid customerId
+GET {{baseUrl}}/order?customerId={{invalidId}}
+
+###
+
+### 24. GET orders with invalid status
+GET {{baseUrl}}/order?status=INVALID_STATUS
+
+###
+
+### 25. GET orders with invalid paymentStatus
+GET {{baseUrl}}/order?paymentStatus=INVALID_PAYMENT
+
+###
+
+### 26. GET orders with invalid pagination
+GET {{baseUrl}}/order?page=0&limit=101
+
+###
+
+### 27. GET orders with invalid sort field
+GET {{baseUrl}}/order?sortBy=invalidField
+
+###
+
+### 28. CREATE order with missing required fields
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "status": "PENDING"
+}
+
+###
+
+### 29. CREATE order with invalid shopId
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-INVALID-001",
+  "total": 100.00,
+  "subtotal": 100.00,
+  "shopId": "{{invalidId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Test Product"
+    }
+  ]
+}
+
+###
+
+### 30. CREATE order with non-existent shop
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-NOEXIST-001",
+  "total": 100.00,
+  "subtotal": 100.00,
+  "shopId": "{{nonExistentId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Test Product"
+    }
+  ]
+}
+
+###
+
+### 31. CREATE order with non-existent customer
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-NOCUST-001",
+  "total": 100.00,
+  "subtotal": 100.00,
+  "shopId": "{{shopId}}",
+  "customerId": "{{nonExistentId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Test Product"
+    }
+  ]
+}
+
+###
+
+### 32. CREATE order with duplicate order number
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "{{orderNumber}}",
+  "total": 100.00,
+  "subtotal": 100.00,
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Duplicate Order"
+    }
+  ]
+}
+
+###
+
+### 33. CREATE order with negative total
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-NEG-001",
+  "total": -100.00,
+  "subtotal": -100.00,
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": -100.00,
+      "totalPrice": -100.00,
+      "productName": "Negative Product"
+    }
+  ]
+}
+
+###
+
+### 34. CREATE order with zero quantity items
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-ZERO-001",
+  "total": 0.00,
+  "subtotal": 0.00,
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 0,
+      "unitPrice": 100.00,
+      "totalPrice": 0.00,
+      "productName": "Zero Quantity Product"
+    }
+  ]
+}
+
+###
+
+### 35. CREATE order with empty items array
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-EMPTY-001",
+  "total": 100.00,
+  "subtotal": 100.00,
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": []
+}
+
+###
+
+### 36. CREATE order with non-existent product
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-NOPROD-001",
+  "total": 100.00,
+  "subtotal": 100.00,
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "productId": "{{nonExistentId}}",
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Non-existent Product"
+    }
+  ]
+}
+
+###
+
+### 37. UPDATE order with invalid ID
+PATCH {{baseUrl}}/order/{{invalidId}}
+Content-Type: application/json
+
+{
+  "status": "SHIPPED"
+}
+
+###
+
+### 38. UPDATE non-existent order
+PATCH {{baseUrl}}/order/{{nonExistentId}}
+Content-Type: application/json
+
+{
+  "status": "SHIPPED"
+}
+
+###
+
+### 39. UPDATE order with duplicate order number
+PATCH {{baseUrl}}/order/{{orderId}}
+Content-Type: application/json
+
+{
+  "orderNumber": "{{orderNumber}}"
+}
+
+###
+
+### 40. UPDATE order with invalid status
+PATCH {{baseUrl}}/order/{{orderId}}
+Content-Type: application/json
+
+{
+  "status": "INVALID_STATUS"
+}
+
+###
+
+### 41. UPDATE order with negative values
+PATCH {{baseUrl}}/order/{{orderId}}
+Content-Type: application/json
+
+{
+  "total": -50.00,
+  "shippingCost": -10.00
+}
+
+###
+
+### 42. BULK UPDATE with empty IDs array
+PATCH {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "ids": [],
+  "data": {
+    "status": "DELIVERED"
+  }
+}
+
+###
+
+### 43. BULK UPDATE with invalid IDs
+PATCH {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "ids": ["{{invalidId}}"],
+  "data": {
+    "status": "DELIVERED"
+  }
+}
+
+###
+
+### 44. BULK UPDATE non-existent orders
+PATCH {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "ids": ["{{nonExistentId}}"],
+  "data": {
+    "status": "DELIVERED"
+  }
+}
+
+###
+
+### 45. DELETE order with invalid ID
+DELETE {{baseUrl}}/order/{{invalidId}}
+
+###
+
+### 46. DELETE non-existent order
+DELETE {{baseUrl}}/order/{{nonExistentId}}
+
+###
+
+### 47. BULK DELETE with missing IDs parameter
+DELETE {{baseUrl}}/order
+
+###
+
+### 48. BULK DELETE with invalid IDs
+DELETE {{baseUrl}}/order?ids={{invalidId}}
+
+###
+
+### 49. BULK DELETE non-existent orders
+DELETE {{baseUrl}}/order?ids={{nonExistentId}}
+
+###
+
+### ========================================
+### BUSINESS LOGIC TESTS
+### ========================================
+
+### 50. CREATE order with customer from different shop
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-WRONGSHOP-001",
+  "total": 100.00,
+  "subtotal": 100.00,
+  "shopId": "550e8400-e29b-41d4-a716-446655440010",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Wrong Shop Product"
+    }
+  ]
+}
+
+###
+
+### 51. CREATE order with product from different shop
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-WRONGPROD-001",
+  "total": 100.00,
+  "subtotal": 100.00,
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "productId": "550e8400-e29b-41d4-a716-446655440020",
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Wrong Shop Product"
+    }
+  ]
+}
+
+###
+
+### 52. UPDATE order to use customer from different shop
+PATCH {{baseUrl}}/order/{{orderId}}
+Content-Type: application/json
+
+{
+  "customerId": "550e8400-e29b-41d4-a716-446655440030"
+}
+
+###
+
+### 53. DELETE order with linked conversation (should fail)
+# First create an order that might have a conversation
+DELETE {{baseUrl}}/order/{{orderId}}
+
+###
+
+### ========================================
+### EDGE CASES AND PERFORMANCE TESTS
+### ========================================
+
+### 54. CREATE order with very long order number
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-VERY-LONG-ORDER-NUMBER-THAT-EXCEEDS-NORMAL-LENGTH-EXPECTATIONS-2024-001",
+  "total": 100.00,
+  "subtotal": 100.00,
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Long Order Number Product"
+    }
+  ]
+}
+
+###
+
+### 55. CREATE order with very long notes
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-LONGNOTES-001",
+  "total": 100.00,
+  "subtotal": 100.00,
+  "notes": "This is a very long note that contains detailed instructions for the order processing team. It includes special handling requirements, delivery preferences, customer preferences, and any other relevant information that might be needed for successful order fulfillment. The note should be preserved in its entirety and displayed correctly in all interfaces.",
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Long Notes Product"
+    }
+  ]
+}
+
+###
+
+### 56. CREATE order with many items
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-MANYITEMS-001",
+  "total": 1000.00,
+  "subtotal": 1000.00,
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Item 1",
+      "productSku": "ITEM-001"
+    },
+    {
+      "quantity": 2,
+      "unitPrice": 150.00,
+      "totalPrice": 300.00,
+      "productName": "Item 2",
+      "productSku": "ITEM-002"
+    },
+    {
+      "quantity": 3,
+      "unitPrice": 200.00,
+      "totalPrice": 600.00,
+      "productName": "Item 3",
+      "productSku": "ITEM-003"
+    }
+  ]
+}
+
+###
+
+### 57. CREATE order with special characters in product name
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-SPECIAL-001",
+  "total": 100.00,
+  "subtotal": 100.00,
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": 100.00,
+      "totalPrice": 100.00,
+      "productName": "Spéciál Prödüct with Émojis 🎉🛍️",
+      "productSku": "SPEC-001"
+    }
+  ]
+}
+
+###
+
+### 58. GET orders with high pagination limit
+GET {{baseUrl}}/order?page=1&limit=50
+
+###
+
+### 59. GET orders with complex filtering
+GET {{baseUrl}}/order?shopId={{shopId}}&status=PENDING&paymentStatus=PENDING&page=1&limit=20&sortBy=createdAt&sortOrder=desc
+
+###
+
+### 60. CREATE order with decimal precision test
+POST {{baseUrl}}/order
+Content-Type: application/json
+
+{
+  "orderNumber": "ORD-DECIMAL-001",
+  "total": 123.456,
+  "subtotal": 100.123,
+  "shippingCost": 15.789,
+  "taxAmount": 7.544,
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "items": [
+    {
+      "quantity": 1,
+      "unitPrice": 100.123,
+      "totalPrice": 100.123,
+      "productName": "Decimal Precision Product"
+    }
+  ]
+}
+
+###
+
+### ========================================
+### FINAL VERIFICATION TESTS
+### ========================================
+
+### 61. GET all orders to verify final state
+GET {{baseUrl}}/order
+
+###
+
+### 62. GET orders count by status
+GET {{baseUrl}}/order?status=PENDING
+
+###
+
+### 63. GET orders count by payment status
+GET {{baseUrl}}/order?paymentStatus=PAID
+
+###
+
+### 64. Verify order data consistency
+GET {{baseUrl}}/order?shopId={{shopId}}&page=1&limit=100
+
+###
+
+### 65. Performance test - Get orders with all includes
+GET {{baseUrl}}/order/{{orderId}}
+
+###

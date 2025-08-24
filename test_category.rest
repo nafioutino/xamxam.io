@@ -1,0 +1,395 @@
+###
+# Tests API Category - CRUD Operations
+# Base URL: http://localhost:3000/api/category
+###
+
+# Variables pour les tests
+@baseUrl = http://localhost:3000
+@categoryId = {{categoryId}}
+@shopId = {{shopId}}
+
+###
+# 1. RÉCUPÉRER TOUTES LES CATÉGORIES
+GET {{baseUrl}}/api/category
+Content-Type: application/json
+
+###
+# 2. RÉCUPÉRER LES CATÉGORIES D'UNE BOUTIQUE SPÉCIFIQUE
+GET {{baseUrl}}/api/category?shopId={{shopId}}
+Content-Type: application/json
+
+###
+# 3. RÉCUPÉRER LES CATÉGORIES ACTIVES SEULEMENT
+GET {{baseUrl}}/api/category?isActive=true
+Content-Type: application/json
+
+###
+# 4. RÉCUPÉRER LES CATÉGORIES AVEC FILTRES COMBINÉS
+GET {{baseUrl}}/api/category?shopId={{shopId}}&isActive=true
+Content-Type: application/json
+
+###
+# 5. CRÉER UNE NOUVELLE CATÉGORIE
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Électronique",
+  "description": "Appareils électroniques et accessoires high-tech",
+  "imageUrl": "https://example.com/electronics-category.jpg",
+  "isActive": true,
+  "shopId": "{{shopId}}"
+}
+
+###
+# 6. CRÉER UNE CATÉGORIE AVEC DONNÉES MINIMALES
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Vêtements",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 7. CRÉER UNE CATÉGORIE AVEC DESCRIPTION LONGUE
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Maison et Jardin",
+  "description": "Tout pour la maison et le jardin : meubles, décoration, outils de jardinage, plantes, accessoires d'intérieur et d'extérieur pour créer un espace de vie confortable et harmonieux.",
+  "imageUrl": "https://example.com/home-garden.jpg",
+  "isActive": true,
+  "shopId": "{{shopId}}"
+}
+
+###
+# 8. RÉCUPÉRER UNE CATÉGORIE SPÉCIFIQUE PAR ID
+GET {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+###
+# 9. METTRE À JOUR UNE CATÉGORIE (PATCH - route générale)
+PATCH {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "id": "{{categoryId}}",
+  "name": "Électronique et High-Tech",
+  "description": "Smartphones, ordinateurs, accessoires et gadgets électroniques"
+}
+
+###
+# 10. METTRE À JOUR UNE CATÉGORIE (PATCH - route spécifique)
+PATCH {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+{
+  "description": "Catégorie mise à jour avec une nouvelle description",
+  "imageUrl": "https://example.com/new-category-image.jpg"
+}
+
+###
+# 11. METTRE À JOUR LE NOM D'UNE CATÉGORIE
+PATCH {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+{
+  "name": "Électronique Premium"
+}
+
+###
+# 12. DÉSACTIVER UNE CATÉGORIE
+PATCH {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+###
+# 13. RÉACTIVER UNE CATÉGORIE
+PATCH {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+{
+  "isActive": true
+}
+
+###
+# 14. METTRE À JOUR L'IMAGE D'UNE CATÉGORIE
+PATCH {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+{
+  "imageUrl": "https://example.com/updated-category-banner.jpg"
+}
+
+###
+# 15. SUPPRIMER UNE CATÉGORIE (DELETE - route générale)
+DELETE {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "id": "{{categoryId}}"
+}
+
+###
+# 16. SUPPRIMER UNE CATÉGORIE (DELETE - route spécifique)
+DELETE {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+###
+# ========================================
+# TESTS D'ERREURS ET CAS LIMITES
+# ========================================
+
+###
+# 17. ERREUR - Créer une catégorie sans nom
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "description": "Catégorie sans nom",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 18. ERREUR - Créer une catégorie avec nom vide
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "",
+  "description": "Catégorie avec nom vide",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 19. ERREUR - Créer une catégorie avec nom uniquement des espaces
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "   ",
+  "description": "Catégorie avec nom d'espaces",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 20. ERREUR - Créer une catégorie sans shopId
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Catégorie sans boutique",
+  "description": "Cette catégorie n'a pas de boutique associée"
+}
+
+###
+# 21. ERREUR - Créer une catégorie avec shopId inexistant
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Catégorie boutique inexistante",
+  "shopId": "00000000-0000-0000-0000-000000000000"
+}
+
+###
+# 22. ERREUR - Créer une catégorie avec nom en doublon
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Électronique",
+  "description": "Doublon du nom de catégorie",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 23. ERREUR - Récupérer une catégorie avec ID invalide
+GET {{baseUrl}}/api/category/invalid-id
+Content-Type: application/json
+
+###
+# 24. ERREUR - Récupérer une catégorie inexistante
+GET {{baseUrl}}/api/category/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+###
+# 25. ERREUR - Modifier une catégorie sans ID
+PATCH {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Nouveau nom"
+}
+
+###
+# 26. ERREUR - Modifier une catégorie avec ID invalide
+PATCH {{baseUrl}}/api/category/invalid-id
+Content-Type: application/json
+
+{
+  "name": "Nouveau nom"
+}
+
+###
+# 27. ERREUR - Modifier une catégorie inexistante
+PATCH {{baseUrl}}/api/category/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "name": "Nouveau nom"
+}
+
+###
+# 28. ERREUR - Modifier une catégorie avec nom vide
+PATCH {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+###
+# 29. ERREUR - Modifier une catégorie avec nom en doublon
+PATCH {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+{
+  "name": "Vêtements"
+}
+
+###
+# 30. ERREUR - Modifier une catégorie sans données
+PATCH {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+{}
+
+###
+# 31. ERREUR - Supprimer une catégorie sans ID
+DELETE {{baseUrl}}/api/category
+Content-Type: application/json
+
+{}
+
+###
+# 32. ERREUR - Supprimer une catégorie avec ID invalide
+DELETE {{baseUrl}}/api/category/invalid-id
+Content-Type: application/json
+
+###
+# 33. ERREUR - Supprimer une catégorie inexistante
+DELETE {{baseUrl}}/api/category/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+###
+# 34. ERREUR - Supprimer une catégorie avec produits liés
+# (Ce test nécessite une catégorie qui contient des produits)
+DELETE {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+###
+# ========================================
+# TESTS DE PERFORMANCE ET LIMITES
+# ========================================
+
+###
+# 35. TEST - Créer une catégorie avec nom très long
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Catégorie avec un nom extrêmement long qui dépasse probablement les limites normales d'un nom de catégorie standard",
+  "description": "Test de limite de longueur",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 36. TEST - Créer une catégorie avec description très longue
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Catégorie description longue",
+  "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 37. TEST - Créer une catégorie avec URL d'image très longue
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Catégorie URL longue",
+  "description": "Test avec URL d'image très longue",
+  "imageUrl": "https://example.com/very/long/path/to/image/with/many/subdirectories/and/a/very/long/filename/that/might/cause/issues/category-image-with-extremely-long-name-for-testing-purposes.jpg?param1=value1&param2=value2&param3=value3&param4=value4",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 38. TEST - Créer plusieurs catégories rapidement (test de performance)
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Sports et Loisirs",
+  "description": "Équipements sportifs et articles de loisirs",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 39. TEST - Créer une catégorie avec caractères spéciaux
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Beauté & Bien-être 💄✨",
+  "description": "Produits de beauté, cosmétiques et bien-être avec émojis 🌟",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 40. TEST - Créer une catégorie avec caractères Unicode
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Livres & Éducation",
+  "description": "Livres, manuels scolaires et matériel éducatif - Français, English, 中文, العربية",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 41. TEST - Récupérer les catégories avec filtres multiples
+GET {{baseUrl}}/api/category?shopId={{shopId}}&isActive=false
+Content-Type: application/json
+
+###
+# 42. TEST - Mettre à jour une catégorie avec tous les champs
+PATCH {{baseUrl}}/api/category/{{categoryId}}
+Content-Type: application/json
+
+{
+  "name": "Électronique et Informatique",
+  "description": "Ordinateurs, smartphones, tablettes et tous les accessoires high-tech",
+  "imageUrl": "https://example.com/electronics-updated.jpg",
+  "isActive": true
+}
+
+###
+# 43. TEST - Créer une catégorie avec isActive explicitement false
+POST {{baseUrl}}/api/category
+Content-Type: application/json
+
+{
+  "name": "Catégorie Inactive",
+  "description": "Cette catégorie est créée comme inactive",
+  "isActive": false,
+  "shopId": "{{shopId}}"
+}

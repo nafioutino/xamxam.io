@@ -1,0 +1,963 @@
+### Conversation API Tests
+### Base URL: http://localhost:3000/api
+
+### Variables
+@baseUrl = http://localhost:3000/api
+@shopId = 550e8400-e29b-41d4-a716-446655440000
+@customerId = 550e8400-e29b-41d4-a716-446655440001
+@orderId = 550e8400-e29b-41d4-a716-446655440002
+@conversationId = 550e8400-e29b-41d4-a716-446655440003
+@nonExistentId = 550e8400-e29b-41d4-a716-446655440999
+
+### 1. GET /api/conversation - Get all conversations
+GET {{baseUrl}}/conversation
+Content-Type: application/json
+
+###
+
+### 2. GET /api/conversation - Filter by shopId
+GET {{baseUrl}}/conversation?shopId={{shopId}}
+Content-Type: application/json
+
+###
+
+### 3. GET /api/conversation - Filter by customerId
+GET {{baseUrl}}/conversation?customerId={{customerId}}
+Content-Type: application/json
+
+###
+
+### 4. GET /api/conversation - Filter by orderId
+GET {{baseUrl}}/conversation?orderId={{orderId}}
+Content-Type: application/json
+
+###
+
+### 5. GET /api/conversation - Filter by platform
+GET {{baseUrl}}/conversation?platform=WHATSAPP
+Content-Type: application/json
+
+###
+
+### 6. GET /api/conversation - Filter by status
+GET {{baseUrl}}/conversation?status=OPEN
+Content-Type: application/json
+
+###
+
+### 7. GET /api/conversation - Filter by priority
+GET {{baseUrl}}/conversation?priority=HIGH
+Content-Type: application/json
+
+###
+
+### 8. GET /api/conversation - Filter by isActive
+GET {{baseUrl}}/conversation?isActive=true
+Content-Type: application/json
+
+###
+
+### 9. GET /api/conversation - Search by title and externalId
+GET {{baseUrl}}/conversation?search=support
+Content-Type: application/json
+
+###
+
+### 10. GET /api/conversation - Filter by tags
+GET {{baseUrl}}/conversation?tags=urgent,support
+Content-Type: application/json
+
+###
+
+### 11. GET /api/conversation - With pagination
+GET {{baseUrl}}/conversation?page=1&limit=5
+Content-Type: application/json
+
+###
+
+### 12. GET /api/conversation - With sorting
+GET {{baseUrl}}/conversation?sortBy=lastMessageAt&sortOrder=desc
+Content-Type: application/json
+
+###
+
+### 13. GET /api/conversation - Complex filtering
+GET {{baseUrl}}/conversation?shopId={{shopId}}&platform=WHATSAPP&status=OPEN&priority=HIGH&isActive=true&page=1&limit=10
+Content-Type: application/json
+
+###
+
+### 14. POST /api/conversation - Create new conversation (WhatsApp)
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "title": "Customer Support - WhatsApp",
+  "platform": "WHATSAPP",
+  "externalId": "wa_conv_12345",
+  "isActive": true,
+  "unreadCount": 0,
+  "tags": ["support", "new"],
+  "priority": "NORMAL",
+  "status": "OPEN",
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}"
+}
+
+###
+
+### 15. POST /api/conversation - Create conversation with order
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "title": "Order Inquiry - Facebook",
+  "platform": "FACEBOOK_PAGE",
+  "externalId": "fb_conv_67890",
+  "isActive": true,
+  "unreadCount": 2,
+  "tags": ["order", "inquiry"],
+  "priority": "HIGH",
+  "status": "PENDING",
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}",
+  "orderId": "{{orderId}}"
+}
+
+###
+
+### 16. POST /api/conversation - Create conversation without customer
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "title": "General Inquiry - Instagram",
+  "platform": "INSTAGRAM_DM",
+  "externalId": "ig_conv_11111",
+  "isActive": true,
+  "unreadCount": 1,
+  "tags": ["general"],
+  "priority": "LOW",
+  "status": "OPEN",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 17. POST /api/conversation - Create conversation with lastMessageAt
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "title": "Urgent Support - Telegram",
+  "platform": "TELEGRAM",
+  "externalId": "tg_conv_22222",
+  "isActive": true,
+  "lastMessageAt": "2024-01-15T10:30:00Z",
+  "unreadCount": 5,
+  "tags": ["urgent", "support"],
+  "priority": "URGENT",
+  "status": "OPEN",
+  "shopId": "{{shopId}}",
+  "customerId": "{{customerId}}"
+}
+
+###
+
+### 18. POST /api/conversation - Create conversation without externalId
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "title": "Internal Note - Email",
+  "platform": "EMAIL",
+  "isActive": true,
+  "unreadCount": 0,
+  "tags": ["internal"],
+  "priority": "NORMAL",
+  "status": "RESOLVED",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 19. GET /api/conversation/[id] - Get specific conversation
+GET {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+###
+
+### 20. PATCH /api/conversation/[id] - Update conversation title and status
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "title": "Updated Support Conversation",
+  "status": "RESOLVED",
+  "priority": "LOW"
+}
+
+###
+
+### 21. PATCH /api/conversation/[id] - Update conversation tags and unread count
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "tags": ["resolved", "customer-satisfied"],
+  "unreadCount": 0,
+  "isActive": false
+}
+
+###
+
+### 22. PATCH /api/conversation/[id] - Update conversation customer
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "customerId": "{{customerId}}"
+}
+
+###
+
+### 23. PATCH /api/conversation/[id] - Update conversation order
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "orderId": "{{orderId}}"
+}
+
+###
+
+### 24. PATCH /api/conversation/[id] - Update lastMessageAt
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "lastMessageAt": "2024-01-15T15:45:00Z"
+}
+
+###
+
+### 25. PATCH /api/conversation - Bulk update conversations
+PATCH {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "ids": ["{{conversationId}}"],
+  "data": {
+    "status": "CLOSED",
+    "isActive": false
+  }
+}
+
+###
+
+### 26. DELETE /api/conversation/[id] - Delete specific conversation
+DELETE {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+###
+
+### 27. DELETE /api/conversation - Bulk delete conversations
+DELETE {{baseUrl}}/conversation?ids={{conversationId}}
+Content-Type: application/json
+
+###
+
+### Error Cases
+
+### 28. GET /api/conversation - Invalid shopId format
+GET {{baseUrl}}/conversation?shopId=invalid-uuid
+Content-Type: application/json
+
+###
+
+### 29. GET /api/conversation - Invalid customerId format
+GET {{baseUrl}}/conversation?customerId=invalid-uuid
+Content-Type: application/json
+
+###
+
+### 30. GET /api/conversation - Invalid orderId format
+GET {{baseUrl}}/conversation?orderId=invalid-uuid
+Content-Type: application/json
+
+###
+
+### 31. GET /api/conversation - Invalid platform type
+GET {{baseUrl}}/conversation?platform=INVALID_PLATFORM
+Content-Type: application/json
+
+###
+
+### 32. GET /api/conversation - Invalid status
+GET {{baseUrl}}/conversation?status=INVALID_STATUS
+Content-Type: application/json
+
+###
+
+### 33. GET /api/conversation - Invalid priority
+GET {{baseUrl}}/conversation?priority=INVALID_PRIORITY
+Content-Type: application/json
+
+###
+
+### 34. GET /api/conversation - Invalid isActive value
+GET {{baseUrl}}/conversation?isActive=maybe
+Content-Type: application/json
+
+###
+
+### 35. GET /api/conversation - Invalid pagination
+GET {{baseUrl}}/conversation?page=0&limit=101
+Content-Type: application/json
+
+###
+
+### 36. GET /api/conversation - Invalid sort field
+GET {{baseUrl}}/conversation?sortBy=invalidField
+Content-Type: application/json
+
+###
+
+### 37. POST /api/conversation - Missing required fields
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "title": "Test Conversation"
+}
+
+###
+
+### 38. POST /api/conversation - Invalid platform type
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "INVALID_PLATFORM",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 39. POST /api/conversation - Invalid shopId format
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "invalid-uuid"
+}
+
+###
+
+### 40. POST /api/conversation - Invalid customerId format
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "customerId": "invalid-uuid"
+}
+
+###
+
+### 41. POST /api/conversation - Invalid orderId format
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "orderId": "invalid-uuid"
+}
+
+###
+
+### 42. POST /api/conversation - Non-existent shop
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{nonExistentId}}"
+}
+
+###
+
+### 43. POST /api/conversation - Non-existent customer
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "customerId": "{{nonExistentId}}"
+}
+
+###
+
+### 44. POST /api/conversation - Non-existent order
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "orderId": "{{nonExistentId}}"
+}
+
+###
+
+### 45. POST /api/conversation - Customer from different shop
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "customerId": "{{nonExistentId}}"
+}
+
+###
+
+### 46. POST /api/conversation - Order from different shop
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "orderId": "{{nonExistentId}}"
+}
+
+###
+
+### 47. POST /api/conversation - Duplicate conversation (same shop, platform, externalId)
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "externalId": "wa_conv_12345",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 48. POST /api/conversation - Order already has conversation
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "TELEGRAM",
+  "shopId": "{{shopId}}",
+  "orderId": "{{orderId}}"
+}
+
+###
+
+### 49. POST /api/conversation - Invalid lastMessageAt format
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "lastMessageAt": "invalid-date"
+}
+
+###
+
+### 50. POST /api/conversation - Negative unreadCount
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "unreadCount": -1
+}
+
+###
+
+### 51. POST /api/conversation - Invalid priority
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "priority": "INVALID_PRIORITY"
+}
+
+###
+
+### 52. POST /api/conversation - Invalid status
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "status": "INVALID_STATUS"
+}
+
+###
+
+### 53. GET /api/conversation/[id] - Invalid ID format
+GET {{baseUrl}}/conversation/invalid-uuid
+Content-Type: application/json
+
+###
+
+### 54. GET /api/conversation/[id] - Non-existent conversation
+GET {{baseUrl}}/conversation/{{nonExistentId}}
+Content-Type: application/json
+
+###
+
+### 55. PATCH /api/conversation/[id] - Invalid ID format
+PATCH {{baseUrl}}/conversation/invalid-uuid
+Content-Type: application/json
+
+{
+  "title": "Updated Title"
+}
+
+###
+
+### 56. PATCH /api/conversation/[id] - Non-existent conversation
+PATCH {{baseUrl}}/conversation/{{nonExistentId}}
+Content-Type: application/json
+
+{
+  "title": "Updated Title"
+}
+
+###
+
+### 57. PATCH /api/conversation/[id] - Invalid platform type
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "platform": "INVALID_PLATFORM"
+}
+
+###
+
+### 58. PATCH /api/conversation/[id] - Invalid customerId format
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "customerId": "invalid-uuid"
+}
+
+###
+
+### 59. PATCH /api/conversation/[id] - Invalid orderId format
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "orderId": "invalid-uuid"
+}
+
+###
+
+### 60. PATCH /api/conversation/[id] - Non-existent customer
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "customerId": "{{nonExistentId}}"
+}
+
+###
+
+### 61. PATCH /api/conversation/[id] - Non-existent order
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "orderId": "{{nonExistentId}}"
+}
+
+###
+
+### 62. PATCH /api/conversation/[id] - Customer from different shop
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "customerId": "{{nonExistentId}}"
+}
+
+###
+
+### 63. PATCH /api/conversation/[id] - Order from different shop
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "orderId": "{{nonExistentId}}"
+}
+
+###
+
+### 64. PATCH /api/conversation/[id] - Order already has conversation
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "orderId": "{{orderId}}"
+}
+
+###
+
+### 65. PATCH /api/conversation/[id] - Duplicate constraint violation
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "externalId": "wa_conv_12345"
+}
+
+###
+
+### 66. PATCH /api/conversation/[id] - Invalid lastMessageAt format
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "lastMessageAt": "invalid-date"
+}
+
+###
+
+### 67. PATCH /api/conversation/[id] - Negative unreadCount
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "unreadCount": -5
+}
+
+###
+
+### 68. PATCH /api/conversation - Missing IDs array
+PATCH {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "data": {
+    "status": "CLOSED"
+  }
+}
+
+###
+
+### 69. PATCH /api/conversation - Empty IDs array
+PATCH {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "ids": [],
+  "data": {
+    "status": "CLOSED"
+  }
+}
+
+###
+
+### 70. PATCH /api/conversation - Invalid ID format in array
+PATCH {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "ids": ["invalid-uuid"],
+  "data": {
+    "status": "CLOSED"
+  }
+}
+
+###
+
+### 71. PATCH /api/conversation - Non-existent conversations
+PATCH {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "ids": ["{{nonExistentId}}"],
+  "data": {
+    "status": "CLOSED"
+  }
+}
+
+###
+
+### 72. PATCH /api/conversation - Invalid validation data
+PATCH {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "ids": ["{{conversationId}}"],
+  "data": {
+    "platform": "INVALID_PLATFORM"
+  }
+}
+
+###
+
+### 73. DELETE /api/conversation/[id] - Invalid ID format
+DELETE {{baseUrl}}/conversation/invalid-uuid
+Content-Type: application/json
+
+###
+
+### 74. DELETE /api/conversation/[id] - Non-existent conversation
+DELETE {{baseUrl}}/conversation/{{nonExistentId}}
+Content-Type: application/json
+
+###
+
+### 75. DELETE /api/conversation/[id] - Conversation with messages
+# First create a message for the conversation
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message",
+  "messageType": "TEXT",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+# Then try to delete the conversation
+DELETE {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+###
+
+### 76. DELETE /api/conversation - Missing IDs parameter
+DELETE {{baseUrl}}/conversation
+Content-Type: application/json
+
+###
+
+### 77. DELETE /api/conversation - Invalid ID format in parameter
+DELETE {{baseUrl}}/conversation?ids=invalid-uuid
+Content-Type: application/json
+
+###
+
+### 78. DELETE /api/conversation - Non-existent conversations
+DELETE {{baseUrl}}/conversation?ids={{nonExistentId}}
+Content-Type: application/json
+
+###
+
+### 79. DELETE /api/conversation - Conversations with messages
+DELETE {{baseUrl}}/conversation?ids={{conversationId}}
+Content-Type: application/json
+
+###
+
+### Edge Cases and Performance Tests
+
+### 80. POST /api/conversation - Very long title
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "title": "Very long conversation title that might cause issues in database or validation and should be tested for proper handling of lengthy text content in the system architecture",
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 81. POST /api/conversation - Very long externalId
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "FACEBOOK_PAGE",
+  "externalId": "very_long_external_id_that_might_cause_issues_in_database_or_validation_12345678901234567890123456789012345678901234567890",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 82. POST /api/conversation - Many tags
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "INSTAGRAM_DM",
+  "shopId": "{{shopId}}",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7", "tag8", "tag9", "tag10", "urgent", "support", "customer-service", "high-priority", "escalated"]
+}
+
+###
+
+### 83. POST /api/conversation - Special characters in title
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "title": "Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?àáâãäåæçèéêëìíîïñòóôõöøùúûüý",
+  "platform": "TELEGRAM",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 84. POST /api/conversation - Special characters in externalId
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "EMAIL",
+  "externalId": "special_chars_!@#$%^&*()_+-=[]{}|;:,.<>?",
+  "shopId": "{{shopId}}"
+}
+
+###
+
+### 85. GET /api/conversation - Search with special characters
+GET {{baseUrl}}/conversation?search=special_chars_!@#$
+Content-Type: application/json
+
+###
+
+### 86. GET /api/conversation - Search with accents
+GET {{baseUrl}}/conversation?search=àáâãäåæçèéêë
+Content-Type: application/json
+
+###
+
+### 87. GET /api/conversation - Filter by multiple tags with special characters
+GET {{baseUrl}}/conversation?tags=urgent,special-chars,àáâã
+Content-Type: application/json
+
+###
+
+### 88. GET /api/conversation - High pagination limit
+GET {{baseUrl}}/conversation?page=1&limit=100
+Content-Type: application/json
+
+###
+
+### 89. GET /api/conversation - Very high page number
+GET {{baseUrl}}/conversation?page=9999&limit=10
+Content-Type: application/json
+
+###
+
+### 90. GET /api/conversation - Multiple filters combination
+GET {{baseUrl}}/conversation?shopId={{shopId}}&platform=WHATSAPP&status=OPEN&priority=HIGH&isActive=true&search=support&tags=urgent&sortBy=lastMessageAt&sortOrder=desc&page=1&limit=5
+Content-Type: application/json
+
+###
+
+### 91. PATCH /api/conversation - Update with null values
+PATCH {{baseUrl}}/conversation/{{conversationId}}
+Content-Type: application/json
+
+{
+  "title": null,
+  "externalId": null,
+  "customerId": null,
+  "orderId": null
+}
+
+###
+
+### 92. POST /api/conversation - Boolean as string
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "isActive": "true"
+}
+
+###
+
+### 93. POST /api/conversation - Numeric unreadCount as string
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "unreadCount": "5"
+}
+
+###
+
+### 94. POST /api/conversation - Very high unreadCount
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "unreadCount": 999999
+}
+
+###
+
+### 95. POST /api/conversation - Empty tags array
+POST {{baseUrl}}/conversation
+Content-Type: application/json
+
+{
+  "platform": "WHATSAPP",
+  "shopId": "{{shopId}}",
+  "tags": []
+}
+
+###
+
+### Final Verification Tests
+
+### 96. GET /api/conversation - Retrieve all conversations for verification
+GET {{baseUrl}}/conversation
+Content-Type: application/json
+
+###
+
+### 97. GET /api/conversation - Count conversations by shop
+GET {{baseUrl}}/conversation?shopId={{shopId}}
+Content-Type: application/json
+
+###
+
+### 98. GET /api/conversation - Count conversations by status
+GET {{baseUrl}}/conversation?status=OPEN
+Content-Type: application/json
+
+###
+
+### 99. GET /api/conversation - Count conversations by priority
+GET {{baseUrl}}/conversation?priority=HIGH
+Content-Type: application/json
+
+###
+
+### 100. GET /api/conversation - Verify data consistency
+GET {{baseUrl}}/conversation?sortBy=createdAt&sortOrder=desc&limit=50
+Content-Type: application/json

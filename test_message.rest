@@ -1,0 +1,1086 @@
+### Message API Tests
+### Base URL: http://localhost:3000/api
+
+### Variables
+@baseUrl = http://localhost:3000/api
+@conversationId = 550e8400-e29b-41d4-a716-446655440000
+@messageId = 550e8400-e29b-41d4-a716-446655440001
+@replyMessageId = 550e8400-e29b-41d4-a716-446655440002
+@nonExistentId = 550e8400-e29b-41d4-a716-446655440999
+
+### 1. GET /api/message - Get all messages
+GET {{baseUrl}}/message
+Content-Type: application/json
+
+###
+
+### 2. GET /api/message - Filter by conversationId
+GET {{baseUrl}}/message?conversationId={{conversationId}}
+Content-Type: application/json
+
+###
+
+### 3. GET /api/message - Filter by isFromCustomer
+GET {{baseUrl}}/message?isFromCustomer=true
+Content-Type: application/json
+
+###
+
+### 4. GET /api/message - Filter by isRead
+GET {{baseUrl}}/message?isRead=false
+Content-Type: application/json
+
+###
+
+### 5. GET /api/message - Filter by messageType
+GET {{baseUrl}}/message?messageType=TEXT
+Content-Type: application/json
+
+###
+
+### 6. GET /api/message - Search by content
+GET {{baseUrl}}/message?search=hello
+Content-Type: application/json
+
+###
+
+### 7. GET /api/message - Filter by replyToId
+GET {{baseUrl}}/message?replyToId={{replyMessageId}}
+Content-Type: application/json
+
+###
+
+### 8. GET /api/message - With pagination
+GET {{baseUrl}}/message?page=1&limit=5
+Content-Type: application/json
+
+###
+
+### 9. GET /api/message - With sorting
+GET {{baseUrl}}/message?sortBy=createdAt&sortOrder=desc
+Content-Type: application/json
+
+###
+
+### 10. GET /api/message - Complex filtering
+GET {{baseUrl}}/message?conversationId={{conversationId}}&isFromCustomer=true&isRead=false&messageType=TEXT&page=1&limit=10
+Content-Type: application/json
+
+###
+
+### 11. POST /api/message - Create text message from customer
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Hello, I need help with my order",
+  "messageType": "TEXT",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 12. POST /api/message - Create text message from support
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Hi! I'd be happy to help you with your order. Can you provide your order number?",
+  "messageType": "TEXT",
+  "isFromCustomer": false,
+  "isRead": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 13. POST /api/message - Create image message
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Here's a photo of the issue",
+  "messageType": "IMAGE",
+  "mediaUrl": "https://example.com/image.jpg",
+  "mediaType": "image/jpeg",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 14. POST /api/message - Create audio message
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Voice message",
+  "messageType": "AUDIO",
+  "mediaUrl": "https://example.com/audio.mp3",
+  "mediaType": "audio/mpeg",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 15. POST /api/message - Create video message
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Video explanation",
+  "messageType": "VIDEO",
+  "mediaUrl": "https://example.com/video.mp4",
+  "mediaType": "video/mp4",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 16. POST /api/message - Create document message
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Order receipt",
+  "messageType": "DOCUMENT",
+  "mediaUrl": "https://example.com/receipt.pdf",
+  "mediaType": "application/pdf",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 17. POST /api/message - Create location message
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "My current location",
+  "messageType": "LOCATION",
+  "mediaUrl": "https://maps.google.com/location",
+  "mediaType": "application/json",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}",
+  "metadata": {
+    "latitude": 40.7128,
+    "longitude": -74.0060,
+    "address": "New York, NY"
+  }
+}
+
+###
+
+### 18. POST /api/message - Create contact message
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Contact information",
+  "messageType": "CONTACT",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}",
+  "metadata": {
+    "name": "John Doe",
+    "phone": "+1234567890",
+    "email": "john@example.com"
+  }
+}
+
+###
+
+### 19. POST /api/message - Create sticker message
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "😊",
+  "messageType": "STICKER",
+  "mediaUrl": "https://example.com/sticker.webp",
+  "mediaType": "image/webp",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 20. POST /api/message - Create system message
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Customer joined the conversation",
+  "messageType": "SYSTEM",
+  "isFromCustomer": false,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 21. POST /api/message - Create reply message
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Thank you for the information!",
+  "messageType": "TEXT",
+  "isFromCustomer": false,
+  "conversationId": "{{conversationId}}",
+  "replyToId": "{{messageId}}"
+}
+
+###
+
+### 22. POST /api/message - Create message with externalId
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Message from external platform",
+  "messageType": "TEXT",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}",
+  "externalId": "ext_msg_12345"
+}
+
+###
+
+### 23. POST /api/message - Create message with metadata
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Message with custom metadata",
+  "messageType": "TEXT",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}",
+  "metadata": {
+    "platform": "whatsapp",
+    "messageId": "wa_msg_123",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "forwarded": false
+  }
+}
+
+###
+
+### 24. GET /api/message/[id] - Get specific message
+GET {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+###
+
+### 25. PATCH /api/message/[id] - Update message content
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "content": "Updated message content",
+  "isRead": true
+}
+
+###
+
+### 26. PATCH /api/message/[id] - Update message type and media
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "messageType": "IMAGE",
+  "mediaUrl": "https://example.com/updated-image.jpg",
+  "mediaType": "image/jpeg"
+}
+
+###
+
+### 27. PATCH /api/message/[id] - Update message metadata
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "metadata": {
+    "edited": true,
+    "editedAt": "2024-01-15T15:30:00Z",
+    "originalContent": "Original message"
+  }
+}
+
+###
+
+### 28. PATCH /api/message/[id] - Update reply reference
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "replyToId": "{{replyMessageId}}"
+}
+
+###
+
+### 29. PATCH /api/message/[id] - Update conversation
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 30. PATCH /api/message/[id] - Mark as read
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "isRead": true
+}
+
+###
+
+### 31. PATCH /api/message - Bulk update messages
+PATCH {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "ids": ["{{messageId}}"],
+  "data": {
+    "isRead": true
+  }
+}
+
+###
+
+### 32. PATCH /api/message - Bulk update multiple messages
+PATCH {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "ids": ["{{messageId}}", "{{replyMessageId}}"],
+  "data": {
+    "isRead": true,
+    "metadata": {
+      "bulkUpdated": true,
+      "updatedAt": "2024-01-15T16:00:00Z"
+    }
+  }
+}
+
+###
+
+### 33. DELETE /api/message/[id] - Delete specific message
+DELETE {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+###
+
+### 34. DELETE /api/message - Bulk delete messages
+DELETE {{baseUrl}}/message?ids={{messageId}}
+Content-Type: application/json
+
+###
+
+### 35. DELETE /api/message - Bulk delete multiple messages
+DELETE {{baseUrl}}/message?ids={{messageId}},{{replyMessageId}}
+Content-Type: application/json
+
+###
+
+### Error Cases
+
+### 36. GET /api/message - Invalid conversationId format
+GET {{baseUrl}}/message?conversationId=invalid-uuid
+Content-Type: application/json
+
+###
+
+### 37. GET /api/message - Invalid isFromCustomer value
+GET {{baseUrl}}/message?isFromCustomer=maybe
+Content-Type: application/json
+
+###
+
+### 38. GET /api/message - Invalid isRead value
+GET {{baseUrl}}/message?isRead=unknown
+Content-Type: application/json
+
+###
+
+### 39. GET /api/message - Invalid messageType
+GET {{baseUrl}}/message?messageType=INVALID_TYPE
+Content-Type: application/json
+
+###
+
+### 40. GET /api/message - Invalid replyToId format
+GET {{baseUrl}}/message?replyToId=invalid-uuid
+Content-Type: application/json
+
+###
+
+### 41. GET /api/message - Invalid pagination
+GET {{baseUrl}}/message?page=0&limit=101
+Content-Type: application/json
+
+###
+
+### 42. GET /api/message - Invalid sort field
+GET {{baseUrl}}/message?sortBy=invalidField
+Content-Type: application/json
+
+###
+
+### 43. POST /api/message - Missing required fields
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message"
+}
+
+###
+
+### 44. POST /api/message - Empty content
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 45. POST /api/message - Invalid messageType
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message",
+  "messageType": "INVALID_TYPE",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 46. POST /api/message - Invalid conversationId format
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message",
+  "isFromCustomer": true,
+  "conversationId": "invalid-uuid"
+}
+
+###
+
+### 47. POST /api/message - Invalid replyToId format
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}",
+  "replyToId": "invalid-uuid"
+}
+
+###
+
+### 48. POST /api/message - Non-existent conversation
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message",
+  "isFromCustomer": true,
+  "conversationId": "{{nonExistentId}}"
+}
+
+###
+
+### 49. POST /api/message - Non-existent reply message
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}",
+  "replyToId": "{{nonExistentId}}"
+}
+
+###
+
+### 50. POST /api/message - Reply to message from different conversation
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}",
+  "replyToId": "{{nonExistentId}}"
+}
+
+###
+
+### 51. POST /api/message - Invalid media URL
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message",
+  "messageType": "IMAGE",
+  "mediaUrl": "invalid-url",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 52. POST /api/message - Media URL without media type
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message",
+  "messageType": "IMAGE",
+  "mediaUrl": "https://example.com/image.jpg",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 53. POST /api/message - Non-text message without media URL
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message",
+  "messageType": "IMAGE",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 54. GET /api/message/[id] - Invalid ID format
+GET {{baseUrl}}/message/invalid-uuid
+Content-Type: application/json
+
+###
+
+### 55. GET /api/message/[id] - Non-existent message
+GET {{baseUrl}}/message/{{nonExistentId}}
+Content-Type: application/json
+
+###
+
+### 56. PATCH /api/message/[id] - Invalid ID format
+PATCH {{baseUrl}}/message/invalid-uuid
+Content-Type: application/json
+
+{
+  "content": "Updated content"
+}
+
+###
+
+### 57. PATCH /api/message/[id] - Non-existent message
+PATCH {{baseUrl}}/message/{{nonExistentId}}
+Content-Type: application/json
+
+{
+  "content": "Updated content"
+}
+
+###
+
+### 58. PATCH /api/message/[id] - Empty content
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "content": ""
+}
+
+###
+
+### 59. PATCH /api/message/[id] - Invalid messageType
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "messageType": "INVALID_TYPE"
+}
+
+###
+
+### 60. PATCH /api/message/[id] - Invalid conversationId format
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "conversationId": "invalid-uuid"
+}
+
+###
+
+### 61. PATCH /api/message/[id] - Invalid replyToId format
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "replyToId": "invalid-uuid"
+}
+
+###
+
+### 62. PATCH /api/message/[id] - Non-existent conversation
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "conversationId": "{{nonExistentId}}"
+}
+
+###
+
+### 63. PATCH /api/message/[id] - Non-existent reply message
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "replyToId": "{{nonExistentId}}"
+}
+
+###
+
+### 64. PATCH /api/message/[id] - Self-reply
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "replyToId": "{{messageId}}"
+}
+
+###
+
+### 65. PATCH /api/message/[id] - Reply to message from different conversation
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "replyToId": "{{nonExistentId}}"
+}
+
+###
+
+### 66. PATCH /api/message/[id] - Media URL without media type
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "mediaUrl": "https://example.com/image.jpg"
+}
+
+###
+
+### 67. PATCH /api/message/[id] - Non-text message without media URL
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "messageType": "IMAGE"
+}
+
+###
+
+### 68. PATCH /api/message - Missing IDs array
+PATCH {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "data": {
+    "isRead": true
+  }
+}
+
+###
+
+### 69. PATCH /api/message - Empty IDs array
+PATCH {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "ids": [],
+  "data": {
+    "isRead": true
+  }
+}
+
+###
+
+### 70. PATCH /api/message - Invalid ID format in array
+PATCH {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "ids": ["invalid-uuid"],
+  "data": {
+    "isRead": true
+  }
+}
+
+###
+
+### 71. PATCH /api/message - Non-existent messages
+PATCH {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "ids": ["{{nonExistentId}}"],
+  "data": {
+    "isRead": true
+  }
+}
+
+###
+
+### 72. PATCH /api/message - Invalid validation data
+PATCH {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "ids": ["{{messageId}}"],
+  "data": {
+    "messageType": "INVALID_TYPE"
+  }
+}
+
+###
+
+### 73. PATCH /api/message - Non-existent conversation in bulk update
+PATCH {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "ids": ["{{messageId}}"],
+  "data": {
+    "conversationId": "{{nonExistentId}}"
+  }
+}
+
+###
+
+### 74. PATCH /api/message - Non-existent reply message in bulk update
+PATCH {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "ids": ["{{messageId}}"],
+  "data": {
+    "replyToId": "{{nonExistentId}}"
+  }
+}
+
+###
+
+### 75. DELETE /api/message/[id] - Invalid ID format
+DELETE {{baseUrl}}/message/invalid-uuid
+Content-Type: application/json
+
+###
+
+### 76. DELETE /api/message/[id] - Non-existent message
+DELETE {{baseUrl}}/message/{{nonExistentId}}
+Content-Type: application/json
+
+###
+
+### 77. DELETE /api/message/[id] - Message with replies
+# First create a reply message
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Reply to be deleted",
+  "isFromCustomer": false,
+  "conversationId": "{{conversationId}}",
+  "replyToId": "{{messageId}}"
+}
+
+###
+
+# Then try to delete the parent message
+DELETE {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+###
+
+### 78. DELETE /api/message - Missing IDs parameter
+DELETE {{baseUrl}}/message
+Content-Type: application/json
+
+###
+
+### 79. DELETE /api/message - Invalid ID format in parameter
+DELETE {{baseUrl}}/message?ids=invalid-uuid
+Content-Type: application/json
+
+###
+
+### 80. DELETE /api/message - Non-existent messages
+DELETE {{baseUrl}}/message?ids={{nonExistentId}}
+Content-Type: application/json
+
+###
+
+### 81. DELETE /api/message - Messages with replies
+DELETE {{baseUrl}}/message?ids={{messageId}}
+Content-Type: application/json
+
+###
+
+### Edge Cases and Performance Tests
+
+### 82. POST /api/message - Very long content
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Very long message content that might cause issues in database or validation and should be tested for proper handling of lengthy text content in the system architecture. This message contains multiple sentences and paragraphs to test the system's ability to handle large amounts of text data without performance degradation or validation errors.",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 83. POST /api/message - Very long externalId
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Message with long external ID",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}",
+  "externalId": "very_long_external_id_that_might_cause_issues_in_database_or_validation_12345678901234567890123456789012345678901234567890"
+}
+
+###
+
+### 84. POST /api/message - Complex metadata
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Message with complex metadata",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}",
+  "metadata": {
+    "platform": "whatsapp",
+    "messageId": "wa_msg_123",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "forwarded": false,
+    "mentions": ["@user1", "@user2"],
+    "reactions": {
+      "👍": 5,
+      "❤️": 3,
+      "😂": 1
+    },
+    "location": {
+      "latitude": 40.7128,
+      "longitude": -74.0060,
+      "address": "New York, NY"
+    },
+    "attachments": [
+      {
+        "type": "image",
+        "url": "https://example.com/image1.jpg",
+        "size": 1024000
+      },
+      {
+        "type": "document",
+        "url": "https://example.com/doc.pdf",
+        "size": 2048000
+      }
+    ]
+  }
+}
+
+###
+
+### 85. POST /api/message - Special characters in content
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?àáâãäåæçèéêëìíîïñòóôõöøùúûüý 🚀🎉💯",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 86. POST /api/message - Unicode and emoji content
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Unicode test: 你好世界 🌍 مرحبا بالعالم 🌎 Здравствуй мир 🌏 こんにちは世界 🚀✨🎉💯❤️😊👍🔥💪🌟",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 87. GET /api/message - Search with special characters
+GET {{baseUrl}}/message?search=special_chars_!@#$
+Content-Type: application/json
+
+###
+
+### 88. GET /api/message - Search with unicode
+GET {{baseUrl}}/message?search=你好世界
+Content-Type: application/json
+
+###
+
+### 89. GET /api/message - High pagination limit
+GET {{baseUrl}}/message?page=1&limit=100
+Content-Type: application/json
+
+###
+
+### 90. GET /api/message - Very high page number
+GET {{baseUrl}}/message?page=9999&limit=10
+Content-Type: application/json
+
+###
+
+### 91. GET /api/message - Multiple filters combination
+GET {{baseUrl}}/message?conversationId={{conversationId}}&isFromCustomer=true&isRead=false&messageType=TEXT&search=hello&sortBy=createdAt&sortOrder=desc&page=1&limit=5
+Content-Type: application/json
+
+###
+
+### 92. PATCH /api/message - Update with null values
+PATCH {{baseUrl}}/message/{{messageId}}
+Content-Type: application/json
+
+{
+  "externalId": null,
+  "mediaUrl": null,
+  "mediaType": null,
+  "metadata": null,
+  "replyToId": null
+}
+
+###
+
+### 93. POST /api/message - Boolean as string
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Test message",
+  "isFromCustomer": "true",
+  "isRead": "false",
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+### 94. POST /api/message - Nested reply chain test
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Original message",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}"
+}
+
+###
+
+# Reply to the original
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "First reply",
+  "isFromCustomer": false,
+  "conversationId": "{{conversationId}}",
+  "replyToId": "{{messageId}}"
+}
+
+###
+
+# Reply to the reply
+POST {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "content": "Reply to reply",
+  "isFromCustomer": true,
+  "conversationId": "{{conversationId}}",
+  "replyToId": "{{replyMessageId}}"
+}
+
+###
+
+### 95. PATCH /api/message - Bulk update many messages
+PATCH {{baseUrl}}/message
+Content-Type: application/json
+
+{
+  "ids": ["{{messageId}}", "{{replyMessageId}}"],
+  "data": {
+    "isRead": true,
+    "metadata": {
+      "bulkProcessed": true,
+      "processedAt": "2024-01-15T16:00:00Z",
+      "batchId": "batch_001"
+    }
+  }
+}
+
+###
+
+### Final Verification Tests
+
+### 96. GET /api/message - Retrieve all messages for verification
+GET {{baseUrl}}/message
+Content-Type: application/json
+
+###
+
+### 97. GET /api/message - Count messages by conversation
+GET {{baseUrl}}/message?conversationId={{conversationId}}
+Content-Type: application/json
+
+###
+
+### 98. GET /api/message - Count unread messages
+GET {{baseUrl}}/message?isRead=false
+Content-Type: application/json
+
+###
+
+### 99. GET /api/message - Count customer messages
+GET {{baseUrl}}/message?isFromCustomer=true
+Content-Type: application/json
+
+###
+
+### 100. GET /api/message - Verify data consistency
+GET {{baseUrl}}/message?sortBy=createdAt&sortOrder=desc&limit=50
+Content-Type: application/json

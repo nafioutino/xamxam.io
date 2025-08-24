@@ -1,0 +1,610 @@
+###
+# Tests API Customer - CRUD Operations
+# Base URL: http://localhost:3000/api/customer
+###
+
+# Variables pour les tests
+@baseUrl = http://localhost:3000
+@customerId = {{customerId}}
+@shopId = {{shopId}}
+
+###
+# 1. RÉCUPÉRER TOUS LES CLIENTS
+GET {{baseUrl}}/api/customer
+Content-Type: application/json
+
+###
+# 2. RÉCUPÉRER LES CLIENTS D'UNE BOUTIQUE SPÉCIFIQUE
+GET {{baseUrl}}/api/customer?shopId={{shopId}}
+Content-Type: application/json
+
+###
+# 3. RECHERCHER DES CLIENTS PAR NOM/EMAIL/TÉLÉPHONE
+GET {{baseUrl}}/api/customer?search=Jean
+Content-Type: application/json
+
+###
+# 4. FILTRER LES CLIENTS PAR VILLE
+GET {{baseUrl}}/api/customer?city=Paris
+Content-Type: application/json
+
+###
+# 5. FILTRER LES CLIENTS PAR PAYS
+GET {{baseUrl}}/api/customer?country=France
+Content-Type: application/json
+
+###
+# 6. FILTRES COMBINÉS
+GET {{baseUrl}}/api/customer?shopId={{shopId}}&city=Paris&search=Jean
+Content-Type: application/json
+
+###
+# 7. PAGINATION DES CLIENTS
+GET {{baseUrl}}/api/customer?page=1&limit=10
+Content-Type: application/json
+
+###
+# 8. CRÉER UN NOUVEAU CLIENT COMPLET
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Jean Dupont",
+  "phone": "+33123456789",
+  "email": "jean.dupont@email.com",
+  "address": "123 Rue de la Paix",
+  "city": "Paris",
+  "country": "France",
+  "notes": "Client VIP - Préfère les livraisons le matin",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 9. CRÉER UN CLIENT AVEC DONNÉES MINIMALES
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Marie Martin",
+  "phone": "+33987654321",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 10. CRÉER UN CLIENT SANS EMAIL
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Pierre Durand",
+  "phone": "+33555666777",
+  "address": "456 Avenue des Champs",
+  "city": "Lyon",
+  "country": "France",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 11. CRÉER UN CLIENT AVEC EMAIL VIDE
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Sophie Bernard",
+  "phone": "+33444555666",
+  "email": "",
+  "address": "789 Boulevard Saint-Germain",
+  "city": "Marseille",
+  "country": "France",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 12. CRÉER UN CLIENT INTERNATIONAL
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "John Smith",
+  "phone": "+1234567890",
+  "email": "john.smith@email.com",
+  "address": "123 Main Street",
+  "city": "New York",
+  "country": "USA",
+  "notes": "International customer - English speaking",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 13. RÉCUPÉRER UN CLIENT SPÉCIFIQUE PAR ID
+GET {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+###
+# 14. METTRE À JOUR UN CLIENT (PATCH - route générale)
+PATCH {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "id": "{{customerId}}",
+  "name": "Jean Dupont-Martin",
+  "email": "jean.dupont.martin@email.com"
+}
+
+###
+# 15. METTRE À JOUR UN CLIENT (PATCH - route spécifique)
+PATCH {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+{
+  "address": "456 Nouvelle Adresse",
+  "city": "Bordeaux",
+  "notes": "Adresse mise à jour - Préfère les livraisons en soirée"
+}
+
+###
+# 16. METTRE À JOUR LE TÉLÉPHONE D'UN CLIENT
+PATCH {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+{
+  "phone": "+33111222333"
+}
+
+###
+# 17. METTRE À JOUR L'EMAIL D'UN CLIENT
+PATCH {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+{
+  "email": "nouveau.email@example.com"
+}
+
+###
+# 18. SUPPRIMER L'EMAIL D'UN CLIENT (le mettre à null)
+PATCH {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+{
+  "email": ""
+}
+
+###
+# 19. METTRE À JOUR LES NOTES D'UN CLIENT
+PATCH {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+{
+  "notes": "Client fidèle depuis 2020 - Commandes régulières le vendredi"
+}
+
+###
+# 20. METTRE À JOUR L'ADRESSE COMPLÈTE
+PATCH {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+{
+  "address": "789 Rue de la République",
+  "city": "Toulouse",
+  "country": "France"
+}
+
+###
+# 21. SUPPRIMER UN CLIENT (DELETE - route générale)
+DELETE {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "id": "{{customerId}}"
+}
+
+###
+# 22. SUPPRIMER UN CLIENT (DELETE - route spécifique)
+DELETE {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+###
+# ========================================
+# TESTS D'ERREURS ET CAS LIMITES
+# ========================================
+
+###
+# 23. ERREUR - Créer un client sans nom
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "phone": "+33123456789",
+  "email": "test@email.com",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 24. ERREUR - Créer un client avec nom vide
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "",
+  "phone": "+33123456789",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 25. ERREUR - Créer un client avec nom uniquement des espaces
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "   ",
+  "phone": "+33123456789",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 26. ERREUR - Créer un client sans téléphone
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Test Client",
+  "email": "test@email.com",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 27. ERREUR - Créer un client avec téléphone vide
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Test Client",
+  "phone": "",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 28. ERREUR - Créer un client sans shopId
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Test Client",
+  "phone": "+33123456789",
+  "email": "test@email.com"
+}
+
+###
+# 29. ERREUR - Créer un client avec shopId inexistant
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Test Client",
+  "phone": "+33123456789",
+  "shopId": "00000000-0000-0000-0000-000000000000"
+}
+
+###
+# 30. ERREUR - Créer un client avec email invalide
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Test Client",
+  "phone": "+33123456789",
+  "email": "email-invalide",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 31. ERREUR - Créer un client avec téléphone en doublon
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Doublon Client",
+  "phone": "+33123456789",
+  "email": "doublon@email.com",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 32. ERREUR - Récupérer un client avec ID invalide
+GET {{baseUrl}}/api/customer/invalid-id
+Content-Type: application/json
+
+###
+# 33. ERREUR - Récupérer un client inexistant
+GET {{baseUrl}}/api/customer/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+###
+# 34. ERREUR - Modifier un client sans ID
+PATCH {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Nouveau nom"
+}
+
+###
+# 35. ERREUR - Modifier un client avec ID invalide
+PATCH {{baseUrl}}/api/customer/invalid-id
+Content-Type: application/json
+
+{
+  "name": "Nouveau nom"
+}
+
+###
+# 36. ERREUR - Modifier un client inexistant
+PATCH {{baseUrl}}/api/customer/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+{
+  "name": "Nouveau nom"
+}
+
+###
+# 37. ERREUR - Modifier un client avec nom vide
+PATCH {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+###
+# 38. ERREUR - Modifier un client avec téléphone vide
+PATCH {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+{
+  "phone": ""
+}
+
+###
+# 39. ERREUR - Modifier un client avec email invalide
+PATCH {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+{
+  "email": "email-invalide"
+}
+
+###
+# 40. ERREUR - Modifier un client avec téléphone en doublon
+PATCH {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+{
+  "phone": "+33987654321"
+}
+
+###
+# 41. ERREUR - Modifier un client sans données
+PATCH {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+{}
+
+###
+# 42. ERREUR - Supprimer un client sans ID
+DELETE {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{}
+
+###
+# 43. ERREUR - Supprimer un client avec ID invalide
+DELETE {{baseUrl}}/api/customer/invalid-id
+Content-Type: application/json
+
+###
+# 44. ERREUR - Supprimer un client inexistant
+DELETE {{baseUrl}}/api/customer/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+###
+# 45. ERREUR - Supprimer un client avec commandes liées
+# (Ce test nécessite un client qui a des commandes)
+DELETE {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+###
+# 46. ERREUR - Supprimer un client avec conversations liées
+# (Ce test nécessite un client qui a des conversations)
+DELETE {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
+
+###
+# ========================================
+# TESTS DE PERFORMANCE ET LIMITES
+# ========================================
+
+###
+# 47. TEST - Créer un client avec nom très long
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Jean-Baptiste-Alexandre-Maximilien-François-Xavier-Antoine-Marie-Joseph-Philippe-Louis-Charles-Henri-Georges-Dupont-de-la-Fontaine-des-Bois",
+  "phone": "+33111111111",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 48. TEST - Créer un client avec adresse très longue
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Client Adresse Longue",
+  "phone": "+33222222222",
+  "address": "123 Rue de la Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Très Longue",
+  "city": "Paris",
+  "country": "France",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 49. TEST - Créer un client avec notes très longues
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Client Notes Longues",
+  "phone": "+33333333333",
+  "notes": "Ce client a des besoins très spécifiques et des préférences particulières. Il préfère les livraisons le matin entre 8h et 10h, n'aime pas les emballages en plastique, demande toujours des factures détaillées, a une allergie aux noix, préfère les produits bio quand c'est possible, habite au 3ème étage sans ascenseur, a un chien qui aboie beaucoup donc il faut sonner doucement, préfère être contacté par SMS plutôt que par téléphone, commande souvent pour des événements familiaux, a tendance à changer d'avis sur les commandes, paie toujours en espèces, demande souvent des remises, est très fidèle depuis 5 ans, recommande souvent notre boutique à ses amis, préfère les produits locaux, n'aime pas attendre, est très exigeant sur la qualité, retourne parfois des produits sans raison valable, mais reste un bon client dans l'ensemble. Il faut faire attention à bien emballer ses commandes car il est très méticuleux sur la présentation. Il a aussi l'habitude de commander des quantités importantes pendant les fêtes de fin d'année.",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 50. TEST - Créer un client avec caractères spéciaux
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "José María Ñoño-Pérez",
+  "phone": "+34666777888",
+  "email": "jose.maria@email.es",
+  "address": "Calle de la Constitución, 123 - 2º A",
+  "city": "Málaga",
+  "country": "España",
+  "notes": "Cliente español - Habla español y un poco de francés. Símbolos: €, ñ, ç, à, é, ü, ß",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 51. TEST - Recherche avec caractères spéciaux
+GET {{baseUrl}}/api/customer?search=José
+Content-Type: application/json
+
+###
+# 52. TEST - Recherche avec accents
+GET {{baseUrl}}/api/customer?search=Pérez
+Content-Type: application/json
+
+###
+# 53. TEST - Filtrer par ville avec accents
+GET {{baseUrl}}/api/customer?city=Málaga
+Content-Type: application/json
+
+###
+# 54. TEST - Pagination avec limite élevée
+GET {{baseUrl}}/api/customer?page=1&limit=100
+Content-Type: application/json
+
+###
+# 55. TEST - Pagination page inexistante
+GET {{baseUrl}}/api/customer?page=999&limit=10
+Content-Type: application/json
+
+###
+# ========================================
+# TESTS DE VALIDATION AVANCÉS
+# ========================================
+
+###
+# 56. ERREUR - Email avec domaine invalide
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Test Email Invalide",
+  "phone": "+33444444444",
+  "email": "test@domaine-inexistant",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 57. ERREUR - Téléphone avec format invalide
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "Test Téléphone Invalide",
+  "phone": "123abc456",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 58. ERREUR - Nom avec uniquement des chiffres
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": "123456789",
+  "phone": "+33555555555",
+  "shopId": "{{shopId}}"
+}
+
+###
+# 59. ERREUR - Champs avec valeurs null
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": null,
+  "phone": "+33666666666",
+  "email": null,
+  "shopId": "{{shopId}}"
+}
+
+###
+# 60. ERREUR - Données avec types incorrects
+POST {{baseUrl}}/api/customer
+Content-Type: application/json
+
+{
+  "name": 12345,
+  "phone": true,
+  "email": [],
+  "shopId": "{{shopId}}"
+}
+
+###
+# ========================================
+# TESTS DE PERFORMANCE ET STRESS
+# ========================================
+
+###
+# 61. TEST - Recherche avec terme très court
+GET {{baseUrl}}/api/customer?search=a
+Content-Type: application/json
+
+###
+# 62. TEST - Recherche avec terme vide
+GET {{baseUrl}}/api/customer?search=
+Content-Type: application/json
+
+###
+# 63. TEST - Filtres multiples complexes
+GET {{baseUrl}}/api/customer?shopId={{shopId}}&search=Jean&city=Paris&country=France&page=1&limit=5
+Content-Type: application/json
+
+###
+# 64. TEST - Récupération avec tous les filtres vides
+GET {{baseUrl}}/api/customer?shopId=&search=&city=&country=
+Content-Type: application/json
+
+###
+# ========================================
+# TESTS FINAUX ET NETTOYAGE
+# ========================================
+
+###
+# 65. RÉCUPÉRER TOUS LES CLIENTS POUR VÉRIFICATION FINALE
+GET {{baseUrl}}/api/customer
+Content-Type: application/json
+
+###
+# 66. COMPTER LES CLIENTS D'UNE BOUTIQUE
+GET {{baseUrl}}/api/customer?shopId={{shopId}}
+Content-Type: application/json
+
+###
+# 67. TEST - Vérifier la cohérence des données
+GET {{baseUrl}}/api/customer/{{customerId}}
+Content-Type: application/json
