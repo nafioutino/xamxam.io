@@ -5,8 +5,8 @@
 
 # Variables pour les tests
 @baseUrl = http://localhost:3000
-@customerId = {{customerId}}
-@shopId = {{shopId}}
+@customerId = 5d25d755-9ee7-4a20-b6f4-e37d9921f106
+@shopId = 0ca14154-a0f3-4fe7-89f0-0a1ba97546fc
 
 ###
 # 1. RÉCUPÉRER TOUS LES CLIENTS

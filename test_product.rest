@@ -5,9 +5,9 @@
 
 # Variables pour les tests
 @baseUrl = http://localhost:3000
-@productId = {{productId}}
-@shopId = {{shopId}}
-@categoryId = {{categoryId}}
+@productId =07a9df90-8286-4161-9071-721bbc2f8934
+@shopId = 0ca14154-a0f3-4fe7-89f0-0a1ba97546fc
+@categoryId = fca0602a-18b8-4e9d-a261-06b3fdd9f72c
 
 ###
 # 1. RÉCUPÉRER TOUS LES PRODUITS

@@ -3,10 +3,10 @@
 
 ### Variables
 @baseUrl = http://localhost:3000/api
-@shopId = 550e8400-e29b-41d4-a716-446655440000
-@customerId = 550e8400-e29b-41d4-a716-446655440001
-@orderId = 550e8400-e29b-41d4-a716-446655440002
-@conversationId = 550e8400-e29b-41d4-a716-446655440003
+@shopId = 0ca14154-a0f3-4fe7-89f0-0a1ba97546fc
+@customerId =5d25d755-9ee7-4a20-b6f4-e37d9921f106
+@orderId = e4e27a41-9d0c-4be2-85ff-bfa4e6f28a47
+@conversationId = 7fb5867a-085c-45f4-8753-4bd76755c831
 @nonExistentId = 550e8400-e29b-41d4-a716-446655440999
 
 ### 1. GET /api/conversation - Get all conversations

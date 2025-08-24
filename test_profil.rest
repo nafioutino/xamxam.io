@@ -2,8 +2,8 @@
 
 # Variables
 @baseUrl = http://localhost:3000
-@profileId = 550e8400-e29b-41d4-a716-446655440000
-@profileId2 = 550e8400-e29b-41d4-a716-446655440001
+@profileId = 47e60e20-d8cf-4bbb-a643-01c06ee88235
+@profileId2 = 23c3f8c0-d9bb-4f69-9f98-7ed6eecab906
 
 ### 1. GET - Récupérer tous les profils (table vide)
 GET {{baseUrl}}/api/profil

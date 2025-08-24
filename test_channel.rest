@@ -3,8 +3,8 @@
 
 ### Variables
 @baseUrl = http://localhost:3000/api
-@shopId = 550e8400-e29b-41d4-a716-446655440000
-@channelId = 550e8400-e29b-41d4-a716-446655440001
+@shopId = 0ca14154-a0f3-4fe7-89f0-0a1ba97546fc
+@channelId = 5b40c449-7748-4c87-b3fa-1b1a6d9250e2
 @nonExistentId = 550e8400-e29b-41d4-a716-446655440999
 
 ### 1. GET /api/channel - Get all channels
@@ -74,7 +74,7 @@ POST {{baseUrl}}/channel
 Content-Type: application/json
 
 {
-  "type": "FACEBOOK",
+  "type": "FACEBOOK_PAGE",
   "externalId": "facebook_67890",
   "accessToken": "fb_token_def456",
   "isActive": true,
@@ -88,7 +88,7 @@ POST {{baseUrl}}/channel
 Content-Type: application/json
 
 {
-  "type": "INSTAGRAM",
+  "type": "INSTAGRAM_DM",
   "externalId": "instagram_11111",
   "accessToken": "ig_token_ghi789",
   "isActive": false,
@@ -467,7 +467,7 @@ POST {{baseUrl}}/channel
 Content-Type: application/json
 
 {
-  "type": "FACEBOOK",
+  "type": "FACEBOOK_PAGE",
   "externalId": "fb_test",
   "accessToken": "very_long_access_token_that_might_cause_issues_in_database_or_validation_abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890",
   "shopId": "{{shopId}}"

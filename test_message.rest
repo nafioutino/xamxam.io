@@ -3,8 +3,8 @@
 
 ### Variables
 @baseUrl = http://localhost:3000/api
-@conversationId = 550e8400-e29b-41d4-a716-446655440000
-@messageId = 550e8400-e29b-41d4-a716-446655440001
+@conversationId = 85725bef-cb72-4ae7-82a0-396120b94fe1
+@messageId = 2d935428-956f-4f47-b16a-e271650a2fc3
 @replyMessageId = 550e8400-e29b-41d4-a716-446655440002
 @nonExistentId = 550e8400-e29b-41d4-a716-446655440999
 
