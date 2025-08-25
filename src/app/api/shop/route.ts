@@ -74,17 +74,30 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    // Vérifier si le propriétaire existe
-    const ownerExists = await prisma.profile.findUnique({
+    // Vérifier si le propriétaire existe, sinon le créer
+    let ownerExists = await prisma.profile.findUnique({
       where: { id: ownerId }
     });
 
     if (!ownerExists) {
-      return NextResponse.json({
-        success: false,
-        error: 'Propriétaire introuvable',
-        message: 'Le profil propriétaire spécifié n\'existe pas'
-      }, { status: 404 });
+      // Créer automatiquement le profil s'il n'existe pas
+      try {
+        ownerExists = await prisma.profile.create({
+          data: {
+            id: ownerId,
+            fullName: null,
+            avatarUrl: null
+          }
+        });
+        console.log('Profil créé automatiquement pour l\'utilisateur:', ownerId);
+      } catch (profileError) {
+        console.error('Erreur lors de la création du profil:', profileError);
+        return NextResponse.json({
+          success: false,
+          error: 'Erreur de création de profil',
+          message: 'Impossible de créer le profil utilisateur'
+        }, { status: 500 });
+      }
     }
 
     // Vérifier si le propriétaire a déjà une boutique (contrainte unique)

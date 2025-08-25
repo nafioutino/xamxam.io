@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useShop } from '@/hooks/useShop';
 import Link from 'next/link';
 import {
   ShoppingBagIcon,
@@ -11,6 +12,7 @@ import {
   CurrencyDollarIcon,
   UserGroupIcon,
 } from '@heroicons/react/24/outline';
+import ShopGuard from '@/components/auth/ShopGuard';
 
 interface StatsCardProps {
   title: string;
@@ -74,11 +76,10 @@ const QuickAction = ({ title, description, icon, href, color }: QuickActionProps
   </Link>
 );
 
-export default function DashboardPage() {
-  const { user, isLoading: authLoading } = useAuth();
-  console.log('user from useAuth', user);
+function DashboardContent() {
+  const { user } = useAuth();
+  const { shop } = useShop();
   const [statsLoading, setStatsLoading] = useState(true);
-  const loading = authLoading || statsLoading;
   const [stats, setStats] = useState({
     revenue: '0',
     orders: 0,
@@ -104,7 +105,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {loading ? (
+      {statsLoading ? (
         <div className="animate-pulse">
           <h1 className="text-2xl font-semibold text-gray-900 h-8 bg-gray-200 rounded w-1/4 mb-6"></h1>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -115,9 +116,18 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          <h1 className="text-3xl font-semibold text-gray-900 mb-6">
-            Bonjour, {user?.identities?.[0]?.identity_data?.display_name || user?.name || 'Commerçant'}
-          </h1>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-semibold text-gray-900">
+                Bonjour, {user?.identities?.[0]?.identity_data?.display_name || user?.name || 'Commerçant'}
+              </h1>
+              {shop && (
+                <p className="text-lg text-gray-600 mt-1">
+                  Boutique: <span className="font-medium text-blue-600">{shop.name}</span>
+                </p>
+              )}
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <StatsCard
@@ -254,5 +264,13 @@ export default function DashboardPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <ShopGuard>
+      <DashboardContent />
+    </ShopGuard>
   );
 }
