@@ -5,8 +5,8 @@
 
 # Variables pour les tests
 @baseUrl = http://localhost:3000
-@categoryId = fca0602a-18b8-4e9d-a261-06b3fdd9f72c
-@shopId = 0ca14154-a0f3-4fe7-89f0-0a1ba97546fc
+@categoryId = {{categoryId}}
+@shopId = {{shopId}}
 
 ###
 # 1. RÉCUPÉRER TOUTES LES CATÉGORIES

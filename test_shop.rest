@@ -2,8 +2,8 @@
 
 # Variables
 @baseUrl = http://localhost:3000
-@shopId =ba681a9d-ca1d-4c72-8360-2b3c6f80b42b
-@shopId2 = 6ad8a788-67d2-4a74-98ee-8f17df72b395
+@shopId = 550e8400-e29b-41d4-a716-446655440000
+@shopId2 = 550e8400-e29b-41d4-a716-446655440001
 @ownerId = 23c3f8c0-d9bb-4f69-9f98-7ed6eecab906
 @ownerId2 = 47e60e20-d8cf-4bbb-a643-01c06ee88235
 ### 1. GET - Récupérer toutes les boutiques (table vide)

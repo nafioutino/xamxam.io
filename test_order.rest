@@ -1,10 +1,10 @@
 ### Order API Tests
 ### Base URL and Variables
 @baseUrl = http://localhost:3000/api
-@shopId = 0ca14154-a0f3-4fe7-89f0-0a1ba97546fc
-@customerId = 5d25d755-9ee7-4a20-b6f4-e37d9921f106
-@productId = 5c9c7bac-62ff-4b5f-b94b-dfc5dc17120f
-@orderId = e4e27a41-9d0c-4be2-85ff-bfa4e6f28a47
+@shopId = 550e8400-e29b-41d4-a716-446655440000
+@customerId = 550e8400-e29b-41d4-a716-446655440001
+@productId = 550e8400-e29b-41d4-a716-446655440002
+@orderId = 550e8400-e29b-41d4-a716-446655440003
 @orderNumber = ORD-2024-001
 @invalidId = invalid-uuid
 @nonExistentId = 550e8400-e29b-41d4-a716-446655440999
