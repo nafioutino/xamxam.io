@@ -13,11 +13,11 @@ const updateChannelSchema = z.object({
 
 // GET /api/channel/[id] - Get a specific channel
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Validate ID format
     if (!z.string().uuid().safeParse(id).success) {
@@ -60,11 +60,11 @@ export async function GET(
 
 // PATCH /api/channel/[id] - Update a specific channel
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     // Validate ID format
@@ -152,11 +152,11 @@ export async function PATCH(
 
 // DELETE /api/channel/[id] - Delete a specific channel
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Validate ID format
     if (!z.string().uuid().safeParse(id).success) {

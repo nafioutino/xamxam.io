@@ -9,10 +9,10 @@ import { NextResponse } from 'next/server';
 // LIRE - Récupérer une catégorie spécifique par ID
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     if (!id || typeof id !== 'string') {
       return NextResponse.json({
@@ -97,10 +97,10 @@ export async function GET(
 // MODIFIER - Mettre à jour une catégorie spécifique
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
     if (!id || typeof id !== 'string') {
@@ -246,10 +246,10 @@ export async function PATCH(
 // SUPPRIMER - Supprimer une catégorie spécifique
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     if (!id || typeof id !== 'string') {
       return NextResponse.json({

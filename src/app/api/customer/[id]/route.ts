@@ -15,11 +15,11 @@ const updateCustomerSchema = z.object({
 
 // GET - Récupérer un client spécifique par ID
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     console.log('[API] Récupération du client:', id);
 
     // Validation de l'ID
@@ -142,11 +142,11 @@ export async function GET(
 
 // PATCH - Mettre à jour un client spécifique
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     console.log('[API] Mise à jour du client:', id, body);
 
@@ -297,11 +297,11 @@ export async function PATCH(
 
 // DELETE - Supprimer un client spécifique
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     console.log('[API] Suppression du client:', id);
 
     // Validation de l'ID

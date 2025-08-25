@@ -30,11 +30,11 @@ const updateOrderSchema = z.object({
 
 // GET /api/order/[id] - Get a specific order by ID
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Validate ID format
     if (!z.string().uuid().safeParse(id).success) {
@@ -116,11 +116,11 @@ export async function GET(
 
 // PATCH /api/order/[id] - Update a specific order
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     // Validate ID format
@@ -312,11 +312,11 @@ export async function PATCH(
 
 // DELETE /api/order/[id] - Delete a specific order
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Validate ID format
     if (!z.string().uuid().safeParse(id).success) {

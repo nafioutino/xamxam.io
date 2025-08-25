@@ -23,11 +23,11 @@ const paramsSchema = z.object({
 
 // GET /api/message/[id] - Get specific message
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const validatedParams = paramsSchema.parse(params);
+    const validatedParams = paramsSchema.parse(await params);
     
     const message = await prisma.message.findUnique({
       where: {
@@ -99,11 +99,11 @@ export async function GET(
 
 // PATCH /api/message/[id] - Update specific message
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const validatedParams = paramsSchema.parse(params);
+    const validatedParams = paramsSchema.parse(await params);
     const body = await request.json();
     const validatedData = messageUpdateSchema.parse(body);
     
@@ -255,11 +255,11 @@ export async function PATCH(
 
 // DELETE /api/message/[id] - Delete specific message
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const validatedParams = paramsSchema.parse(params);
+    const validatedParams = paramsSchema.parse(await params);
     
     // Check if message exists and has replies
     const existingMessage = await prisma.message.findUnique({

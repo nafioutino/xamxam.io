@@ -54,7 +54,7 @@ export default function SessionProvider({ children }: { children: React.ReactNod
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase.auth]);
 
   return (
     <SupabaseContext.Provider value={{ user, session, isLoading }}>

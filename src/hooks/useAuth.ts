@@ -60,7 +60,7 @@ export function useAuth() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [router]);
+  }, [router, supabase.auth]);
 
   const login = async (
     credentials: { email?: string; password?: string; phone?: string; otp?: string }

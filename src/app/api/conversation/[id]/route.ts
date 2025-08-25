@@ -20,11 +20,11 @@ const updateConversationSchema = z.object({
 
 // GET /api/conversation/[id] - Get a specific conversation
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Validate ID format
     if (!z.string().uuid().safeParse(id).success) {
@@ -107,11 +107,11 @@ export async function GET(
 
 // PATCH /api/conversation/[id] - Update a specific conversation
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     // Validate ID format
@@ -307,11 +307,11 @@ export async function PATCH(
 
 // DELETE /api/conversation/[id] - Delete a specific conversation
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Validate ID format
     if (!z.string().uuid().safeParse(id).success) {

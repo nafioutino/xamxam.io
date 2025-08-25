@@ -9,10 +9,10 @@ import { NextResponse } from 'next/server';
 // LIRE - Récupérer une boutique par son ID
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     if (!id || typeof id !== 'string') {
       return NextResponse.json({
@@ -98,10 +98,10 @@ export async function GET(
 // MODIFIER - Mettre à jour une boutique spécifique
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
     if (!id || typeof id !== 'string') {
@@ -220,10 +220,10 @@ export async function PATCH(
 // SUPPRIMER - Supprimer une boutique spécifique
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     if (!id || typeof id !== 'string') {
       return NextResponse.json({

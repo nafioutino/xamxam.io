@@ -1,12 +1,25 @@
 import { createClient } from '@/utils/supabase/client';
 
+export interface OpeningHours {
+  [day: string]: {
+    open?: string;
+    close?: string;
+    closed?: boolean;
+  };
+}
+
+export interface FAQ {
+  question: string;
+  answer: string;
+}
+
 export interface Shop {
   id: string;
   name: string;
   description?: string;
   address?: string;
-  openingHours?: any;
-  faq?: any;
+  openingHours?: OpeningHours;
+  faq?: FAQ[];
   createdAt: string;
   updatedAt: string;
   ownerId: string;
@@ -16,11 +29,16 @@ export interface CreateShopData {
   name: string;
   description?: string;
   address?: string;
-  openingHours?: any;
-  faq?: any;
+  openingHours?: OpeningHours;
+  faq?: FAQ[];
 }
 
-export interface UpdateShopData extends Partial<CreateShopData> {}
+export type UpdateShopData = Partial<CreateShopData>;
+
+export interface ShopResponse {
+  shop: Shop;
+  message?: string;
+}
 
 class ShopService {
   private supabase = createClient();

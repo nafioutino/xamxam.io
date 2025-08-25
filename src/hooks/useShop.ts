@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { shopService, Shop } from '@/services/shopService';
 
@@ -18,7 +18,7 @@ export function useShop(): UseShopReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchShop = async () => {
+  const fetchShop = useCallback(async () => {
     if (!user || authLoading) return;
     
     try {
@@ -33,7 +33,7 @@ export function useShop(): UseShopReturn {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, authLoading]);
 
   useEffect(() => {
     if (user && !authLoading) {
@@ -42,7 +42,7 @@ export function useShop(): UseShopReturn {
       setShop(null);
       setIsLoading(false);
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, fetchShop]);
 
   const refetch = async () => {
     await fetchShop();
