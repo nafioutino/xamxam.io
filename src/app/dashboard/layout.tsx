@@ -14,6 +14,7 @@ import {
   DocumentTextIcon,
   ChartBarIcon,
   Cog6ToothIcon,
+  RadioIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -27,6 +28,7 @@ interface NavItem {
 const navigation: NavItem[] = [
   { name: 'Tableau de bord', href: '/dashboard', icon: HomeIcon },
   { name: 'Catalogue', href: '/dashboard/catalogue', icon: ShoppingBagIcon },
+  { name: 'Canaux', href: '/dashboard/channels', icon: RadioIcon },
   { name: 'Boîte de réception', href: '/dashboard/inbox', icon: ChatBubbleLeftRightIcon },
   { name: 'Agent IA', href: '/dashboard/ai-agent', icon: SparklesIcon },
   { name: 'Création de contenu', href: '/dashboard/content', icon: DocumentTextIcon },
