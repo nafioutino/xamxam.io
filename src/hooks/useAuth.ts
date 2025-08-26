@@ -38,12 +38,16 @@ export function useAuth() {
         setIsLoading(false);
         
         // Gestion automatique de la redirection après connexion
+        // Seulement si on n'est pas déjà sur une page dashboard
         if (event === 'SIGNED_IN' && session) {
-          // Attendre que l'état soit mis à jour avant de rediriger
-          setTimeout(() => {
-            router.push('/dashboard');
-            router.refresh();
-          }, 100);
+          const currentPath = window.location.pathname;
+          if (!currentPath.startsWith('/dashboard')) {
+            // Attendre que l'état soit mis à jour avant de rediriger
+            setTimeout(() => {
+              router.push('/dashboard');
+              router.refresh();
+            }, 100);
+          }
         }
         
         // Gestion automatique de la redirection après déconnexion

@@ -16,8 +16,8 @@ export interface FAQ {
 export interface Shop {
   id: string;
   name: string;
-  description?: string;
-  address?: string;
+  description?: string | null;
+  address?: string | null;
   openingHours?: OpeningHours;
   faq?: FAQ[];
   createdAt: string;
