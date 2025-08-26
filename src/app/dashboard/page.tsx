@@ -119,7 +119,7 @@ function DashboardContent() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-semibold text-gray-900">
-                Bonjour, {user?.identities?.[0]?.identity_data?.display_name || user?.name || 'Commerçant'}
+                Bonjour, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Commerçant'}
               </h1>
               {shop && (
                 <p className="text-lg text-gray-600 mt-1">

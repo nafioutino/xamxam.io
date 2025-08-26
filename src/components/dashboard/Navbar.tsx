@@ -61,20 +61,12 @@ export default function DashboardNavbar() {
                   onClick={toggleProfile}
                   className="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition duration-150 ease-in-out items-center"
                 >
-                  {user?.image ? (
-                    <Image
-                      className="h-8 w-8 rounded-full object-cover border-2 border-blue-200"
-                      src={user.image}
-                      alt={user.name || 'Profile'}
-                      width={32}
-                      height={32}
-                    />
-                  ) : (
-                    <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
-                      {user?.display_name?.charAt(0) || user?.name?.charAt(0) || 'U'}
-                    </div>
-                  )}
-                  <span className="ml-2 text-gray-700">{user?.display_name || user?.name || 'Utilisateur'}</span>
+                  <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                    {(user?.user_metadata?.full_name || user?.email)?.charAt(0)?.toUpperCase() || 'U'}
+                  </div>
+                  <span className="ml-2 text-gray-700">
+                    {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
+                  </span>
                   <ChevronDown className="ml-1 h-4 w-4 text-gray-600" />
                 </button>
               </div>
@@ -158,23 +150,13 @@ export default function DashboardNavbar() {
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
             <div className="flex items-center px-4">
-              {user?.image ? (
-                <div className="flex-shrink-0">
-                  <Image
-                    className="h-10 w-10 rounded-full object-cover border-2 border-blue-200"
-                    src={user.image}
-                    alt={user.display_name || user.name || 'Profile'}
-                    width={40}
-                    height={40}
-                  />
-                </div>
-              ) : (
-                <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
-                  {user?.display_name?.charAt(0) || user?.name?.charAt(0) || 'U'}
-                </div>
-              )}
+              <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-bold">
+                {(user?.user_metadata?.full_name || user?.email)?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
               <div className="ml-3">
-                <div className="text-base font-medium text-gray-800">{user?.display_name || user?.name || 'Utilisateur'}</div>
+                <div className="text-base font-medium text-gray-800">
+                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
+                </div>
                 <div className="text-sm font-medium text-gray-500">{user?.email || ''}</div>
               </div>
             </div>

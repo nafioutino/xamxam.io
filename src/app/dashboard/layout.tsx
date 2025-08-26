@@ -94,26 +94,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <h1 className="text-3xl font-bold text-blue-600">ZOBA</h1>
             </div>
             <div className="px-4 py-3 border-t border-b border-gray-200 mt-2">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  {user?.image ? (
-                    <img
-                      className="h-12 w-12 rounded-full object-cover border-2 border-blue-200"
-                      src={user.image}
-                      alt={user.display_name || user.name || 'Profile'}
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
-                      {user?.display_name?.charAt(0) || user?.name?.charAt(0) || 'U'}
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    {profileImage ? (
+                      <img
+                        className="h-12 w-12 rounded-full object-cover border-2 border-blue-200"
+                        src={profileImage}
+                        alt={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Profile'}
+                      />
+                    ) : (
+                      <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-bold">
+                        {(user?.user_metadata?.full_name || user?.email)?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="ml-3">
+                    <div className="text-lg font-medium text-gray-800">
+                      {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
                     </div>
-                  )}
-                </div>
-                <div className="ml-3">
-                  <div className="text-lg font-medium text-gray-800">{user?.display_name || user?.name || 'Utilisateur'}</div>
-                  <div className="text-base font-medium text-gray-500">{user?.email || ''}</div>
+                    <div className="text-base font-medium text-gray-500">{user?.email || ''}</div>
+                  </div>
                 </div>
               </div>
-            </div>
             <nav className="mt-5 px-2 space-y-1">
               {navigation.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -194,16 +196,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <img
                         className="h-12 w-12 rounded-full object-cover border-2 border-blue-200"
                         src={profileImage}
-                        alt={user?.name || 'Profile'}
+                        alt={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Profile'}
                       />
                     ) : (
                       <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-bold border-2 border-blue-200">
-                        {user?.name?.charAt(0) || 'U'}
+                        {(user?.user_metadata?.full_name || user?.email)?.charAt(0)?.toUpperCase() || 'U'}
                       </div>
                     )}
                   </div>
                   <div className="ml-3">
-                    <div className="text-base font-medium text-gray-800">{user?.name || 'Utilisateur'}</div>
+                    <div className="text-base font-medium text-gray-800">
+                      {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
+                    </div>
                     <div className="text-sm font-medium text-gray-500">{user?.email || ''}</div>
                   </div>
                 </div>
@@ -243,13 +247,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <div>
                     <img
                       className="inline-block h-12 w-12 rounded-full object-cover border-2 border-blue-200"
-                      src={profileImage || `https://ui-avatars.com/api/?name=${user?.display_name || user?.name || 'User'}&background=random`}
-                      alt=""
+                      src={profileImage || `https://ui-avatars.com/api/?name=${user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}&background=random`}
+                      alt={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Profile'}
                     />
                   </div>
                   <div className="ml-3">
                     <p className="text-base font-medium text-gray-700 group-hover:text-gray-900">
-                      {user?.display_name || user?.name || 'Utilisateur'}
+                      {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
                     </p>
                     <button
                       onClick={handleLogout}
