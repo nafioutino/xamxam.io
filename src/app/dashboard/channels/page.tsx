@@ -147,26 +147,8 @@ export default function ChannelsPage() {
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
 
   const handleConnectChannel = (channelId: string) => {
-    // Pour l'instant, on simule juste un changement de statut
-    setChannels(prev => prev.map(channel => 
-      channel.id === channelId 
-        ? { ...channel, status: 'pending' as const }
-        : channel
-    ));
-    
-    // Simulation d'une connexion après 2 secondes
-    setTimeout(() => {
-      setChannels(prev => prev.map(channel => 
-        channel.id === channelId 
-          ? { 
-              ...channel, 
-              status: 'connected' as const,
-              lastActivity: 'Il y a quelques instants',
-              messageCount: Math.floor(Math.random() * 50)
-            }
-          : channel
-      ));
-    }, 2000);
+    // Redirection vers la page de connexion spécifique pour chaque canal
+    window.location.href = `/dashboard/channels/connect/${channelId}`;
   };
 
   const handleDisconnectChannel = (channelId: string) => {
