@@ -7,24 +7,24 @@ export const metadata: Metadata = {
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Header avec navigation */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                ZOBA
-              </h1>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                 ZOBA
+               </h1>
             </div>
             <nav className="flex space-x-6">
-              <a href="/" className="text-gray-600 hover:text-purple-600 transition-colors">
+              <a href="/" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Accueil
               </a>
-              <a href="/privacy-policy" className="text-gray-600 hover:text-purple-600 transition-colors">
+              <a href="/privacy-policy" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Confidentialité
               </a>
-              <a href="/contact" className="text-gray-600 hover:text-purple-600 transition-colors">
+              <a href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Contact
               </a>
             </nav>
@@ -33,9 +33,9 @@ export default function TermsOfServicePage() {
       </div>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-700 py-16">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-purple-500/20 rounded-full text-purple-100 text-sm font-medium mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-blue-500/20 rounded-full text-blue-100 text-sm font-medium mb-6">
             <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
@@ -44,7 +44,7 @@ export default function TermsOfServicePage() {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Conditions d'utilisation
           </h1>
-          <p className="text-xl text-purple-100 max-w-3xl mx-auto">
+          <p className="text-xl text-blue-100 max-w-2xl mx-auto">
             Les règles et conditions qui régissent l'utilisation de notre plateforme ZOBA.
           </p>
         </div>
@@ -55,41 +55,41 @@ export default function TermsOfServicePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
             {/* Barre de progression */}
-            <div className="h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+            <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
             
             <div className="p-8 md:p-12">
           
               {/* Table des matières */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 mb-12">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-12">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   Table des matières
                 </h2>
                 <div className="grid md:grid-cols-2 gap-3">
-                  <a href="#acceptation" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
-                    <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                  <a href="#acceptation" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Acceptation des conditions
                   </a>
-                  <a href="#description" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
-                    <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                  <a href="#utilisation" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Description du service
                   </a>
-                  <a href="#compte" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
-                    <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                  <a href="#services" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Compte utilisateur
                   </a>
-                  <a href="#utilisation" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
-                    <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                  <a href="#introduction" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Utilisation acceptable
                   </a>
-                  <a href="#propriete" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
-                    <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                  <a href="#compte" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Propriété intellectuelle
                   </a>
-                  <a href="#responsabilite" className="flex items-center text-purple-600 hover:text-purple-800 transition-colors">
-                    <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                  <a href="#responsabilite" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Limitation de responsabilité
                   </a>
                 </div>
@@ -102,14 +102,14 @@ export default function TermsOfServicePage() {
 
                 <section id="acceptation" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
-                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
                       <span className="text-white font-bold">1</span>
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
                       Acceptation des conditions
                     </h2>
                   </div>
-                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6">
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
                     <p className="text-gray-700 leading-relaxed text-lg">
                       En accédant et en utilisant Zoba ("le Service"), vous acceptez d'être lié par 
                       ces conditions d'utilisation ("les Conditions"). Si vous n'acceptez pas ces 
@@ -120,7 +120,7 @@ export default function TermsOfServicePage() {
 
                 <section id="description" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
-                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
                       <span className="text-white font-bold">2</span>
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
@@ -319,7 +319,7 @@ export default function TermsOfServicePage() {
 
                 <section id="contact" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
-                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
                       <span className="text-white font-bold">13</span>
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
@@ -327,7 +327,7 @@ export default function TermsOfServicePage() {
                     </h2>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-8">
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8">
                     <p className="text-gray-700 text-lg mb-6">
                       Pour toute question concernant ces conditions d'utilisation, 
                       vous pouvez nous contacter à :
@@ -336,7 +336,7 @@ export default function TermsOfServicePage() {
                     <div className="grid md:grid-cols-3 gap-6">
                       <div className="bg-white rounded-lg p-6 shadow-sm">
                         <div className="flex items-center mb-3">
-                          <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
+                          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
                             <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                               <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
@@ -349,7 +349,7 @@ export default function TermsOfServicePage() {
                       
                       <div className="bg-white rounded-lg p-6 shadow-sm">
                         <div className="flex items-center mb-3">
-                          <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center mr-3">
+                          <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center mr-3">
                             <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                             </svg>
@@ -383,7 +383,7 @@ export default function TermsOfServicePage() {
         <footer className="bg-gray-900 text-white py-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent mb-4">
                 ZOBA
               </h3>
               <p className="text-gray-400 mb-6">
