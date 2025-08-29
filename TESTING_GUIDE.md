@@ -150,13 +150,146 @@ DELETE FROM "Channel" WHERE "shopId" = 'default-shop-id';
 TRUNCATE TABLE "Channel" CASCADE;
 ```
 
+## 🔗 Test des Webhooks Meta
+
+### Configuration des Webhooks
+
+1. **Variables d'environnement requises** :
+   Assurez-vous que votre fichier `.env` contient :
+   ```env
+   FACEBOOK_WEBHOOK_VERIFY_TOKEN="ZobA_W3bH0oK_S3cr3T_Str1n9_2025"
+   FACEBOOK_APP_SECRET="votre_app_secret"
+   NEXT_PUBLIC_FACEBOOK_APP_ID="votre_app_id"
+   ```
+
+2. **URL du Webhook** :
+   ```
+   https://votre-domaine.com/api/webhooks/meta
+   ```
+
+3. **Token de Vérification** :
+   - Utiliser la valeur de `FACEBOOK_WEBHOOK_VERIFY_TOKEN`
+   - Doit correspondre à celle configurée dans l'App Facebook
+
+3. **Événements à Souscrire** :
+   - `messages` : Messages entrants
+   - `messaging_postbacks` : Clics sur boutons
+   - `message_deliveries` : Confirmations de livraison
+   - `message_reads` : Confirmations de lecture
+
+### Test de Vérification du Webhook
+
+```bash
+# Test GET pour vérification
+curl "https://votre-domaine.com/api/webhooks/meta?hub.mode=subscribe&hub.verify_token=VOTRE_TOKEN&hub.challenge=test123"
+
+# Réponse attendue : "test123"
+```
+
+### Test de Réception de Messages
+
+1. **Envoyer un message** à votre page Facebook depuis un compte test
+2. **Vérifier les logs** de l'application :
+   ```bash
+   # Logs attendus
+   Message traité: m_xxx de 1234567890
+   ```
+
+3. **Vérifier en base de données** :
+   ```sql
+   -- Nouveau client créé
+   SELECT * FROM "Customer" WHERE phone = 'FACEBOOK_USER_ID';
+   
+   -- Nouvelle conversation
+   SELECT * FROM "Conversation" WHERE "externalId" = 'FACEBOOK_USER_ID';
+   
+   -- Nouveau message
+   SELECT * FROM "Message" WHERE "externalId" = 'FACEBOOK_MESSAGE_ID';
+   ```
+
+### Types de Messages Supportés
+
+| Type | Description | Traitement |
+|------|-------------|------------|
+| **Texte** | Message texte simple | Stocké dans `content` |
+| **Image** | Photo envoyée | URL dans `mediaUrl`, type `IMAGE` |
+| **Audio** | Message vocal | URL dans `mediaUrl`, type `AUDIO` |
+| **Vidéo** | Vidéo envoyée | URL dans `mediaUrl`, type `VIDEO` |
+| **Document** | Fichier joint | URL dans `mediaUrl`, type `DOCUMENT` |
+| **Postback** | Clic sur bouton | Traité comme message système |
+
+### Structure des Données Webhook
+
+```json
+{
+  "object": "page",
+  "entry": [
+    {
+      "id": "PAGE_ID",
+      "time": 1234567890,
+      "messaging": [
+        {
+          "sender": { "id": "USER_ID" },
+          "recipient": { "id": "PAGE_ID" },
+          "timestamp": 1234567890,
+          "message": {
+            "mid": "MESSAGE_ID",
+            "text": "Hello World"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Débogage des Webhooks
+
+1. **Vérifier la signature** :
+   ```bash
+   # Header attendu
+   X-Hub-Signature-256: sha256=xxx
+   ```
+
+2. **Logs d'erreur courants** :
+   - `Signature webhook invalide` : Vérifier `FACEBOOK_APP_SECRET`
+   - `Canal non trouvé` : Page non connectée dans l'application
+   - `FACEBOOK_APP_SECRET non configuré` : Variable d'environnement manquante
+
+3. **Test avec ngrok** (développement local) :
+   ```bash
+   # Installer ngrok
+   npm install -g ngrok
+   
+   # Exposer le port local
+   ngrok http 3000
+   
+   # Utiliser l'URL ngrok dans Facebook
+   https://xxx.ngrok.io/api/webhooks/meta
+   ```
+
+### Monitoring en Production
+
+1. **Métriques à surveiller** :
+   - Nombre de webhooks reçus
+   - Temps de traitement
+   - Erreurs de signature
+   - Messages non traités
+
+2. **Logs recommandés** :
+   ```javascript
+   console.log(`Webhook reçu: ${payload.entry.length} entrées`);
+   console.log(`Message traité: ${message.mid} de ${sender.id}`);
+   console.error(`Erreur traitement: ${error.message}`);
+   ```
+
 ## Prochaines étapes
 
 1. **Implémentation de la session utilisateur** : Remplacer `'default-shop-id'` par le vrai `shopId`
-2. **Gestion des webhooks entrants** : Créer `/api/webhooks/meta`
-3. **Interface de gestion des canaux** : Permettre la déconnexion/reconnexion
-4. **Tests d'intégration** : Envoyer/recevoir des messages via les APIs Meta
-5. **Monitoring** : Logs et métriques pour la production
+2. **Interface de gestion des canaux** : Permettre la déconnexion/reconnexion
+3. **Tests d'intégration** : Envoyer/recevoir des messages via les APIs Meta
+4. **Monitoring** : Logs et métriques pour la production
+5. **Optimisations** : Cache, rate limiting, retry logic
 
 ## Support
 
