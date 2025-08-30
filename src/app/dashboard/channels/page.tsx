@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Zap, Settings, CheckCircle, XCircle, AlertCircle, MessageCircle } from 'lucide-react';
 import { 
   WhatsAppIcon, 
@@ -68,7 +68,7 @@ const availableChannels: Channel[] = [
   {
     id: 'instagram',
     name: 'Instagram',
-    type: 'messenger',
+    type: 'instagram',
     status: 'disconnected',
     description: 'Connectez Instagram pour gérer les messages directs',
     icon: InstagramIcon,
@@ -145,25 +145,139 @@ const getStatusColor = (status: Channel['status']) => {
 export default function ChannelsPage() {
   const [channels, setChannels] = useState<Channel[]>(availableChannels);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  // Vérifier les paramètres URL pour les messages de succès
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'page_connected') {
+      setShowSuccessMessage(true);
+      // Nettoyer l'URL
+      window.history.replaceState({}, '', '/dashboard/channels');
+      // Masquer le message après 5 secondes
+      setTimeout(() => setShowSuccessMessage(false), 5000);
+    }
+  }, []);
+
+  // Récupérer l'état des canaux depuis l'API
+  useEffect(() => {
+    const fetchChannelStatus = async () => {
+      try {
+        const response = await fetch('/api/channels/status');
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Mettre à jour l'état des canaux avec les données de la base
+           setChannels(prev => prev.map(channel => {
+             const connectedChannel = data.connectedChannels[channel.type];
+             if (connectedChannel) {
+               return {
+                 ...channel,
+                 status: 'connected' as const,
+                 lastActivity: new Date(connectedChannel.connectedAt).toLocaleDateString('fr-FR'),
+                 messageCount: Math.floor(Math.random() * 50) // Simulation pour l'instant
+               };
+             }
+             return channel;
+           }));
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du statut des canaux:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChannelStatus();
+  }, []);
 
   const handleConnectChannel = (channelId: string) => {
     // Redirection vers la page de connexion spécifique pour chaque canal
     window.location.href = `/dashboard/channels/connect/${channelId}`;
   };
 
-  const handleDisconnectChannel = (channelId: string) => {
-    setChannels(prev => prev.map(channel => 
-      channel.id === channelId 
-        ? { ...channel, status: 'disconnected' as const, lastActivity: undefined, messageCount: undefined }
-        : channel
-    ));
+  const handleDisconnectChannel = async (channelId: string) => {
+    try {
+      // Trouver le canal à déconnecter
+      const channelToDisconnect = channels.find(c => c.id === channelId);
+      if (!channelToDisconnect) return;
+
+      // Mettre à jour l'état local immédiatement
+      setChannels(prev => prev.map(channel => 
+        channel.id === channelId 
+          ? { ...channel, status: 'disconnected' as const, lastActivity: undefined, messageCount: undefined }
+          : channel
+      ));
+
+      // Appeler l'API pour déconnecter le canal (à implémenter si nécessaire)
+      // const response = await fetch(`/api/channels/${channelId}/disconnect`, {
+      //   method: 'POST'
+      // });
+      
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion du canal:', error);
+      // Restaurer l'état en cas d'erreur
+      setChannels(prev => prev.map(channel => 
+        channel.id === channelId 
+          ? { ...channel, status: 'connected' as const }
+          : channel
+      ));
+    }
   };
 
   const connectedChannels = channels.filter(channel => channel.status === 'connected');
   const disconnectedChannels = channels.filter(channel => channel.status !== 'connected');
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white shadow-sm rounded-lg p-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <div className="animate-pulse">
+                <div className="h-12 w-12 bg-gray-200 rounded-lg mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Message de succès */}
+      {showSuccessMessage && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+            <div>
+              <h3 className="text-sm font-medium text-green-800">
+                Canal connecté avec succès !
+              </h3>
+              <p className="text-sm text-green-700 mt-1">
+                Votre canal de communication est maintenant actif et prêt à recevoir des messages.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSuccessMessage(false)}
+              className="ml-auto text-green-600 hover:text-green-800"
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* En-tête */}
       <div className="bg-white shadow-sm rounded-lg p-6">
         <div className="flex items-center justify-between">

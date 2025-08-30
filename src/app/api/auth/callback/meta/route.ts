@@ -100,6 +100,7 @@ export async function GET(request: NextRequest) {
     }
 
     const shortLivedToken = tokenData.access_token;
+    console.log("Voici le shortLivedToken:", shortLivedToken);
 
     // Étape 2: Échanger le token courte durée contre un token longue durée
     const longLivedTokenUrl = new URL('https://graph.facebook.com/v23.0/oauth/access_token');
@@ -119,6 +120,10 @@ export async function GET(request: NextRequest) {
     }
 
     const longLivedToken = longLivedData.access_token;
+    const longLivedTokenExpiresIn = longLivedData.expires_in;
+
+    console.log("Voici le longLivedToken:", longLivedToken);
+    console.log("Voici le longLivedTokenExpiresIn:", longLivedTokenExpiresIn);
 
     // Étape 3: Récupérer les pages Facebook de l'utilisateur
     const pagesUrl = new URL('https://graph.facebook.com/v23.0/me/accounts');
@@ -151,7 +156,8 @@ export async function GET(request: NextRequest) {
     // Stocker temporairement les données dans des cookies sécurisés
     // (En production, utilisez une session ou une base de données temporaire)
     const response = NextResponse.redirect(
-      new URL('/dashboard/channels/select-page', request.url)
+      // new URL('/dashboard/channels/select-page', request.url)
+      `${baseUrl}/dashboard/channels/select-page`
     );
 
     // Stocker les données de manière sécurisée (chiffrement recommandé en production)
