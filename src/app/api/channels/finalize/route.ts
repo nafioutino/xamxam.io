@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import prisma from '@/lib/prisma';
 import { encryptToken } from '@/lib/encryption';
 import { ChannelType } from '@/generated/prisma';
+import { createClient } from '@/utils/supabase/server';
 
 // Types
 interface FacebookPage {
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Étape 1: Obtenir un Page Access Token longue durée
-    const pageTokenUrl = new URL(`https://graph.facebook.com/v18.0/${pageId}`);
+    const pageTokenUrl = new URL(`https://graph.facebook.com/v23.0/${pageId}`);
     pageTokenUrl.searchParams.append('fields', 'access_token');
     pageTokenUrl.searchParams.append('access_token', userToken);
     
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
     const pageAccessToken = pageTokenData.access_token;
     
     // Étape 2: Souscrire aux webhooks
-    const webhookUrl = new URL(`https://graph.facebook.com/v18.0/${pageId}/subscribed_apps`);
+    const webhookUrl = new URL(`https://graph.facebook.com/v23.0/${pageId}/subscribed_apps`);
     const webhookBody = new URLSearchParams();
     webhookBody.append('access_token', pageAccessToken);
     
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
     let subscribedFields: string[];
     switch (platform) {
       case 'messenger':
-        subscribedFields = ['messages', 'messaging_postbacks', 'messaging_deliveries', 'messaging_reads'];
+        subscribedFields = ['messages', 'messaging_postbacks', 'message_deliveries', 'message_reads'];
         break;
       case 'instagram':
         subscribedFields = ['messages', 'messaging_postbacks'];
@@ -147,8 +148,35 @@ export async function POST(request: NextRequest) {
     
     // Étape 3: Récupérer le shopId depuis la session utilisateur
     // TODO: Implémenter la récupération du shopId depuis la session
-    // Pour l'instant, on utilise une valeur par défaut
-    const shopId = 'default-shop-id'; // À remplacer par la vraie logique de session
+    // Récupérer l'utilisateur connecté et sa boutique
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      console.error('Erreur d\'authentification:', authError);
+      return NextResponse.json({
+        success: false,
+        error: 'Non authentifié',
+        message: 'Vous devez être connecté pour finaliser la connexion du canal'
+      }, { status: 401 });
+    }
+
+    // Récupérer la boutique de l'utilisateur
+    const userShop = await prisma.shop.findUnique({
+      where: { ownerId: user.id }
+    });
+
+    if (!userShop) {
+      console.error('Aucune boutique trouvée pour l\'utilisateur:', user.id);
+      return NextResponse.json({
+        success: false,
+        error: 'Boutique non trouvée',
+        message: 'Aucune boutique associée à votre compte. Veuillez créer une boutique d\'abord.'
+      }, { status: 404 });
+    }
+
+    const shopId = userShop.id;
+    console.log('Boutique trouvée:', { shopId, shopName: userShop.name, userId: user.id });
     
     // Étape 4: Chiffrer et stocker les données de manière sécurisée
     const encryptedToken = encryptToken(pageAccessToken);

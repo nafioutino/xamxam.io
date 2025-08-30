@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { setCookie } from 'cookies-next';
 
 export default function ConnectWhatsAppPage() {
   const router = useRouter();
@@ -17,13 +18,19 @@ export default function ConnectWhatsAppPage() {
     setCsrfToken(token);
     
     // Stocker le token dans un cookie pour vérification ultérieure
-    document.cookie = `csrf_token=${token}; secure; samesite=strict; path=/`;
+    setCookie('csrf_token', token, {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax', // Changé de 'strict' à 'lax' pour permettre les redirections cross-site
+      path: '/',
+      maxAge: 60 * 15, // 15 minutes
+      httpOnly: true // Cookie accessible uniquement côté serveur pour sécurité
+    });
   }, []);
 
   // Configuration Meta pour WhatsApp Business
   const whatsappConfig = {
     clientId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || 'YOUR_FACEBOOK_APP_ID',
-    redirectUri: 'https://zoba.com/api/auth/callback/meta',
+    redirectUri: 'https://b6be6f0873ee.ngrok-free.app/api/auth/callback/meta',
     scopes: [
       'whatsapp_business_management',
       'whatsapp_business_messaging',
@@ -38,7 +45,7 @@ export default function ConnectWhatsAppPage() {
     
     // Construire l'URL d'authentification Meta pour WhatsApp Business
     const metaAuthUrl = 
-      `https://www.facebook.com/v18.0/dialog/oauth?` +
+      `https://www.facebook.com/v23.0/dialog/oauth?` +
       `client_id=${whatsappConfig.clientId}&` +
       `redirect_uri=${encodeURIComponent(whatsappConfig.redirectUri)}&` +
       `scope=${encodeURIComponent(whatsappConfig.scopes.join(','))}&` +

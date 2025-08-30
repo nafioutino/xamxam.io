@@ -28,8 +28,7 @@ export function encryptToken(token: string): string {
     const key = getEncryptionKey();
     const iv = crypto.randomBytes(IV_LENGTH);
     
-    const cipher = crypto.createCipher('aes-256-cbc', key);
-    cipher.setAutoPadding(true);
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
     
     let encrypted = cipher.update(token, 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -59,8 +58,7 @@ export function decryptToken(encryptedToken: string): string {
     const iv = Buffer.from(parts[0], 'hex');
     const encrypted = parts[1];
     
-    const decipher = crypto.createDecipher('aes-256-cbc', key);
-    decipher.setAutoPadding(true);
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
     
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
