@@ -16,20 +16,27 @@ const sessions = new Map<string, any>(); // Map pour stocker les instances de so
 
 async function connectToWhatsApp(shopId: string) {
   if (sessions.has(shopId)) {
+    console.log(`[${shopId}] Session already exists, returning existing connection`);
     return sessions.get(shopId);
   }
 
-  const { state, saveCreds } = await useMultiFileAuthState(`sessions/${shopId}`);
+  try {
+    console.log(`[${shopId}] Creating new WhatsApp connection...`);
+    const { state, saveCreds } = await useMultiFileAuthState(`sessions/${shopId}`);
 
-  const sock = makeWASocket({
-    auth: state,
-    printQRInTerminal: false, // On ne veut pas le QR dans le terminal
-    logger: pino({ level: 'silent' })
-  });
+    const sock = makeWASocket({
+      auth: state,
+      printQRInTerminal: false,
+      logger: pino({ level: 'silent' }),
+      connectTimeoutMs: 60000, // 60 secondes timeout
+      defaultQueryTimeoutMs: 60000,
+      keepAliveIntervalMs: 30000
+    });
 
-  sessions.set(shopId, sock);
+    sessions.set(shopId, sock);
+    console.log(`[${shopId}] WhatsApp socket created and stored in sessions`);
 
-  sock.ev.on('creds.update', saveCreds);
+    sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('connection.update', async (update) => {
     const { connection, lastDisconnect, qr } = update;
@@ -41,17 +48,30 @@ async function connectToWhatsApp(shopId: string) {
     }
 
     if (connection === 'close') {
-      const shouldReconnect = (lastDisconnect?.error as any)?.output?.statusCode !== DisconnectReason.loggedOut;
+      const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
+      const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+      
       console.log(`[${shopId}] Connection closed due to`, lastDisconnect?.error, ', reconnecting', shouldReconnect);
+      
       if (shouldReconnect) {
-        connectToWhatsApp(shopId);
+        // Supprimer la session actuelle avant de reconnecter
+        sessions.delete(shopId);
+        
+        // Attendre 3 secondes avant de reconnecter pour éviter les boucles rapides
+        setTimeout(() => {
+          console.log(`[${shopId}] Attempting to reconnect...`);
+          connectToWhatsApp(shopId);
+        }, 3000);
       } else {
         sessions.delete(shopId);
-        // Supprimer la session du dossier /sessions
+        io.to(shopId).emit('session_ended', { reason: 'Logged out' });
+        console.log(`[${shopId}] Session ended - logged out`);
       }
     } else if (connection === 'open') {
       io.to(shopId).emit('connected', { status: 'Connected', jid: sock.user?.id });
-      console.log(`[${shopId}] Connection opened`);
+      console.log(`[${shopId}] Connection opened successfully`);
+    } else if (connection === 'connecting') {
+      console.log(`[${shopId}] Connecting to WhatsApp...`);
     }
   });
 
@@ -68,7 +88,13 @@ async function connectToWhatsApp(shopId: string) {
     // await prisma.message.create(...)
   });
 
-  return sock;
+    return sock;
+  } catch (error) {
+    console.error(`[${shopId}] Error creating WhatsApp connection:`, error);
+    sessions.delete(shopId);
+    io.to(shopId).emit('error', { message: 'Failed to create WhatsApp connection' });
+    return null;
+  }
 }
 
 // Socket.IO pour la communication temps réel avec le frontend
@@ -99,5 +125,5 @@ app.post('/send-message', async (req, res) => {
 });
 
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => console.log(`WhatsApp Engine listening on port ${PORT}`));
