@@ -1,0 +1,24 @@
+// zoba-whatsapp-engine/tsconfig.json
+
+{
+  "compilerOptions": {
+    /* --- Modifications Clés --- */
+    "module": "NodeNext",          // Dit à TS de s'attendre à des modules ES modernes pour Node
+    "moduleResolution": "NodeNext", // Utilise le nouvel algorithme de résolution de modules de Node
+    "target": "ES2022",            // Cible une version moderne de JavaScript
+    "esModuleInterop": true,       // Améliore la compatibilité entre CJS et ESM
+    "allowSyntheticDefaultImports": true, // Permet des imports plus propres
+    
+    /* --- Vos options existantes (assurez-vous qu'elles sont là) --- */
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",             // Il est bon de spécifier un dossier de sortie
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts"],      // S'assurer que seul le dossier src est inclus
+  "exclude": ["node_modules"]
+}
