@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (process.env.NODE_ENV === "production" && accountSid && authToken && twilioPhone) {
       const client = new Twilio(accountSid, authToken);
       await client.messages.create({
-        body: `Votre code de vérification ZOBA est: ${otp}`,
+        body: `Votre code de vérification XAMXAM est: ${otp}`,
         from: twilioPhone,
         to: phone,
       });

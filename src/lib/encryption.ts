@@ -15,7 +15,7 @@ function getEncryptionKey(): Buffer {
   }
   
   // Utiliser PBKDF2 pour dériver une clé sécurisée
-  return crypto.pbkdf2Sync(secret, 'zoba-salt', 100000, KEY_LENGTH, 'sha256');
+  return crypto.pbkdf2Sync(secret, 'xamxam-salt', 100000, KEY_LENGTH, 'sha256');
 }
 
 /**

@@ -101,7 +101,7 @@ export default function AIAgentSettingsPage() {
 
   // Paramètres de l'agent IA
   const [agentSettings, setAgentSettings] = useState({
-    name: 'ZOBA Assistant',
+    name: 'XAMXAM Assistant',
     welcomeMessage: 'Bonjour ! Je suis l&apos;assistant virtuel de la boutique. Comment puis-je vous aider aujourd&apos;hui ?',
     transferMessage: 'Je vais transférer votre demande à un conseiller humain. Veuillez patienter un instant.',
     responseTime: 'fast',

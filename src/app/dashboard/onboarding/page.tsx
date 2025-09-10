@@ -67,7 +67,7 @@ export default function OnboardingPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Bienvenue sur ZOBA !
+            Bienvenue sur XAMXAM !
           </h1>
           <p className="text-xl text-gray-600 mb-2">
             Bonjour {user?.identities?.[0]?.identity_data?.display_name || user?.name || 'Commerçant'} 👋
@@ -141,8 +141,8 @@ export default function OnboardingPage() {
         <div className="text-center mt-16">
           <p className="text-sm text-gray-500">
             Besoin d'aide ? Contactez notre équipe support à{' '}
-            <a href="mailto:support@zoba.app" className="text-blue-600 hover:text-blue-700">
-              support@zoba.app
+            <a href="mailto:support@xamxam.io" className="text-blue-600 hover:text-blue-700">
+              support@xamxam.io
             </a>
           </p>
         </div>

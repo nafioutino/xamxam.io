@@ -8,7 +8,7 @@ export default function Home() {
       {/* Navigation */}
       <nav className="container mx-auto px-4 py-6 flex justify-between items-center">
         <div className="flex items-center space-x-2">
-          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">ZOBA</span>
+          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">XAMXAM</span>
         </div>
         <div className="hidden md:flex space-x-6 items-center">
           <a href="#features" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition">Fonctionnalités</a>
@@ -37,7 +37,7 @@ export default function Home() {
               <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">avec l&apos;IA à vos côtés</span>
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-              ZOBA transforme votre façon de vendre en ligne en intégrant messagerie, catalogue et IA dans une seule plateforme puissante.  
+              XAMXAM transforme votre façon de vendre en ligne en intégrant messagerie, catalogue et IA dans une seule plateforme puissante.  
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
               <Link href="/auth/register" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md text-lg font-medium transition flex items-center justify-center">
@@ -55,7 +55,7 @@ export default function Home() {
               <div className="relative bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl">
                 <Image 
                   src="/dashboard-preview.svg" 
-                  alt="ZOBA Dashboard Preview" 
+                  alt="XAMXAM Dashboard Preview" 
                   width={600} 
                   height={400}
                   className="rounded-md"
@@ -151,7 +151,7 @@ export default function Home() {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Comment ça marche</h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Commencez à utiliser ZOBA en quelques étapes simples et transformez votre commerce en ligne.
+              Commencez à utiliser XAMXAM en quelques étapes simples et transformez votre commerce en ligne.
             </p>
           </div>
           
@@ -391,7 +391,7 @@ export default function Home() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Prêt à transformer votre commerce en ligne?</h2>
           <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-            Rejoignez des milliers d&apos;entrepreneurs qui utilisent ZOBA pour développer leur activité.
+            Rejoignez des milliers d&apos;entrepreneurs qui utilisent XAMXAM pour développer leur activité.
           </p>
           <Link href="/auth/register" className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-md text-lg font-medium transition inline-block">
             Commencer gratuitement
@@ -404,7 +404,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-6 md:mb-0">
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">ZOBA</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">XAMXAM</span>
               <p className="text-gray-600 dark:text-gray-400 mt-2">La plateforme tout-en-un pour votre commerce en ligne</p>
             </div>
             <div className="flex space-x-6">
@@ -429,7 +429,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-gray-200 dark:border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600 dark:text-gray-400 text-sm">© 2025 ZOBA. Tous droits réservés.</p>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">© 2025 XAMXAM. Tous droits réservés.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="/privacy-policy" className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition text-sm">Confidentialité</a>
               <a href="/terms-of-service" className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition text-sm">Conditions d&apos;utilisation</a>

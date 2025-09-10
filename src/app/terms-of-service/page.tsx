@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Conditions d\'utilisation - Zoba',
-  description: 'Conditions d\'utilisation de Zoba - Règles et conditions pour l\'utilisation de notre plateforme.',
+  title: 'Conditions d\'utilisation - XAMXAM',
+  description: 'Conditions d\'utilisation de XAMXAM - Règles et conditions pour l\'utilisation de notre plateforme.',
 };
 
 export default function TermsOfServicePage() {
@@ -14,7 +14,7 @@ export default function TermsOfServicePage() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                 ZOBA
+                 XAMXAM
                </h1>
             </div>
             <nav className="flex space-x-6">
@@ -45,7 +45,7 @@ export default function TermsOfServicePage() {
             Conditions d'utilisation
           </h1>
           <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-            Les règles et conditions qui régissent l'utilisation de notre plateforme ZOBA.
+            Les règles et conditions qui régissent l'utilisation de notre plateforme XAMXAM.
           </p>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function TermsOfServicePage() {
                   </div>
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
                     <p className="text-gray-700 leading-relaxed text-lg">
-                      En accédant et en utilisant Zoba ("le Service"), vous acceptez d'être lié par 
+                      En accédant et en utilisant XAMXAM ("le Service"), vous acceptez d'être lié par 
                       ces conditions d'utilisation ("les Conditions"). Si vous n'acceptez pas ces 
                       conditions, veuillez ne pas utiliser notre service.
                     </p>
@@ -138,7 +138,7 @@ export default function TermsOfServicePage() {
                       <div>
                         <h3 className="text-xl font-semibold text-gray-800 mb-3">Plateforme de gestion multi-canaux</h3>
                         <p className="text-gray-700 leading-relaxed text-lg">
-                          Zoba est une plateforme de gestion de conversations clients qui permet aux 
+                          XAMXAM est une plateforme de gestion de conversations clients qui permet aux 
                           entreprises de centraliser et gérer leurs communications avec leurs clients 
                           via différents canaux, notamment Facebook Messenger.
                         </p>
@@ -227,7 +227,7 @@ export default function TermsOfServicePage() {
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 Le service et tout son contenu, fonctionnalités et fonctionnalités sont et 
-                resteront la propriété exclusive de Zoba et de ses concédants de licence.
+                resteront la propriété exclusive de XAMXAM et de ses concédants de licence.
               </p>
               <p className="text-gray-700 leading-relaxed">
                 Vous conservez tous les droits sur le contenu que vous soumettez via notre service.
@@ -291,7 +291,7 @@ export default function TermsOfServicePage() {
                 10. Limitation de responsabilité
               </h2>
               <p className="text-gray-700 leading-relaxed">
-                Dans la mesure permise par la loi, Zoba ne sera pas responsable des dommages 
+                Dans la mesure permise par la loi, XAMXAM ne sera pas responsable des dommages 
                 indirects, accessoires, spéciaux, consécutifs ou punitifs résultant de votre 
                 utilisation du service.
               </p>
@@ -344,7 +344,7 @@ export default function TermsOfServicePage() {
                           </div>
                           <h4 className="font-semibold text-gray-800">Email</h4>
                         </div>
-                        <p className="text-gray-600">legal@zoba.com</p>
+                        <p className="text-gray-600">legal@xamxam.io</p>
                       </div>
                       
                       <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -402,7 +402,7 @@ export default function TermsOfServicePage() {
               </div>
               <div className="border-t border-gray-800 pt-6">
                 <p className="text-gray-500 text-sm">
-                  © {new Date().getFullYear()} ZOBA. Tous droits réservés.
+                  © {new Date().getFullYear()} XAMXAM. Tous droits réservés.
                 </p>
               </div>
             </div>

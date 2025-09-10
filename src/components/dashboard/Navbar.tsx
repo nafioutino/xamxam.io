@@ -24,7 +24,7 @@ export default function DashboardNavbar() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/dashboard" className="text-2xl font-bold text-blue-600">ZOBA</Link>
+              <Link href="/dashboard" className="text-2xl font-bold text-blue-600">XAMXAM</Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link 

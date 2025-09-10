@@ -94,7 +94,7 @@ const availableChannels: Channel[] = [
     name: 'SMS',
     type: 'sms',
     status: 'disconnected',
-    description: 'Envoyez des SMS à vos clients directement depuis ZOBA',
+    description: 'Envoyez des SMS à vos clients directement depuis XAMXAM',
     icon: SMSIcon,
     color: 'text-purple-500',
     bgColor: 'bg-purple-50',
@@ -465,9 +465,9 @@ export default function ChannelsPage() {
         <div className="flex items-start">
           <Zap className="h-6 w-6 text-blue-600 mt-1" />
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-900">À propos de ZOBA</h3>
+            <h3 className="text-sm font-medium text-blue-900">À propos de XAMXAM</h3>
             <p className="text-sm text-blue-700 mt-1">
-              ZOBA centralise toutes vos conversations clients en un seul endroit. Connectez vos canaux de communication 
+              XAMXAM centralise toutes vos conversations clients en un seul endroit. Connectez vos canaux de communication 
               préférés et laissez notre IA vous aider à gérer efficacement toutes vos interactions commerciales.
             </p>
             <p className="text-xs text-blue-600 mt-2">

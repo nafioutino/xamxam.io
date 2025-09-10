@@ -121,7 +121,7 @@ export default function SelectPagePage() {
               Sélectionner une page Facebook
             </h1>
             <p className="text-gray-600 mt-1">
-              Choisissez la page Facebook que vous souhaitez connecter à Zoba
+              Choisissez la page Facebook que vous souhaitez connecter à XAMXAM
             </p>
           </div>
         </div>
@@ -141,7 +141,7 @@ export default function SelectPagePage() {
               Aucune page éligible trouvée
             </h3>
             <p className="text-gray-600 mb-6">
-              Vous devez être administrateur d'une page Facebook avec les permissions de messagerie pour la connecter à Zoba.
+              Vous devez être administrateur d'une page Facebook avec les permissions de messagerie pour la connecter à XAMXAM.
             </p>
             <button
               onClick={() => router.push('/dashboard/channels')}
@@ -236,7 +236,7 @@ export default function SelectPagePage() {
             <p>1. <strong>Sélectionnez une page</strong> - Choisissez la page Facebook que vous souhaitez connecter</p>
             <p>2. <strong>Configuration automatique</strong> - Nous configurerons automatiquement les webhooks et permissions</p>
             <p>3. <strong>Test de connexion</strong> - Vous pourrez tester l'envoi et la réception de messages</p>
-            <p>4. <strong>Gestion centralisée</strong> - Tous vos messages apparaîtront dans l'interface Zoba</p>
+            <p>4. <strong>Gestion centralisée</strong> - Tous vos messages apparaîtront dans l'interface XAMXAM</p>
           </div>
         </div>
       </div>

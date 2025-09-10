@@ -25,7 +25,7 @@ export default function AIAgentPage() {
   useEffect(() => {
     const welcomeMessage: Message = {
       id: 'welcome',
-      content: 'Bonjour ! Je suis ZOBA, votre assistant IA. Comment puis-je vous aider aujourd\'hui ?',
+      content: 'Bonjour ! Je suis XAMXAM, votre assistant IA. Comment puis-je vous aider aujourd\'hui ?',
       role: 'assistant',
       timestamp: new Date().toLocaleTimeString(),
       type: 'text',
@@ -353,7 +353,7 @@ export default function AIAgentPage() {
                 onClick={() => {
                   setMessages([{
                     id: 'welcome',
-                    content: 'Bonjour ! Je suis ZOBA, votre assistant IA. Comment puis-je vous aider aujourd\'hui ?',
+                    content: 'Bonjour ! Je suis XAMXAM, votre assistant IA. Comment puis-je vous aider aujourd\'hui ?',
                     role: 'assistant',
                     timestamp: new Date().toLocaleTimeString(),
                     type: 'text',

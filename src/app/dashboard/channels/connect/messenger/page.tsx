@@ -73,7 +73,7 @@ export default function ConnectMessengerPage() {
               Facebook Messenger
             </h2>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              Connectez votre page Facebook pour recevoir et répondre aux messages Messenger de vos clients directement depuis Zoba.
+              Connectez votre page Facebook pour recevoir et répondre aux messages Messenger de vos clients directement depuis XAMXAM.
             </p>
 
             {/* Connect Button */}
@@ -112,7 +112,7 @@ export default function ConnectMessengerPage() {
               <h5 className="font-medium text-blue-800 mb-2">Gestion des messages :</h5>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• Réception automatique des messages</li>
-                <li>• Réponses depuis l'interface Zoba</li>
+                <li>• Réponses depuis l'interface XAMXAM</li>
                 <li>• Historique des conversations</li>
                 <li>• Notifications en temps réel</li>
               </ul>

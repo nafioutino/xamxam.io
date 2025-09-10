@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contact - Zoba',
-  description: 'Contactez l\'équipe Zoba pour toute question ou support technique.',
+  title: 'Contact - XAMXAM',
+  description: 'Contactez l\'équipe XAMXAM pour toute question ou support technique.',
 };
 
 export default function ContactPage() {
@@ -14,7 +14,7 @@ export default function ContactPage() {
           <nav className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <a href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                ZOBA
+                XAMXAM
               </a>
               <span className="text-gray-400">|</span>
               <span className="text-gray-600">Contact</span>
@@ -78,8 +78,8 @@ export default function ContactPage() {
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">Email</h3>
-                          <p className="text-blue-600 font-medium">support@zoba.com</p>
-                          <p className="text-blue-600 font-medium">contact@zoba.com</p>
+                          <p className="text-blue-600 font-medium">support@xamxam.io</p>
+                          <p className="text-blue-600 font-medium">contact@xamxam.io</p>
                         </div>
                       </div>
                       <p className="text-gray-600 text-sm">
@@ -302,7 +302,7 @@ export default function ContactPage() {
                       <span className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
                         <span className="text-white text-sm font-bold">?</span>
                       </span>
-                      Comment puis-je commencer à utiliser ZOBA ?
+                      Comment puis-je commencer à utiliser XAMXAM ?
                     </h3>
                     <p className="text-gray-700 leading-relaxed">
                       Vous pouvez créer un compte gratuitement et commencer à connecter vos canaux de communication. 
@@ -318,7 +318,7 @@ export default function ContactPage() {
                       Quels canaux de communication sont supportés ?
                     </h3>
                     <p className="text-gray-700 leading-relaxed">
-                      ZOBA supporte Facebook Messenger, WhatsApp Business, Instagram Direct, 
+                      XAMXAM supporte Facebook Messenger, WhatsApp Business, Instagram Direct, 
                       et d'autres plateformes populaires. Nous ajoutons régulièrement de nouveaux canaux selon les besoins de nos clients.
                     </p>
                   </div>
@@ -344,7 +344,7 @@ export default function ContactPage() {
                       Comment contacter le support technique ?
                     </h3>
                     <p className="text-gray-700 leading-relaxed">
-                      Vous pouvez nous contacter via le formulaire ci-dessus, par email à support@zoba.com, 
+                      Vous pouvez nous contacter via le formulaire ci-dessus, par email à support@xamxam.io, 
                       ou par téléphone pendant nos heures d'ouverture. Notre équipe répond généralement sous 2h.
                     </p>
                   </div>
@@ -360,7 +360,7 @@ export default function ContactPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent mb-4">
-              ZOBA
+              XAMXAM
             </h3>
             <p className="text-gray-400 mb-6">
               Plateforme de gestion de conversations multi-canaux
@@ -378,7 +378,7 @@ export default function ContactPage() {
             </div>
             <div className="border-t border-gray-800 pt-6">
               <p className="text-gray-500 text-sm">
-                © {new Date().getFullYear()} ZOBA. Tous droits réservés.
+                © {new Date().getFullYear()} XAMXAM. Tous droits réservés.
               </p>
             </div>
           </div>

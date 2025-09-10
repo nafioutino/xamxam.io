@@ -119,7 +119,7 @@ export default function LoginPage() {
       <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <h1 className="text-5xl font-bold tracking-tight text-gray-900">ZOBA</h1>
+            <h1 className="text-5xl font-bold tracking-tight text-gray-900">XAMXAM</h1>
             <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
               {authMethod === 'phone' ? 'Connexion par téléphone' : 'Connexion par email'}
             </h2>

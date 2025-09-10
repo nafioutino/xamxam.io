@@ -37,8 +37,8 @@ function ErrorContent() {
           <div className="flex justify-center mb-4">
             <div className="relative h-20 w-40">
               <Image 
-                src="/logo/Zoba-logo-bleu.png" 
-                alt="ZOBA Logo" 
+                src="/logo/XAMXAM-logo-bleu.png" 
+                alt="XAMXAM Logo" 
                 fill 
                 style={{ objectFit: 'contain' }} 
                 priority

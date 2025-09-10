@@ -89,7 +89,7 @@ export default function ConnectInstagramPage() {
               Instagram Business
             </h2>
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              Connectez votre compte Instagram Business pour gérer vos messages directs et interactions avec vos clients depuis Zoba.
+              Connectez votre compte Instagram Business pour gérer vos messages directs et interactions avec vos clients depuis XAMXAM.
             </p>
             
             {/* Connect Button */}
@@ -128,7 +128,7 @@ export default function ConnectInstagramPage() {
               <h5 className="font-medium text-purple-800 mb-2">Gestion des messages :</h5>
               <ul className="text-sm text-purple-700 space-y-1">
                 <li>• Messages directs Instagram</li>
-                <li>• Réponses depuis l'interface Zoba</li>
+                <li>• Réponses depuis l'interface XAMXAM</li>
                 <li>• Historique des conversations</li>
                 <li>• Notifications en temps réel</li>
               </ul>

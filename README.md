@@ -1,6 +1,6 @@
-# ZOBA - Plateforme de Commerce en Ligne avec IA Intégrée
+# XAMXAM - Plateforme de Commerce Conversationnel avec IA Intégrée
 
-ZOBA est une plateforme tout-en-un qui transforme la façon dont les entreprises vendent en ligne en intégrant messagerie unifiée, gestion de catalogue et intelligence artificielle dans une seule solution puissante.
+XAMXAM est une plateforme tout-en-un qui transforme la façon dont les entreprises vendent en ligne en intégrant messagerie unifiée, gestion de catalogue et intelligence artificielle dans une seule solution puissante.
 
 ## Fonctionnalités Principales
 
@@ -31,8 +31,8 @@ ZOBA est une plateforme tout-en-un qui transforme la façon dont les entreprises
 
 1. Clonez le dépôt :
    ```bash
-   git clone https://github.com/votre-utilisateur/zoba-v1-next.git
-   cd zoba-v1-next
+   git clone https://github.com/votre-utilisateur/xamxam.git
+   cd xamxam
    ```
 
 2. Installez les dépendances :

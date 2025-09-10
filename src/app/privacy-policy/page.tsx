@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Politique de confidentialité - Zoba',
-  description: 'Politique de confidentialité de Zoba - Comment nous collectons, utilisons et protégeons vos données personnelles.',
+  title: 'Politique de confidentialité - XAMXAM',
+  description: 'Politique de confidentialité de XAMXAM - Comment nous collectons, utilisons et protégeons vos données personnelles.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -14,7 +14,7 @@ export default function PrivacyPolicyPage() {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                ZOBA
+                XAMXAM
               </h1>
             </div>
             <nav className="flex space-x-6">
@@ -108,7 +108,7 @@ export default function PrivacyPolicyPage() {
                   </div>
                   <div className="bg-gray-50 rounded-xl p-6">
                     <p className="text-gray-700 leading-relaxed text-lg">
-                      Zoba ("nous", "notre", "nos") s'engage à protéger et respecter votre vie privée. 
+                      XAMXAM ("nous", "notre", "nos") s'engage à protéger et respecter votre vie privée. 
                       Cette politique de confidentialité explique comment nous collectons, utilisons, 
                       stockons et protégeons vos informations personnelles lorsque vous utilisez notre 
                       plateforme de gestion de conversations clients.
@@ -397,7 +397,7 @@ export default function PrivacyPolicyPage() {
                           </div>
                           <h4 className="font-semibold text-gray-800">Email</h4>
                         </div>
-                        <p className="text-gray-600">privacy@zoba.com</p>
+                        <p className="text-gray-600">privacy@xamxam.io</p>
                       </div>
                       
                       <div className="bg-white rounded-lg p-6 shadow-sm">
@@ -455,7 +455,7 @@ export default function PrivacyPolicyPage() {
               </div>
               <div className="border-t border-gray-800 pt-6">
                 <p className="text-gray-500 text-sm">
-                  © {new Date().getFullYear()} ZOBA. Tous droits réservés.
+                  © {new Date().getFullYear()} XAMXAM. Tous droits réservés.
                 </p>
               </div>
             </div>
