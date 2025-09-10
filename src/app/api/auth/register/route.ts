@@ -9,30 +9,15 @@ const registerSchema = z.object({
   password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
 })
 
-// Vérification des variables d'environnement Supabase
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  console.warn('Variables d\'environnement Supabase manquantes. L\'authentification Supabase ne sera pas disponible.');
-}
-
-const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY 
-  ? createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
-  : null;
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { name, email, password } = registerSchema.parse(body)
-
-    // Vérifier si Supabase est configuré
-    if (!supabase) {
-      return NextResponse.json(
-        { error: 'Service d\'authentification non configuré' },
-        { status: 503 }
-      )
-    }
 
     // Utiliser Supabase Auth pour créer l'utilisateur
     const { data, error } = await supabase.auth.admin.createUser({
