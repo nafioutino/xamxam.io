@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Contact - XAMXAM',
@@ -13,9 +14,9 @@ export default function ContactPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <a href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 XAMXAM
-              </a>
+              </Link>
               <span className="text-gray-400">|</span>
               <span className="text-gray-600">Contact</span>
             </div>
@@ -366,9 +367,9 @@ export default function ContactPage() {
               Plateforme de gestion de conversations multi-canaux
             </p>
             <div className="flex justify-center space-x-6 mb-6">
-              <a href="/" className="text-gray-400 hover:text-white transition-colors">
+              <Link href="/" className="text-gray-400 hover:text-white transition-colors">
                 Accueil
-              </a>
+              </Link>
               <a href="/privacy-policy" className="text-gray-400 hover:text-blue-400 transition-colors">
                 Politique de confidentialité
               </a>

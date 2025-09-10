@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Politique de confidentialité - XAMXAM',
@@ -18,9 +19,9 @@ export default function PrivacyPolicyPage() {
               </h1>
             </div>
             <nav className="flex space-x-6">
-              <a href="/" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Accueil
-              </a>
+              </Link>
               <a href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">
                 Contact
               </a>
@@ -443,9 +444,9 @@ export default function PrivacyPolicyPage() {
                 Plateforme de gestion de conversations multi-canaux
               </p>
               <div className="flex justify-center space-x-6 mb-6">
-                <a href="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/" className="text-gray-400 hover:text-white transition-colors">
                   Accueil
-                </a>
+                </Link>
                 <a href="/terms-of-service" className="text-gray-400 hover:text-white transition-colors">
                   Conditions d'utilisation
                 </a>
