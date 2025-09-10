@@ -173,7 +173,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { shopService } from '@/services/shopService';
 
-const WHATSAPP_ENGINE_URL = process.env.NEXT_PUBLIC_WHATSAPP_ENGINE_URL || 'http://localhost:8000';
+const WHATSAPP_ENGINE_URL = process.env.NEXT_PUBLIC_WHATSAPP_ENGINE_URL || 'https://xamxam-whatsapp-engine.onrender.com:8000';
 
 export default function ConnectWhatsAppPage() {
   const { user } = useAuth();
