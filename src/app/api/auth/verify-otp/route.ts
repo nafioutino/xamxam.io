@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Code OTP valide - créer ou récupérer l'utilisateur dans Supabase
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Normaliser le numéro de téléphone
     const normalizedPhone = phoneNumber.replace(/\s+/g, '');
