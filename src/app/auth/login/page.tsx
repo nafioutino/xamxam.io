@@ -84,6 +84,9 @@ const FormInput = ({
   </div>
 );
 
+type ButtonVariant = 'primary' | 'secondary' | 'success' | 'outline' | 'glass';
+type ButtonSize = 'sm' | 'md' | 'lg';
+
 const Button = ({ 
   variant = 'primary', 
   size = 'md', 
@@ -93,7 +96,16 @@ const Button = ({
   iconLeft,
   iconRight,
   ...props 
-}: any) => {
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  loading?: boolean;
+  children: React.ReactNode;
+  className?: string;
+  iconLeft?: React.ReactNode;
+  iconRight?: React.ReactNode;
+  [key: string]: any;
+}) => {
   const baseClasses = "inline-flex items-center justify-center font-medium rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-[1.02] active:scale-[0.98]";
   
   const variants = {
