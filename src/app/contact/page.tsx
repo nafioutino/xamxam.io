@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { Mail, Phone, MapPin, Clock, Send, Home, Lock, FileText } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Contact - XAMXAM',
@@ -72,10 +73,7 @@ export default function ContactPage() {
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
                       <div className="flex items-center mb-4">
                         <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
-                          <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                          </svg>
+                          <Mail className="w-6 h-6 text-white" />
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">Email</h3>
@@ -91,9 +89,7 @@ export default function ContactPage() {
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
                       <div className="flex items-center mb-4">
                         <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
-                          <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                          </svg>
+                          <Phone className="w-6 h-6 text-white" />
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">Téléphone</h3>
@@ -109,9 +105,7 @@ export default function ContactPage() {
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6">
                       <div className="flex items-center mb-4">
                         <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mr-4">
-                          <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                          </svg>
+                          <MapPin className="w-6 h-6 text-white" />
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">Adresse</h3>
@@ -129,9 +123,7 @@ export default function ContactPage() {
                     <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-6">
                       <div className="flex items-center mb-4">
                         <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg flex items-center justify-center mr-4">
-                          <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                          </svg>
+                          <Clock className="w-6 h-6 text-white" />
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">Heures d'ouverture</h3>
@@ -270,10 +262,7 @@ export default function ContactPage() {
                         className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
                       >
                         <span className="flex items-center justify-center">
-                          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                          </svg>
+                          <Send className="w-5 h-5 mr-2" />
                           Envoyer le message
                         </span>
                       </button>
@@ -367,13 +356,16 @@ export default function ContactPage() {
               Plateforme de gestion de conversations multi-canaux
             </p>
             <div className="flex justify-center space-x-6 mb-6">
-              <Link href="/" className="text-gray-400 hover:text-white transition-colors">
+              <Link href="/" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                <Home className="w-4 h-4 mr-2" />
                 Accueil
               </Link>
-              <a href="/privacy-policy" className="text-gray-400 hover:text-blue-400 transition-colors">
+              <a href="/privacy-policy" className="text-gray-400 hover:text-blue-400 transition-colors flex items-center">
+                <Lock className="w-4 h-4 mr-2" />
                 Politique de confidentialité
               </a>
-              <a href="/terms-of-service" className="text-gray-400 hover:text-blue-400 transition-colors">
+              <a href="/terms-of-service" className="text-gray-400 hover:text-blue-400 transition-colors flex items-center">
+                <FileText className="w-4 h-4 mr-2" />
                 Conditions d'utilisation
               </a>
             </div>

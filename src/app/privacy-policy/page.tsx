@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { Shield, BookOpen, Database, Lock, AlertCircle, Home, FileText, Mail } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Politique de confidentialité - XAMXAM',
@@ -34,9 +35,7 @@ export default function PrivacyPolicyPage() {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center px-4 py-2 bg-blue-500/20 rounded-full text-blue-100 text-sm font-medium mb-6">
-            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
+            <Shield className="w-4 h-4 mr-2" />
             Transparence et protection des données
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
@@ -60,9 +59,7 @@ export default function PrivacyPolicyPage() {
               {/* Table des matières */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-12">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <BookOpen className="w-5 h-5 mr-2 text-blue-600" />
                   Table des matières
                 </h2>
                 <div className="grid md:grid-cols-2 gap-3">
@@ -101,7 +98,7 @@ export default function PrivacyPolicyPage() {
                 <section id="introduction" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
                     <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
-                      <span className="text-white font-bold">1</span>
+                      <Shield className="w-5 h-5 text-white" />
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
                       Introduction
@@ -120,10 +117,10 @@ export default function PrivacyPolicyPage() {
                 <section id="collecte" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
                     <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
-                      <span className="text-white font-bold">2</span>
+                      <Database className="w-5 h-5 text-white" />
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
-                      Informations que nous collectons
+                      Collecte d'informations
                     </h2>
                   </div>
                   
@@ -438,21 +435,24 @@ export default function PrivacyPolicyPage() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent mb-4">
-                ZOBA
+                XAMXAM
               </h3>
               <p className="text-gray-400 mb-6">
                 Plateforme de gestion de conversations multi-canaux
               </p>
               <div className="flex justify-center space-x-6 mb-6">
-                <Link href="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/" className="text-gray-400 hover:text-blue-400 transition-colors flex items-center">
+                  <Home className="w-4 h-4 mr-2" />
                   Accueil
                 </Link>
-                <a href="/terms-of-service" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/terms-of-service" className="text-gray-400 hover:text-blue-400 transition-colors flex items-center">
+                  <FileText className="w-4 h-4 mr-2" />
                   Conditions d'utilisation
-                </a>
-                <a href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                </Link>
+                <Link href="/contact" className="text-gray-400 hover:text-blue-400 transition-colors flex items-center">
+                  <Mail className="w-4 h-4 mr-2" />
                   Contact
-                </a>
+                </Link>
               </div>
               <div className="border-t border-gray-800 pt-6">
                 <p className="text-gray-500 text-sm">

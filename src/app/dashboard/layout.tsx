@@ -93,6 +93,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
             <div className="flex-shrink-0 flex items-center px-4">
+              <div className="relative w-12 h-12 mr-3 group">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl blur-sm opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative bg-white dark:bg-gray-800 rounded-xl p-1 shadow-lg">
+                  <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
+                    <span className="text-xl font-bold text-white">X</span>
+                  </div>
+                </div>
+              </div>
               <h1 className="text-3xl font-bold text-blue-600">XAMXAM</h1>
             </div>
             <div className="px-4 py-3 border-t border-b border-gray-200 mt-2">
@@ -189,6 +197,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex flex-col h-0 flex-1 border-r border-gray-200 bg-white">
             <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
               <div className="flex items-center flex-shrink-0 px-4">
+                <div className="relative w-10 h-10 mr-3 group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl blur-sm opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative bg-white dark:bg-gray-800 rounded-xl p-1 shadow-lg">
+                    <div className="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
+                      <span className="text-lg font-bold text-white">X</span>
+                    </div>
+                  </div>
+                </div>
                 <h1 className="text-2xl font-bold text-blue-600">XAMXAM</h1>
               </div>
               <div className="px-4 py-3 border-t border-b border-gray-200 mt-2">
