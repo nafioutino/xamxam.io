@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" fill="none">
+  <!-- Fond avec dégradé subtil -->
+  <rect width="800" height="800" fill="url(#grad1)" opacity="0.1"/>
+  
+  <!-- Cercles décoratifs -->
+  <circle cx="400" cy="400" r="300" stroke="#4F46E5" stroke-width="8" stroke-dasharray="20 15" opacity="0.2"/>
+  <circle cx="400" cy="400" r="250" stroke="#4F46E5" stroke-width="6" stroke-dasharray="15 10" opacity="0.3"/>
+  
+  <!-- Bouclier principal avec alerte -->
+  <path d="M400 150C400 150 250 200 250 200C250 200 250 350 250 450C250 550 325 650 400 700C475 650 550 550 550 450C550 350 550 200 550 200C550 200 400 150 400 150Z" fill="url(#grad2)" opacity="0.7" stroke="#ffffff" stroke-width="8"/>
+  
+  <!-- Symbole d'alerte -->
+  <circle cx="400" cy="400" r="100" fill="#ffffff"/>
+  <path d="M400 330 L400 430" stroke="#FF4A4A" stroke-width="20" stroke-linecap="round"/>
+  <circle cx="400" cy="470" r="10" fill="#FF4A4A"/>
+  
+  <!-- Éléments de connexion brisés -->
+  <path d="M200 200 L300 300" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  <path d="M320 320 L380 380" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  <path d="M420 420 L480 480" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  <path d="M500 500 L600 600" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  
+  <path d="M600 200 L500 300" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  <path d="M480 320 L420 380" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  <path d="M380 420 L320 480" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  <path d="M300 500 L200 600" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  
+  <!-- Points de connexion -->
+  <circle cx="200" cy="200" r="15" fill="#ffffff" opacity="0.6"/>
+  <circle cx="600" cy="200" r="15" fill="#ffffff" opacity="0.6"/>
+  <circle cx="200" cy="600" r="15" fill="#ffffff" opacity="0.6"/>
+  <circle cx="600" cy="600" r="15" fill="#ffffff" opacity="0.6"/>
+  
+  <!-- Petits éléments de circuit -->
+  <rect x="150" y="350" width="50" height="20" rx="5" fill="#ffffff" opacity="0.5"/>
+  <rect x="600" y="350" width="50" height="20" rx="5" fill="#ffffff" opacity="0.5"/>
+  <rect x="350" y="150" width="20" height="50" rx="5" fill="#ffffff" opacity="0.5"/>
+  <rect x="350" y="600" width="20" height="50" rx="5" fill="#ffffff" opacity="0.5"/>
+  
+  <!-- Définitions des dégradés -->
+  <defs>
+    <linearGradient id="grad1" x1="0" y1="0" x2="800" y2="800" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#0EA5E9"/>
+    </linearGradient>
+    <linearGradient id="grad2" x1="250" y1="200" x2="550" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#FF4A4A" stop-opacity="0.7"/>
+    </linearGradient>
+  </defs>
+</svg>

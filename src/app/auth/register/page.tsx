@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
+import Image from 'next/image';
 import UnauthGuard from '@/components/auth/UnauthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { Mail, Lock, User, LogIn, UserPlus, Facebook, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
@@ -133,7 +134,64 @@ export default function RegisterPage() {
           <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-indigo-200/30 dark:bg-indigo-500/10 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
         </div>
         
-        <div className={`max-w-md w-full space-y-8 bg-white/90 dark:bg-gray-800/90 p-8 rounded-2xl shadow-xl backdrop-blur-sm border border-white/50 dark:border-gray-700/50 relative z-10 transform transition-all duration-500 hover:shadow-2xl ${isPageLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+        {/* Container principal responsive */}
+        <div className={`w-full max-w-6xl transition-all duration-700 transform ${isPageLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+          <div className="flex flex-col lg:flex-row rounded-3xl shadow-2xl overflow-hidden">
+            {/* Colonne de gauche (image/branding) - visible uniquement sur desktop */}
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 p-12 flex-col justify-between relative overflow-hidden">
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full filter blur-3xl animate-blob"></div>
+                <div className="absolute bottom-10 right-10 w-64 h-64 bg-white rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
+              </div>
+              
+              <div className="relative z-10">
+                <div className="text-white text-4xl font-bold mb-6">XAMXAM</div>
+                <h2 className="text-white text-3xl font-bold mb-6">Rejoignez notre communauté</h2>
+                <p className="text-blue-100 text-xl mb-8">Créez votre compte et commencez à développer votre business avec notre plateforme de commerce conversationnel.</p>
+                
+                {/* Image SVG sécurisée */}
+                <div className="flex justify-center items-center my-8">
+                  <Image 
+                    src="/auth/secure-register.svg" 
+                    alt="Inscription sécurisée" 
+                    width={300} 
+                    height={300} 
+                    className="max-w-full h-auto animate-float"
+                    priority
+                  />
+                </div>
+              </div>
+              
+              <div className="relative z-10 mt-auto">
+                <div className="flex items-center space-x-4 mb-8">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <div className="text-white">
+                    <div className="font-medium">Inscription rapide</div>
+                    <div className="text-blue-100 text-sm">Créez votre compte en quelques minutes</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div className="text-white">
+                    <div className="font-medium">Démarrage immédiat</div>
+                    <div className="text-blue-100 text-sm">Commencez à utiliser la plateforme instantanément</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Colonne de droite (formulaire) */}
+            <div className="w-full lg:w-1/2 bg-white/70 dark:bg-gray-800/90 backdrop-blur-xl p-8 lg:p-12">
+              <div className={`transition-all duration-500 transform ${isPageLoaded ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'}`}>
           <div className="text-center">
             <div className="relative mx-auto w-20 h-20 mb-4 group">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl blur-lg opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -232,7 +290,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-4">
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => handleSocialSignIn('google')}
@@ -283,6 +341,9 @@ export default function RegisterPage() {
               <LogIn className="w-4 h-4 mr-2" />
               Se connecter
             </Link>
+          </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@
   
   <!-- Header -->
   <rect width="600" height="60" fill="#f1f5f9" rx="8" />
-  <text x="30" y="38" font-family="Arial" font-size="20" font-weight="bold" fill="#3b82f6">ZOBA Dashboard</text>
+  <text x="30" y="38" font-family="Arial" font-size="20" font-weight="bold" fill="#3b82f6">Xamxam Dashboard</text>
   
   <!-- Sidebar -->
   <rect x="0" y="60" width="180" height="340" fill="#f1f5f9" />
@@ -29,9 +29,9 @@
   <!-- Stats Cards -->
   <rect x="200" y="80" width="180" height="100" fill="#ffffff" rx="8" stroke="#e2e8f0" stroke-width="1" />
   <text x="220" y="110" font-family="Arial" font-size="14" fill="#64748b">Total Revenue</text>
-  <text x="220" y="140" font-family="Arial" font-size="20" font-weight="bold" fill="#0f172a">€4,385.00</text>
-  <rect x="320" y="130" width="40" height="20" fill="#dcfce7" rx="4" />
-  <text x="328" y="144" font-family="Arial" font-size="12" fill="#16a34a">+12%</text>
+  <text x="220" y="140" font-family="Arial" font-size="20" font-weight="bold" fill="#0f172a">2,875,000 FCFA</text>
+  <rect x="220" y="155" width="40" height="20" fill="#dcfce7" rx="4" />
+  <text x="228" y="169" font-family="Arial" font-size="12" fill="#16a34a">+12%</text>
   
   <rect x="400" y="80" width="180" height="100" fill="#ffffff" rx="8" stroke="#e2e8f0" stroke-width="1" />
   <text x="420" y="110" font-family="Arial" font-size="14" fill="#64748b">Total Orders</text>
