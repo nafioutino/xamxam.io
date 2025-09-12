@@ -66,6 +66,82 @@ export function useAuth() {
     };
   }, [router, supabase.auth]);
 
+  const sendOTP = async (phoneNumber: string) => {
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de l\'envoi du code OTP');
+      }
+
+      if (data.demo) {
+        toast.success('Code OTP envoyé (mode démo) - Utilisez 1234');
+      } else {
+        toast.success('Code OTP envoyé avec succès');
+      }
+      
+      return true;
+    } catch (error: unknown) {
+      console.error('Send OTP error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de l\'envoi du code OTP';
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyOTP = async (phoneNumber: string, code: string) => {
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber, code }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Code OTP invalide');
+      }
+
+      if (data.isNewUser) {
+        toast.success('Compte créé et connexion réussie!');
+      } else {
+        toast.success('Connexion réussie!');
+      }
+      
+      // Rediriger vers le dashboard
+      setTimeout(() => {
+        router.push('/dashboard');
+        router.refresh();
+      }, 100);
+      
+      return true;
+    } catch (error: unknown) {
+      console.error('Verify OTP error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la vérification du code OTP';
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const login = async (
     credentials: { email?: string; password?: string; phone?: string; otp?: string }
   ) => {
@@ -83,18 +159,8 @@ export function useAuth() {
         // Ne pas rediriger ici, laisser l'onAuthStateChange gérer
         return true;
       } else if (credentials.phone && credentials.otp) {
-        // Simulation pour la démo
-        if (credentials.otp === '1234') {
-          // Créer une session simulée pour la démo
-          toast.success('Connexion réussie (démo)');
-          setTimeout(() => {
-            router.push('/dashboard');
-            router.refresh();
-          }, 100);
-          return true;
-        } else {
-          throw new Error('Code OTP invalide. Pour la démo, utilisez 1234.');
-        }
+        // Utiliser la nouvelle méthode verifyOTP
+        return await verifyOTP(credentials.phone, credentials.otp);
       }
       
       return false;
@@ -121,12 +187,17 @@ export function useAuth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/api/auth/callback`,
+          queryParams: {
+            next: '/dashboard'
+          }
         }
       });
       
       if (error) throw error;
       
+      // Pour OAuth, la redirection se fait automatiquement
+      // Pas besoin de retourner true/false car l'utilisateur sera redirigé
       return true;
     } catch (error: unknown) {
       console.error(`${provider} login error:`, error);
@@ -206,5 +277,7 @@ export function useAuth() {
     register,
     socialLogin,
     logout,
+    sendOTP,
+    verifyOTP,
   };
 }

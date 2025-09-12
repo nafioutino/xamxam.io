@@ -27,5 +27,5 @@ export default function UnauthGuard({ children, fallback }: UnauthGuardProps) {
     return null;
   }
   
-  return <>{children}</>;
+  return <>{children}</>
 }

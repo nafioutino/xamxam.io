@@ -8,6 +8,14 @@ export default function Home() {
       {/* Navigation */}
       <nav className="container mx-auto px-4 py-6 flex justify-between items-center">
         <div className="flex items-center space-x-2">
+          <div className="relative w-10 h-10 mr-2 group">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg blur-sm opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg p-1 shadow-lg">
+              <div className="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
+                <span className="text-lg font-bold text-white">X</span>
+              </div>
+            </div>
+          </div>
           <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">XAMXAM</span>
         </div>
         <div className="hidden md:flex space-x-6 items-center">
