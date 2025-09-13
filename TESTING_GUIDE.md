@@ -6,7 +6,7 @@
 - Créer une application Facebook de type "Business" sur [Meta for Developers](https://developers.facebook.com/)
 - Ajouter les produits : Facebook Login, Webhooks, Messenger Platform, Instagram Basic Display, WhatsApp Business Platform
 - Configurer les URLs de redirection OAuth :
-  - Production : `https://zoba.com/api/auth/callback/meta`
+  - Production : `https://www.xamxam.io/api/auth/callback/meta`
   - Développement : `http://localhost:3000/api/auth/callback/meta`
 
 ### 2. Variables d'environnement

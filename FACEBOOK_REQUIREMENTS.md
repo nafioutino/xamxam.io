@@ -47,7 +47,7 @@ FACEBOOK_WEBHOOK_VERIFY_TOKEN=your_custom_verify_token
 #### Dans Facebook Login > Settings :
 ```
 Valid OAuth Redirect URIs:
-- https://zoba.com/api/auth/callback/meta
+- https://www.xamxam.io/api/auth/callback/meta
 - http://localhost:3000/api/auth/callback/meta (pour développement)
 ```
 
@@ -55,7 +55,7 @@ Valid OAuth Redirect URIs:
 
 #### URL du Webhook :
 ```
-https://zoba.com/api/webhooks/meta
+https://www.xamxam.io/api/webhooks/meta
 ```
 
 #### Events à souscrire :
