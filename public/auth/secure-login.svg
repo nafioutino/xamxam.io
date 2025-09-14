@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" fill="none">
+  <!-- Fond avec dégradé subtil -->
+  <rect width="800" height="800" fill="url(#grad1)" opacity="0.1"/>
+  
+  <!-- Cercles décoratifs -->
+  <circle cx="400" cy="400" r="300" stroke="#4F46E5" stroke-width="8" stroke-dasharray="20 15" opacity="0.3"/>
+  <circle cx="400" cy="400" r="250" stroke="#4F46E5" stroke-width="6" stroke-dasharray="15 10" opacity="0.4"/>
+  
+  <!-- Bouclier principal -->
+  <path d="M400 150C400 150 250 200 250 200C250 200 250 350 250 450C250 550 325 650 400 700C475 650 550 550 550 450C550 350 550 200 550 200C550 200 400 150 400 150Z" fill="url(#grad2)" stroke="#ffffff" stroke-width="8"/>
+  
+  <!-- Cadenas au centre du bouclier -->
+  <rect x="350" y="350" width="100" height="120" rx="10" fill="#ffffff" stroke="#4F46E5" stroke-width="6"/>
+  <rect x="365" y="300" width="70" height="60" rx="30" fill="none" stroke="#ffffff" stroke-width="12"/>
+  <circle cx="400" cy="400" r="20" fill="#4F46E5"/>
+  <rect x="395" y="400" width="10" height="40" fill="#4F46E5"/>
+  
+  <!-- Éléments de connexion -->
+  <circle cx="200" cy="200" r="15" fill="#ffffff" opacity="0.6"/>
+  <circle cx="600" cy="200" r="15" fill="#ffffff" opacity="0.6"/>
+  <circle cx="200" cy="600" r="15" fill="#ffffff" opacity="0.6"/>
+  <circle cx="600" cy="600" r="15" fill="#ffffff" opacity="0.6"/>
+  
+  <path d="M200 200C250 250 350 300 400 300C450 300 550 250 600 200" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  <path d="M200 600C250 550 350 500 400 500C450 500 550 550 600 600" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  <path d="M200 200C150 300 150 500 200 600" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  <path d="M600 200C650 300 650 500 600 600" stroke="#ffffff" stroke-width="4" stroke-dasharray="10 5" opacity="0.4"/>
+  
+  <!-- Définitions des dégradés -->
+  <defs>
+    <linearGradient id="grad1" x1="0" y1="0" x2="800" y2="800" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#0EA5E9"/>
+    </linearGradient>
+    <linearGradient id="grad2" x1="250" y1="200" x2="550" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#0EA5E9"/>
+    </linearGradient>
+  </defs>
+</svg>

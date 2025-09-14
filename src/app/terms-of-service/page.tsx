@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { Check, Home, FileText, Mail, Shield, BookOpen, AlertCircle, FileCode, Users, Lock, ExternalLink } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Conditions d\'utilisation - XAMXAM',
@@ -37,9 +38,7 @@ export default function TermsOfServicePage() {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center px-4 py-2 bg-blue-500/20 rounded-full text-blue-100 text-sm font-medium mb-6">
-            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
+            <Check className="w-4 h-4 mr-2" />
             Conditions légales et d'utilisation
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
@@ -63,9 +62,7 @@ export default function TermsOfServicePage() {
               {/* Table des matières */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-12">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <BookOpen className="w-5 h-5 mr-2 text-blue-600" />
                   Table des matières
                 </h2>
                 <div className="grid md:grid-cols-2 gap-3">
@@ -104,8 +101,8 @@ export default function TermsOfServicePage() {
                 <section id="acceptation" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
                     <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
-                      <span className="text-white font-bold">1</span>
-                    </div>
+                    <Check className="w-5 h-5 text-white" />
+                  </div>
                     <h2 className="text-3xl font-bold text-gray-900">
                       Acceptation des conditions
                     </h2>
@@ -122,7 +119,7 @@ export default function TermsOfServicePage() {
                 <section id="description" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
                     <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
-                      <span className="text-white font-bold">2</span>
+                      <FileText className="w-5 h-5 text-white" />
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
                       Description du service
@@ -131,10 +128,7 @@ export default function TermsOfServicePage() {
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6">
                     <div className="flex items-start">
                       <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
-                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
-                          <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
-                        </svg>
+                        <Mail className="w-6 h-6 text-white" />
                       </div>
                       <div>
                         <h3 className="text-xl font-semibold text-gray-800 mb-3">Plateforme de gestion multi-canaux</h3>
@@ -149,7 +143,8 @@ export default function TermsOfServicePage() {
                 </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                <Users className="w-6 h-6 mr-2 text-blue-600" />
                 3. Inscription et compte
               </h2>
               <h3 className="text-xl font-medium text-gray-800 mb-3">
@@ -172,7 +167,8 @@ export default function TermsOfServicePage() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                <Shield className="w-6 h-6 mr-2 text-blue-600" />
                 4. Utilisation acceptable
               </h2>
               <h3 className="text-xl font-medium text-gray-800 mb-3">
@@ -385,21 +381,24 @@ export default function TermsOfServicePage() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent mb-4">
-                ZOBA
+                XAMXAM
               </h3>
               <p className="text-gray-400 mb-6">
                 Plateforme de gestion de conversations multi-canaux
               </p>
               <div className="flex justify-center space-x-6 mb-6">
-                <Link href="/" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                  <Home className="w-4 h-4 mr-2" />
                   Accueil
                 </Link>
-                <a href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                  <Lock className="w-4 h-4 mr-2" />
                   Politique de confidentialité
-                </a>
-                <a href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                </Link>
+                <Link href="/contact" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                  <Mail className="w-4 h-4 mr-2" />
                   Contact
-                </a>
+                </Link>
               </div>
               <div className="border-t border-gray-800 pt-6">
                 <p className="text-gray-500 text-sm">

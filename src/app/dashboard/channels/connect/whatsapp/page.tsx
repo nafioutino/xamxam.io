@@ -30,7 +30,7 @@
 //   // Configuration Meta pour WhatsApp Business
 //   const whatsappConfig = {
 //     clientId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || 'YOUR_FACEBOOK_APP_ID',
-//     redirectUri: 'https://b6be6f0873ee.ngrok-free.app/api/auth/callback/meta',
+//     redirectUri: 'https://www.xamxam.io/api/auth/callback/meta',
 //     scopes: [
 //       'whatsapp_business_management',
 //       'whatsapp_business_messaging',

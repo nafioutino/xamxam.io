@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" fill="none">
+  <!-- Fond avec dégradé subtil -->
+  <rect width="800" height="800" fill="url(#grad1)" opacity="0.1"/>
+  
+  <!-- Grille de connexion -->
+  <path d="M100 100 L700 100 L700 700 L100 700 Z" stroke="#ffffff" stroke-width="2" stroke-dasharray="10 5" opacity="0.3"/>
+  <path d="M100 300 L700 300" stroke="#ffffff" stroke-width="2" stroke-dasharray="10 5" opacity="0.3"/>
+  <path d="M100 500 L700 500" stroke="#ffffff" stroke-width="2" stroke-dasharray="10 5" opacity="0.3"/>
+  <path d="M300 100 L300 700" stroke="#ffffff" stroke-width="2" stroke-dasharray="10 5" opacity="0.3"/>
+  <path d="M500 100 L500 700" stroke="#ffffff" stroke-width="2" stroke-dasharray="10 5" opacity="0.3"/>
+  
+  <!-- Cercles décoratifs -->
+  <circle cx="400" cy="400" r="250" stroke="#4F46E5" stroke-width="6" opacity="0.2"/>
+  <circle cx="400" cy="400" r="200" stroke="#4F46E5" stroke-width="4" opacity="0.3"/>
+  
+  <!-- Éléments principaux -->
+  <circle cx="400" cy="250" r="80" fill="url(#grad2)" opacity="0.9"/>
+  <path d="M400 200 C380 200 365 215 365 235 C365 255 380 270 400 270 C420 270 435 255 435 235 C435 215 420 200 400 200 Z" fill="#ffffff"/>
+  <path d="M350 320 C350 290 370 270 400 270 C430 270 450 290 450 320 L450 350 C450 350 400 370 400 370 C400 370 350 350 350 350 L350 320 Z" fill="#ffffff"/>
+  
+  <!-- Document avec vérification -->
+  <rect x="300" y="400" width="200" height="250" rx="10" fill="#ffffff" opacity="0.9"/>
+  <path d="M330 450 L470 450" stroke="#4F46E5" stroke-width="4"/>
+  <path d="M330 500 L470 500" stroke="#4F46E5" stroke-width="4"/>
+  <path d="M330 550 L470 550" stroke="#4F46E5" stroke-width="4"/>
+  <path d="M330 600 L400 600" stroke="#4F46E5" stroke-width="4"/>
+  
+  <!-- Coche de vérification -->
+  <circle cx="500" cy="500" r="60" fill="url(#grad2)" opacity="0.8"/>
+  <path d="M470 500 L490 520 L530 480" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Points de connexion -->
+  <circle cx="100" cy="100" r="10" fill="#ffffff" opacity="0.6"/>
+  <circle cx="300" cy="100" r="10" fill="#ffffff" opacity="0.6"/>
+  <circle cx="500" cy="100" r="10" fill="#ffffff" opacity="0.6"/>
+  <circle cx="700" cy="100" r="10" fill="#ffffff" opacity="0.6"/>
+  <circle cx="100" cy="300" r="10" fill="#ffffff" opacity="0.6"/>
+  <circle cx="700" cy="300" r="10" fill="#ffffff" opacity="0.6"/>
+  <circle cx="100" cy="500" r="10" fill="#ffffff" opacity="0.6"/>
+  <circle cx="700" cy="500" r="10" fill="#ffffff" opacity="0.6"/>
+  <circle cx="100" cy="700" r="10" fill="#ffffff" opacity="0.6"/>
+  <circle cx="300" cy="700" r="10" fill="#ffffff" opacity="0.6"/>
+  <circle cx="500" cy="700" r="10" fill="#ffffff" opacity="0.6"/>
+  <circle cx="700" cy="700" r="10" fill="#ffffff" opacity="0.6"/>
+  
+  <!-- Définitions des dégradés -->
+  <defs>
+    <linearGradient id="grad1" x1="0" y1="0" x2="800" y2="800" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#0EA5E9"/>
+    </linearGradient>
+    <linearGradient id="grad2" x1="250" y1="200" x2="550" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#0EA5E9"/>
+    </linearGradient>
+  </defs>
+</svg>

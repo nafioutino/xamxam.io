@@ -23,7 +23,7 @@ Voici une méthode simple, robuste et non technique pour l'utilisateur, basée s
 2.  **Construire l'URL de Redirection Facebook :**
     *   L'URL doit inclure :
         *   `client_id`: L'ID de votre application Meta.
-        *   `redirect_uri`: L'URL de callback sur votre site (ex: `https://zoba.com/api/auth/callback/meta`).
+        *   `redirect_uri`: L'URL de callback sur votre site (ex: `https://www.xamxam.io/api/auth/callback/meta`).
         *   `scope`: La liste des permissions critiques que vous demandez. C'est le point le plus important. Vous aurez besoin de :
             *   `pages_show_list` (pour lister les pages du commerçant)
             *   `pages_messaging` (pour Facebook Messenger)
