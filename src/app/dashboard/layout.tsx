@@ -128,7 +128,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             <nav className="mt-5 px-2 space-y-1">
               {navigation.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const isActive = item.href === '/dashboard' 
+                  ? pathname === '/dashboard'
+                  : pathname.startsWith(`${item.href}/`);
                 return (
                   <Link
                     key={item.name}
@@ -146,7 +148,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               
               <button
                 onClick={handleLogout}
-                className="group flex items-center px-3 py-3 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full mt-8"
+                className="group flex items-center px-3 py-3 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full mt-8 cursor-pointer"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="mr-4 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -178,7 +180,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </p>
                   <button
                     onClick={handleLogout}
-                    className="text-sm font-medium text-gray-500 group-hover:text-gray-700 hover:underline"
+                    className="text-sm font-medium text-gray-500 group-hover:text-gray-700 hover:underline cursor-pointer"
                   >
                     Déconnexion
                   </button>
@@ -232,7 +234,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
               <nav className="mt-5 flex-1 px-2 bg-white space-y-1">
                 {navigation.map((item) => {
-                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  const isActive = item.href === '/dashboard' 
+                    ? pathname === '/dashboard'
+                    : pathname.startsWith(`${item.href}/`);
                   return (
                     <Link
                       key={item.name}
@@ -250,7 +254,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 
                 <button
                   onClick={handleLogout}
-                  className="group flex items-center px-3 py-3 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full mt-8"
+                  className="group flex items-center px-3 py-3 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full mt-8 cursor-pointer"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 flex-shrink-0 h-6 w-6 text-gray-500 group-hover:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -275,7 +279,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </p>
                     <button
                       onClick={handleLogout}
-                      className="text-sm font-medium text-gray-500 group-hover:text-gray-700 hover:underline"
+                      className="text-sm font-medium text-gray-500 group-hover:text-gray-700 hover:underline cursor-pointer"
                     >
                       Déconnexion
                     </button>
