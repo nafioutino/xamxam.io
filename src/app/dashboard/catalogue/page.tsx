@@ -242,7 +242,7 @@ export default function CataloguePage() {
               <div className="h-48 w-full overflow-hidden">
                 <img
                   src={product.images[0]}
-                  alt={product.name}
+                  alt={`Image du produit ${product.name}`}
                   className="w-full h-full object-cover"
                 />
               </div>

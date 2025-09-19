@@ -16,7 +16,7 @@ XAMXAM est une plateforme tout-en-un qui transforme la façon dont les entrepris
 - **Frontend** : Next.js 14, React, Tailwind CSS
 - **Backend** : Next.js API Routes, Prisma ORM
 - **Base de Données** : PostgreSQL avec PGVector pour la recherche vectorielle
-- **Authentification** : NextAuth.js avec support pour téléphone+OTP, Google, Facebook
+- **Authentification** : NextAuth.js avec support pour Google, Facebook
 - **IA** : OpenAI GPT-4/Mistral, DALL·E 3, Runway ML
 - **Messagerie** : Intégrations avec WhatsApp Business API, Facebook Messenger, Instagram Direct, Telegram, TikTok, Email
 
@@ -24,7 +24,6 @@ XAMXAM est une plateforme tout-en-un qui transforme la façon dont les entrepris
 
 - Node.js 18.0.0 ou supérieur
 - PostgreSQL 14 ou supérieur
-- Compte Twilio (pour l'authentification par téléphone)
 - Comptes développeur pour les plateformes de messagerie que vous souhaitez intégrer
 
 ## Installation

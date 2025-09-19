@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import twilio from 'twilio';
 import { createClient } from '@/utils/supabase/server';
-
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
-
-const client = twilio(accountSid, authToken);
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,30 +12,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let isValidCode = false;
-
-    // Vérifier si les variables d'environnement Twilio sont configurées
-    if (!accountSid || !authToken || !serviceSid) {
-      // Mode démo - accepter le code 1234
-      isValidCode = code === '1234';
-      console.log(`Mode démo: Vérification OTP pour ${phoneNumber} avec code ${code}`);
-    } else {
-      try {
-        // Vérifier le code OTP via Twilio Verify
-        const verificationCheck = await client.verify.v2
-          .services(serviceSid)
-          .verificationChecks.create({
-            to: phoneNumber,
-            code: code
-          });
-
-        isValidCode = verificationCheck.status === 'approved';
-      } catch (twilioError) {
-        console.error('Erreur Twilio:', twilioError);
-        // En cas d'erreur Twilio, basculer en mode démo
-        isValidCode = code === '1234';
-      }
-    }
+    // Mode démo - accepter le code 1234
+    const isValidCode = code === '1234';
+    console.log(`Mode démo: Vérification OTP pour ${phoneNumber} avec code ${code}`);
 
     if (!isValidCode) {
       return NextResponse.json(

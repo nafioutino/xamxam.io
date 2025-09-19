@@ -1,10 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Twilio } from "twilio";
-
-// Initialize Twilio client
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
 
 // For MVP, we'll use a simple in-memory store for OTPs
 // In production, use Redis or similar for better security and scalability
@@ -30,18 +24,8 @@ export async function POST(req: NextRequest) {
       expires: Date.now() + 5 * 60 * 1000, // 5 minutes
     };
 
-    // In production, send OTP via Twilio
-    if (process.env.NODE_ENV === "production" && accountSid && authToken && twilioPhone) {
-      const client = new Twilio(accountSid, authToken);
-      await client.messages.create({
-        body: `Votre code de vérification XAMXAM est: ${otp}`,
-        from: twilioPhone,
-        to: phone,
-      });
-    } else {
-      // For development, just log the OTP
-      console.log(`OTP for ${phone}: ${otp}`);
-    }
+    // For development, just log the OTP
+    console.log(`OTP for ${phone}: ${otp}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
