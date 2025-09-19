@@ -5,6 +5,7 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
+import LoadingTransition from './LoadingTransition';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -12,14 +13,17 @@ interface AuthGuardProps {
 }
 
 export default function AuthGuard({ children, fallback }: AuthGuardProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isTransitioning } = useAuth();
 
-  // Afficher le spinner pendant le chargement
+  // Afficher le loader de transition pendant la redirection après authentification
+  if (isTransitioning) {
+    return <LoadingTransition message="Redirection vers le dashboard" />;
+  }
+
+  // Afficher le spinner pendant le chargement initial
   if (isLoading) {
     return fallback || (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
+      <LoadingTransition message="Vérification de l'authentification" showLogo={false} />
     );
   }
 

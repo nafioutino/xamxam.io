@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
 import UnauthGuard from '@/components/auth/UnauthGuard';
+import LoadingTransition from '@/components/auth/LoadingTransition';
 import { useAuth } from '@/hooks/useAuth';
 import { Mail, Lock, Smartphone, KeyRound, LogIn, UserPlus, Check, RefreshCw, Phone, Facebook, ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import React from 'react';
@@ -203,7 +204,7 @@ const AuthMethodToggle = ({ authMethod, setAuthMethod, loading, setStep }: any) 
 );
 
 export default function LoginPage() {
-  const { login, socialLogin, sendOTP, isLoading: authLoading } = useAuth();
+  const { login, socialLogin, sendOTP, isLoading: authLoading, isTransitioning } = useAuth();
   const [authMethod, setAuthMethod] = useState<AuthMethod>('phone');
   const [step, setStep] = useState<AuthStep>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -288,6 +289,11 @@ export default function LoginPage() {
   };
 
   const loading = isLoading || authLoading;
+
+  // Afficher le loader de transition si nécessaire
+  if (isTransitioning) {
+    return <LoadingTransition message="Connexion en cours" />;
+  }
 
   return (
     <UnauthGuard>

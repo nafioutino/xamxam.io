@@ -9,6 +9,7 @@ import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
 import UnauthGuard from '@/components/auth/UnauthGuard';
+import LoadingTransition from '@/components/auth/LoadingTransition';
 import { useAuth } from '@/hooks/useAuth';
 import { Mail, Lock, User, LogIn, UserPlus, Facebook, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
@@ -73,7 +74,7 @@ const FormInput = ({ id, label, type = 'text', iconComponent, error, className =
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const { register, socialLogin, isLoading: authLoading } = useAuth();
+  const { register, socialLogin, isLoading: authLoading, isTransitioning } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
   
@@ -124,6 +125,11 @@ export default function RegisterPage() {
       toast.error(`Erreur lors de la connexion avec ${provider}`);
     }
   };
+
+  // Afficher le loader de transition si nécessaire
+  if (isTransitioning) {
+    return <LoadingTransition message="Inscription en cours" />;
+  }
 
   return (
     <UnauthGuard>

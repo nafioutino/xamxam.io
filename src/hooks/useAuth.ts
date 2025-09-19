@@ -10,6 +10,7 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const isAuthenticated = !!user;
   const supabase = createClient();
 
@@ -42,10 +43,14 @@ export function useAuth() {
         if (event === 'SIGNED_IN' && session) {
           const currentPath = window.location.pathname;
           if (!currentPath.startsWith('/dashboard')) {
+            // Activer l'état de transition
+            setIsTransitioning(true);
             // Attendre que l'état soit mis à jour avant de rediriger
             setTimeout(() => {
               router.push('/dashboard');
               router.refresh();
+              // Désactiver l'état de transition après la redirection
+              setTimeout(() => setIsTransitioning(false), 1000);
             }, 100);
           }
         }
@@ -156,6 +161,8 @@ export function useAuth() {
         
         if (error) throw error;
         
+        // Activer l'état de transition pour la connexion par email/password
+        setIsTransitioning(true);
         // Ne pas rediriger ici, laisser l'onAuthStateChange gérer
         return true;
       } else if (credentials.phone && credentials.otp) {
@@ -230,6 +237,8 @@ export function useAuth() {
       // Si l'inscription réussit et que l'utilisateur est automatiquement connecté
       if (data.user && data.session) {
         toast.success('Inscription réussie! Redirection vers le dashboard...');
+        // Activer l'état de transition
+        setIsTransitioning(true);
         // La redirection sera gérée par onAuthStateChange
         return true;
       } else {
@@ -272,6 +281,7 @@ export function useAuth() {
     user,
     session,
     isLoading,
+    isTransitioning,
     isAuthenticated,
     login,
     register,
