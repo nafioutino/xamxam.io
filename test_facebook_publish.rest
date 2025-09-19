@@ -1,0 +1,31 @@
+### Test de publication Facebook
+
+# Publication d'un message texte
+POST http://localhost:3000/api/facebook/publish
+Content-Type: application/json
+
+{
+  "message": "Test de publication depuis XAMXAM ! 🚀",
+  "pageId": "YOUR_PAGE_ID_HERE"
+}
+
+###
+
+# Test avec message vide (doit échouer)
+POST http://localhost:3000/api/facebook/publish
+Content-Type: application/json
+
+{
+  "message": "",
+  "pageId": "YOUR_PAGE_ID_HERE"
+}
+
+###
+
+# Test sans pageId (doit échouer)
+POST http://localhost:3000/api/facebook/publish
+Content-Type: application/json
+
+{
+  "message": "Test sans pageId"
+}
