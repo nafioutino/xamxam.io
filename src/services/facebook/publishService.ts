@@ -15,6 +15,11 @@ export interface FacebookPublishResult {
 export class FacebookPublishService {
   private static readonly API_VERSION = 'v23.0';
   private static readonly BASE_URL = 'https://graph.facebook.com';
+  private static readonly REQUIRED_PERMISSIONS = [
+    'pages_manage_posts',
+    'pages_read_engagement',
+    'pages_show_list'
+  ];
 
   /**
    * Publie un message texte sur une page Facebook
@@ -29,6 +34,15 @@ export class FacebookPublishService {
 
       const url = `${this.BASE_URL}/${this.API_VERSION}/${pageId}/feed`;
       
+      // Vérifier les permissions du token avant publication
+      const hasPermissions = await this.checkTokenPermissions(accessToken);
+      if (!hasPermissions) {
+        return {
+          success: false,
+          error: 'Token manque les permissions requises: pages_manage_posts, pages_read_engagement'
+        };
+      }
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -92,5 +106,28 @@ export class FacebookPublishService {
    */
   static prepareAccessToken(encryptedToken: string): string {
     return decryptToken(encryptedToken);
+  }
+
+  /**
+   * Vérifie si le token a les permissions requises
+   */
+  private static async checkTokenPermissions(accessToken: string): Promise<boolean> {
+    try {
+      const url = `${this.BASE_URL}/${this.API_VERSION}/me/permissions?access_token=${accessToken}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (!response.ok) return false;
+      
+      const grantedPermissions = data.data
+        ?.filter((p: any) => p.status === 'granted')
+        ?.map((p: any) => p.permission) || [];
+      
+      return this.REQUIRED_PERMISSIONS.every(perm => 
+        grantedPermissions.includes(perm)
+      );
+    } catch {
+      return false;
+    }
   }
 }
