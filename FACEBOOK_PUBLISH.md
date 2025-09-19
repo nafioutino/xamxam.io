@@ -1,4 +1,4 @@
-# Publication de Contenu Facebook - XAMXAM-New
+# Publication de Contenu Facebook - XAMXAM-MAJ
 
 ## Vue d'ensemble
 
