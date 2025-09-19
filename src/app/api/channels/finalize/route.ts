@@ -89,7 +89,38 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Étape 1: Obtenir un Page Access Token longue durée
+    // Étape 1: Vérifier les permissions du user token
+    const permissionsUrl = `https://graph.facebook.com/v23.0/me/permissions?access_token=${userToken}`;
+    const permissionsResponse = await fetch(permissionsUrl);
+    const permissionsData = await permissionsResponse.json();
+    
+    if (!permissionsResponse.ok) {
+      console.error('Failed to check permissions:', permissionsData);
+      return NextResponse.json(
+        { error: 'Failed to verify user permissions' },
+        { status: 500 }
+      );
+    }
+    
+    const grantedPermissions = permissionsData.data
+      ?.filter((p: any) => p.status === 'granted')
+      ?.map((p: any) => p.permission) || [];
+    
+    const requiredPermissions = ['pages_manage_posts', 'pages_read_engagement', 'pages_show_list'];
+    const missingPermissions = requiredPermissions.filter(perm => !grantedPermissions.includes(perm));
+    
+    if (missingPermissions.length > 0) {
+      console.error('Missing permissions:', missingPermissions);
+      return NextResponse.json(
+        { 
+          error: `Permissions manquantes: ${missingPermissions.join(', ')}. Veuillez reconnecter votre compte Facebook avec toutes les permissions.`,
+          missingPermissions
+        },
+        { status: 403 }
+      );
+    }
+    
+    // Étape 2: Obtenir un Page Access Token avec les bonnes permissions
     const pageTokenUrl = new URL(`https://graph.facebook.com/v23.0/${pageId}`);
     pageTokenUrl.searchParams.append('fields', 'access_token');
     pageTokenUrl.searchParams.append('access_token', userToken);
@@ -107,7 +138,16 @@ export async function POST(request: NextRequest) {
     
     const pageAccessToken = pageTokenData.access_token;
     
-    // Étape 2: Souscrire aux webhooks
+    // Étape 3: Vérifier les permissions du page token
+    const pagePermissionsUrl = `https://graph.facebook.com/v23.0/me/permissions?access_token=${pageAccessToken}`;
+    const pagePermissionsResponse = await fetch(pagePermissionsUrl);
+    
+    if (pagePermissionsResponse.ok) {
+      const pagePermissionsData = await pagePermissionsResponse.json();
+      console.log('Page token permissions:', pagePermissionsData.data);
+    }
+    
+    // Étape 4: Souscrire aux webhooks
     const webhookUrl = new URL(`https://graph.facebook.com/v23.0/${pageId}/subscribed_apps`);
     const webhookBody = new URLSearchParams();
     webhookBody.append('access_token', pageAccessToken);
