@@ -10,6 +10,11 @@ interface FacebookPage {
   access_token: string;
   category: string;
   tasks: string[];
+  instagram_business_account?: {
+    id: string;
+    username: string;
+    profile_picture_url: string;
+  };
 }
 
 export default function SelectPagePage() {
@@ -45,10 +50,10 @@ export default function SelectPagePage() {
     fetchPages();
   }, []);
 
-  const handleConnectPage = async (page: FacebookPage) => {
+  const handleConnectPage = async (page: FacebookPage, platform: 'messenger' | 'instagram') => {
     if (connecting) return;
 
-    setConnecting(page.id);
+    setConnecting(`${page.id}-${platform}`);
     setError(null);
 
     try {
@@ -61,7 +66,7 @@ export default function SelectPagePage() {
         body: JSON.stringify({
           pageId: page.id,
           pageName: page.name,
-          platform: 'messenger' // Par défaut, on commence par Messenger
+          platform
         })
       });
 
@@ -118,10 +123,10 @@ export default function SelectPagePage() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              Sélectionner une page Facebook
+              Sélectionner vos canaux
             </h1>
             <p className="text-gray-600 mt-1">
-              Choisissez la page Facebook que vous souhaitez connecter à XAMXAM
+              Choisissez les canaux Facebook et Instagram que vous souhaitez connecter à XAMXAM
             </p>
           </div>
         </div>
@@ -151,75 +156,91 @@ export default function SelectPagePage() {
             </button>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-6">
             {pages.map((page) => (
               <div
                 key={page.id}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    {/* Page Icon */}
-                    <div className={`w-12 h-12 ${getPlatformColor(page.category)} rounded-full flex items-center justify-center text-white`}>
-                      {getPlatformIcon(page.category)}
-                    </div>
-                    
-                    {/* Page Info */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {page.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {page.category} • ID: {page.id}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span className="text-sm text-green-600">
-                          Permissions de messagerie disponibles
-                        </span>
+                {/* Page Header */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                    <Facebook className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {page.name}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {page.category} • ID: {page.id}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Available Channels */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Facebook Messenger */}
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                        <MessageSquare className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">Facebook Messenger</h4>
+                        <p className="text-sm text-gray-600">Messages de votre page Facebook</p>
                       </div>
                     </div>
+                    <button
+                      onClick={() => handleConnectPage(page, 'messenger')}
+                      disabled={connecting === `${page.id}-messenger`}
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {connecting === `${page.id}-messenger` ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2 inline-block"></div>
+                          Connexion...
+                        </>
+                      ) : (
+                        'Connecter Messenger'
+                      )}
+                    </button>
                   </div>
-                  
-                  {/* Connect Button */}
-                  <button
-                    onClick={() => handleConnectPage(page)}
-                    disabled={connecting === page.id}
-                    className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {connecting === page.id ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Connexion...
-                      </>
+
+                  {/* Instagram Direct */}
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white">
+                        <Instagram className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">Instagram Direct</h4>
+                        {page.instagram_business_account ? (
+                          <p className="text-sm text-gray-600">@{page.instagram_business_account.username}</p>
+                        ) : (
+                          <p className="text-sm text-gray-500">Aucun compte Instagram Business lié</p>
+                        )}
+                      </div>
+                    </div>
+                    {page.instagram_business_account ? (
+                      <button
+                        onClick={() => handleConnectPage(page, 'instagram')}
+                        disabled={connecting === `${page.id}-instagram`}
+                        className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {connecting === `${page.id}-instagram` ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2 inline-block"></div>
+                            Connexion...
+                          </>
+                        ) : (
+                          'Connecter Instagram'
+                        )}
+                      </button>
                     ) : (
-                      'Connecter cette page'
+                      <div className="w-full px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-center">
+                        Non disponible
+                      </div>
                     )}
-                  </button>
-                </div>
-                
-                {/* Available Features */}
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    Fonctionnalités disponibles :
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {page.tasks?.includes('MESSAGING') && (
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                        Messages Facebook
-                      </span>
-                    )}
-                    {page.tasks?.includes('MANAGE') && (
-                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                        Gestion de page
-                      </span>
-                    )}
-                    <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
-                      Réponses automatiques
-                    </span>
-                    <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
-                      Statistiques
-                    </span>
                   </div>
                 </div>
               </div>
@@ -233,7 +254,7 @@ export default function SelectPagePage() {
             📋 Prochaines étapes
           </h4>
           <div className="text-sm text-blue-800 space-y-2">
-            <p>1. <strong>Sélectionnez une page</strong> - Choisissez la page Facebook que vous souhaitez connecter</p>
+            <p>1. <strong>Sélectionnez vos canaux</strong> - Choisissez les canaux Facebook et Instagram que vous souhaitez connecter</p>
             <p>2. <strong>Configuration automatique</strong> - Nous configurerons automatiquement les webhooks et permissions</p>
             <p>3. <strong>Test de connexion</strong> - Vous pourrez tester l'envoi et la réception de messages</p>
             <p>4. <strong>Gestion centralisée</strong> - Tous vos messages apparaîtront dans l'interface XAMXAM</p>

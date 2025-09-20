@@ -19,6 +19,11 @@ interface FacebookPage {
   access_token: string; // Le Page Access Token fourni par /me/accounts
   category: string;
   tasks: string[];
+  instagram_business_account?: {
+    id: string;
+    username: string;
+    profile_picture_url: string;
+  };
 }
 
 // ==================================================================
@@ -98,17 +103,31 @@ export async function POST(request: NextRequest) {
     
     const shopId = userShop.id;
     const encryptedToken = encryptToken(pageAccessToken);
-    const channelType = mapPlatformToChannelType(platform);
+    
+    // Déterminer le type de canal et l'ID externe basé sur la plateforme
+    let channelType: ChannelType;
+    let externalId: string;
+    
+    if (platform === 'instagram') {
+      channelType = ChannelType.INSTAGRAM_DM;
+      if (!selectedPage.instagram_business_account) {
+        throw new Error('No Instagram Business account linked to this page.');
+      }
+      externalId = selectedPage.instagram_business_account.id;
+    } else {
+      channelType = ChannelType.FACEBOOK_PAGE;
+      externalId = pageId;
+    }
 
     // --- ÉTAPE 6: STOCKER LE CANAL DANS LA BASE DE DONNÉES ---
     // On utilise `upsert` pour créer le canal s'il n'existe pas, ou le mettre à jour s'il existe déjà.
     // C'est plus robuste qu'une logique `findFirst` + `if/else`.
     await prisma.channel.upsert({
-      where: { shopId_type_externalId: { shopId, type: channelType, externalId: pageId } },
+      where: { shopId_type_externalId: { shopId, type: channelType, externalId } },
       update: { accessToken: encryptedToken, isActive: true },
-      create: { type: channelType, externalId: pageId, accessToken: encryptedToken, isActive: true, shopId }
+      create: { type: channelType, externalId, accessToken: encryptedToken, isActive: true, shopId }
     });
-    logger.info(`${logPrefix} Channel data for page ${pageId} stored successfully in DB.`);
+    logger.info(`${logPrefix} Channel data for ${platform} (${externalId}) stored successfully in DB.`);
 
     // --- ÉTAPE 7: NETTOYER LA SESSION ET RÉPONDRE ---
     const response = NextResponse.json({ success: true });
@@ -132,15 +151,7 @@ const logger = {
   error: (prefix: string, ...args: any[]) => console.error(prefix, ...args)
 };
 
-// Fonction utilitaire pour mapper les plateformes vers les types de canaux
-function mapPlatformToChannelType(platform: string): ChannelType {
-  switch (platform.toLowerCase()) {
-    case 'messenger': return ChannelType.FACEBOOK_PAGE;
-    case 'instagram': return ChannelType.INSTAGRAM_DM;
-    case 'whatsapp': return ChannelType.WHATSAPP;
-    default: throw new Error(`Unsupported platform: ${platform}`);
-  }
-}
+
 
 // Gérer les autres méthodes HTTP pour retourner une erreur claire.
 export async function GET() {
