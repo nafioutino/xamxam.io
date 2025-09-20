@@ -36,14 +36,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Récupérer la boutique et le canal
+    // Récupérer la boutique et le canal (Facebook ou Instagram)
     const shop = await prisma.shop.findUnique({
       where: { ownerId: user.id },
       include: {
         channels: {
           where: {
-            type: ChannelType.FACEBOOK_PAGE,
-            externalId: pageId,
+            OR: [
+              { type: ChannelType.FACEBOOK_PAGE, externalId: pageId },
+              { type: ChannelType.INSTAGRAM_DM, externalId: pageId }
+            ],
             isActive: true
           }
         }
@@ -52,14 +54,22 @@ export async function POST(request: NextRequest) {
 
     if (!shop || shop.channels.length === 0) {
       return NextResponse.json(
-        { error: 'Canal Facebook non trouvé ou inactif' },
+        { error: 'Canal non trouvé ou inactif' },
         { status: 404 }
       );
     }
 
     const channel = shop.channels[0];
     
-    // Préparer le token d'accès
+    // Vérifier le type de canal - rediriger vers l'API Instagram si nécessaire
+    if (channel.type === ChannelType.INSTAGRAM_DM) {
+      return NextResponse.json(
+        { error: 'Veuillez utiliser l\'API Instagram pour publier sur ce canal.' },
+        { status: 400 }
+      );
+    }
+    
+    // Préparer le token d'accès pour Facebook
     const pageAccessToken = FacebookPublishService.prepareAccessToken(channel.accessToken!);
 
     let result;

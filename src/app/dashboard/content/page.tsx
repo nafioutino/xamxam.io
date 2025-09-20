@@ -56,9 +56,21 @@ export default function ContentPage() {
                 isActive: channel.isActive,
                 pageName: channel.pageName || `Page ${channel.externalId}`
               });
-              channelTypes.push({ key: 'facebook-page', label: 'Facebook Page', icon: Facebook });
+              if (!channelTypes.find(ct => ct.key === 'facebook-page')) {
+                channelTypes.push({ key: 'facebook-page', label: 'Facebook Page', icon: Facebook });
+              }
+            } else if (type === 'instagram') {
+              allChannels.push({
+                id: channel.id,
+                externalId: channel.externalId,
+                type,
+                isActive: channel.isActive,
+                pageName: channel.pageName || `Instagram ${channel.externalId}`
+              });
+              if (!channelTypes.find(ct => ct.key === 'instagram-dm')) {
+                channelTypes.push({ key: 'instagram-dm', label: 'Instagram Direct', icon: Facebook });
+              }
             }
-            // Ajouter d'autres types de canaux ici
           });
           
           setChannels(allChannels);
@@ -66,8 +78,14 @@ export default function ContentPage() {
           
           if (channelTypes.length > 0) {
             setSelectedChannelType(channelTypes[0].key);
-            if (channelTypes[0].key === 'facebook-page' && allChannels.length > 0) {
-              setSelectedPage(allChannels[0].externalId);
+            if (allChannels.length > 0) {
+              const firstChannelOfType = allChannels.find(c => 
+                (channelTypes[0].key === 'facebook-page' && c.type === 'messenger') ||
+                (channelTypes[0].key === 'instagram-dm' && c.type === 'instagram')
+              );
+              if (firstChannelOfType) {
+                setSelectedPage(firstChannelOfType.externalId);
+              }
             }
           }
         }
@@ -132,7 +150,7 @@ export default function ContentPage() {
 
   const handlePublish = async () => {
     if (!message.trim() || !selectedChannelType) return;
-    if (selectedChannelType === 'facebook-page' && !selectedPage) return;
+    if ((selectedChannelType === 'facebook-page' || selectedChannelType === 'instagram-dm') && !selectedPage) return;
     if (contentType === 'image' && !imageFile && !imageUrl) return;
     if (contentType === 'video' && !videoFile && !videoUrl) return;
 
@@ -160,7 +178,10 @@ export default function ContentPage() {
         }
       }
 
-      const response = await fetch('/api/facebook/publish', {
+      // Déterminer l'API à utiliser selon le type de canal
+      const apiEndpoint = selectedChannelType === 'instagram-dm' ? '/api/instagram/publish' : '/api/facebook/publish';
+      
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         body: formData
       });
@@ -324,7 +345,7 @@ export default function ContentPage() {
               </select>
             </div>
 
-            {/* Sélection de la page Facebook (conditionnel) */}
+            {/* Sélection de la page/compte (conditionnel) */}
             {selectedChannelType === 'facebook-page' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -338,6 +359,25 @@ export default function ContentPage() {
                   {channels.filter(c => c.type === 'messenger').map((channel) => (
                     <option key={channel.externalId} value={channel.externalId}>
                       {channel.pageName || `Page ${channel.externalId}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
+            {selectedChannelType === 'instagram-dm' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Compte Instagram
+                </label>
+                <select
+                  value={selectedPage}
+                  onChange={(e) => setSelectedPage(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+                >
+                  {channels.filter(c => c.type === 'instagram').map((channel) => (
+                    <option key={channel.externalId} value={channel.externalId}>
+                      {channel.pageName || `Instagram ${channel.externalId}`}
                     </option>
                   ))}
                 </select>
@@ -611,7 +651,12 @@ export default function ContentPage() {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    {contentType === 'video' ? 'Upload vidéo...' : 'Publication...'}
+                    {selectedChannelType === 'instagram-dm' && contentType === 'video' 
+                      ? 'Traitement vidéo Instagram...' 
+                      : contentType === 'video' 
+                      ? 'Upload vidéo...' 
+                      : 'Publication...'
+                    }
                   </>
                 ) : (
                   <>
