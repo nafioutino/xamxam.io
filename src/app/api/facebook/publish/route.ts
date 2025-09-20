@@ -6,8 +6,12 @@ import { FacebookPublishService } from '@/services/facebook/publishService';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { message, pageId } = body;
+    const formData = await request.formData();
+    const message = formData.get('message') as string;
+    const pageId = formData.get('pageId') as string;
+    const contentType = formData.get('contentType') as string || 'text';
+    const imageFile = formData.get('image') as File | null;
+    const imageUrl = formData.get('imageUrl') as string | null;
 
     if (!message || !pageId) {
       return NextResponse.json(
@@ -53,12 +57,23 @@ export async function POST(request: NextRequest) {
     // Préparer le token d'accès
     const pageAccessToken = FacebookPublishService.prepareAccessToken(channel.accessToken!);
 
-    // Publier sur Facebook
-    const result = await FacebookPublishService.publishTextPost({
-      message,
-      pageId,
-      accessToken: pageAccessToken
-    });
+    let result;
+    
+    if (contentType === 'image') {
+      result = await FacebookPublishService.publishImagePost({
+        message,
+        pageId,
+        accessToken: pageAccessToken,
+        imageFile: imageFile || undefined,
+        imageUrl: imageUrl || undefined
+      });
+    } else {
+      result = await FacebookPublishService.publishTextPost({
+        message,
+        pageId,
+        accessToken: pageAccessToken
+      });
+    }
 
     if (!result.success) {
       return NextResponse.json(

@@ -26,6 +26,10 @@ export default function ContentPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [contentType, setContentType] = useState<'text' | 'image'>('text');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Récupérer les canaux connectés
   useEffect(() => {
@@ -71,24 +75,52 @@ export default function ContentPage() {
     fetchChannels();
   }, []);
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImageUrl('');
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUrlChange = (url: string) => {
+    setImageUrl(url);
+    setImageFile(null);
+    setImagePreview(url);
+  };
+
   const handlePublish = async () => {
     if (!message.trim() || !selectedChannelType) return;
     if (selectedChannelType === 'facebook-page' && !selectedPage) return;
+    if (contentType === 'image' && !imageFile && !imageUrl) return;
 
     setLoading(true);
     setError('');
     setSuccess('');
 
     try {
+      const formData = new FormData();
+      formData.append('message', message.trim());
+      formData.append('pageId', selectedPage);
+      formData.append('contentType', contentType);
+      
+      if (contentType === 'image') {
+        if (imageFile) {
+          formData.append('image', imageFile);
+        } else if (imageUrl) {
+          formData.append('imageUrl', imageUrl);
+        }
+      }
+
       const response = await fetch('/api/facebook/publish', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: message.trim(),
-          pageId: selectedPage
-        })
+        body: formData
       });
 
       const data = await response.json();
@@ -96,6 +128,9 @@ export default function ContentPage() {
       if (response.ok) {
         setSuccess('Publication réussie !');
         setMessage('');
+        setImageFile(null);
+        setImageUrl('');
+        setImagePreview(null);
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError(data.error || 'Erreur lors de la publication');
@@ -281,17 +316,31 @@ export default function ContentPage() {
               </div>
             </div>
 
-            {/* Types de contenu (pour plus tard) */}
+            {/* Types de contenu */}
             <div className="border-t pt-4">
               <p className="text-sm font-medium text-gray-700 mb-3">Type de contenu</p>
               <div className="flex space-x-4">
-                <button className="flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-200">
+                <button
+                  onClick={() => setContentType('text')}
+                  className={`flex items-center px-3 py-2 rounded-lg border ${
+                    contentType === 'text'
+                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
                   <FileText className="h-4 w-4 mr-2" />
                   Texte
                 </button>
-                <button className="flex items-center px-3 py-2 bg-gray-50 text-gray-400 rounded-lg border border-gray-200 cursor-not-allowed">
+                <button
+                  onClick={() => setContentType('image')}
+                  className={`flex items-center px-3 py-2 rounded-lg border ${
+                    contentType === 'image'
+                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
                   <Image className="h-4 w-4 mr-2" />
-                  Image (bientôt)
+                  Image
                 </button>
                 <button className="flex items-center px-3 py-2 bg-gray-50 text-gray-400 rounded-lg border border-gray-200 cursor-not-allowed">
                   <Video className="h-4 w-4 mr-2" />
@@ -299,6 +348,55 @@ export default function ContentPage() {
                 </button>
               </div>
             </div>
+
+            {/* Section image (conditionnelle) */}
+            {contentType === 'image' && (
+              <div className="border-t pt-4">
+                <p className="text-sm font-medium text-gray-700 mb-3">Image</p>
+                <div className="space-y-4">
+                  {/* Upload de fichier */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Télécharger une image
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                  </div>
+                  
+                  {/* Ou URL */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ou URL de l'image
+                    </label>
+                    <input
+                      type="url"
+                      value={imageUrl}
+                      onChange={(e) => handleImageUrlChange(e.target.value)}
+                      placeholder="https://exemple.com/image.jpg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  {/* Aperçu de l'image */}
+                  {imagePreview && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Aperçu
+                      </label>
+                      <img
+                        src={imagePreview}
+                        alt="Aperçu"
+                        className="max-w-xs max-h-48 rounded-lg border border-gray-300"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Bouton de publication */}
             <div className="flex justify-between items-center pt-4">
@@ -309,7 +407,7 @@ export default function ContentPage() {
               </div>
               <button
                 onClick={handlePublish}
-                disabled={!message.trim() || loading}
+                disabled={!message.trim() || loading || (contentType === 'image' && !imageFile && !imageUrl)}
                 className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {loading ? (

@@ -19,6 +19,24 @@ export interface FacebookPublishOptions {
 }
 
 /**
+ * Options pour publier un post avec image sur Facebook.
+ */
+export interface FacebookImagePublishOptions extends FacebookPublishOptions {
+  imageUrl?: string;
+  imageFile?: File;
+}
+
+/**
+ * Résultat d'un upload de photo.
+ */
+export interface FacebookPhotoUploadResult {
+  success: boolean;
+  photoId?: string;
+  error?: string;
+  metaError?: any;
+}
+
+/**
  * Le résultat d'une tentative de publication.
  */
 export interface FacebookPublishResult {
@@ -126,6 +144,140 @@ export class FacebookPublishService {
     }
 
     return null; // Tout est valide.
+  }
+
+  /**
+   * Upload une image sur Facebook et retourne l'ID de la photo
+   */
+  static async uploadPhoto(options: {
+    pageId: string;
+    accessToken: string;
+    imageUrl?: string;
+    imageFile?: File;
+    message?: string;
+  }): Promise<FacebookPhotoUploadResult> {
+    try {
+      const { pageId, accessToken, imageUrl, imageFile, message } = options;
+
+      if (!imageUrl && !imageFile) {
+        return { success: false, error: 'Image URL ou fichier requis' };
+      }
+
+      const url = `${this.BASE_URL}/${this.API_VERSION}/${pageId}/photos`;
+      
+      const formData = new FormData();
+      formData.append('access_token', accessToken);
+      
+      if (message) {
+        formData.append('message', message.trim());
+      }
+
+      if (imageFile) {
+        formData.append('source', imageFile);
+      } else if (imageUrl) {
+        formData.append('url', imageUrl);
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Facebook Photo Upload Error:', JSON.stringify(data, null, 2));
+        return {
+          success: false,
+          error: data.error?.message || 'Erreur lors de l\'upload de l\'image',
+          metaError: data.error
+        };
+      }
+
+      return {
+        success: true,
+        photoId: data.id
+      };
+
+    } catch (error) {
+      console.error('Photo upload service error:', error);
+      return {
+        success: false,
+        error: 'Erreur de connexion lors de l\'upload de l\'image'
+      };
+    }
+  }
+
+  /**
+   * Publie un post avec image sur Facebook
+   */
+  static async publishImagePost(options: FacebookImagePublishOptions): Promise<FacebookPublishResult> {
+    try {
+      const { message, pageId, accessToken, imageUrl, imageFile } = options;
+
+      // Validation
+      const validationError = this.validateImagePublishOptions(options);
+      if (validationError) {
+        return { success: false, error: validationError };
+      }
+
+      // Upload de l'image
+      const uploadResult = await this.uploadPhoto({
+        pageId,
+        accessToken,
+        imageUrl,
+        imageFile,
+        message: message.trim()
+      });
+
+      if (!uploadResult.success) {
+        return {
+          success: false,
+          error: uploadResult.error,
+          metaError: uploadResult.metaError
+        };
+      }
+
+      return {
+        success: true,
+        postId: uploadResult.photoId
+      };
+
+    } catch (error) {
+      console.error('Image post service error:', error);
+      return {
+        success: false,
+        error: 'Erreur lors de la publication de l\'image'
+      };
+    }
+  }
+
+  /**
+   * Validation pour les posts avec images
+   */
+  static validateImagePublishOptions(options: Partial<FacebookImagePublishOptions>): string | null {
+    // Validation de base
+    const baseValidation = this.validatePublishOptions(options);
+    if (baseValidation) return baseValidation;
+
+    // Validation spécifique aux images
+    if (!options.imageUrl && !options.imageFile) {
+      return 'Une image (URL ou fichier) est requise';
+    }
+
+    if (options.imageFile) {
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (options.imageFile.size > maxSize) {
+        return 'L\'image est trop volumineuse (maximum 10MB)';
+      }
+
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(options.imageFile.type)) {
+        return 'Format d\'image non supporté (JPEG, PNG, GIF, WebP uniquement)';
+      }
+    }
+
+    return null;
   }
 
   /**
