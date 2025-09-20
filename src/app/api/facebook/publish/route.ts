@@ -4,6 +4,9 @@ import prisma from '@/lib/prisma';
 import { ChannelType } from '@/generated/prisma';
 import { FacebookPublishService } from '@/services/facebook/publishService';
 
+// Configuration pour les uploads de vidéos
+export const maxDuration = 300; // 5 minutes
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();

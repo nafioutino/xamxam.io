@@ -302,10 +302,17 @@ export class FacebookPublishService {
         formData.append('file_url', videoUrl);
       }
 
+      // Timeout plus long pour les vidéos
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes
+      
       const response = await fetch(url, {
         method: 'POST',
-        body: formData
+        body: formData,
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -325,6 +332,12 @@ export class FacebookPublishService {
 
     } catch (error) {
       console.error('Video upload service error:', error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        return {
+          success: false,
+          error: 'Timeout: La vidéo est trop volumineuse ou la connexion trop lente'
+        };
+      }
       return {
         success: false,
         error: 'Erreur de connexion lors de l\'upload de la vidéo'

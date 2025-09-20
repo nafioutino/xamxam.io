@@ -101,8 +101,16 @@ export default function ContentPage() {
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Vérifier la taille (100MB max)
+      const maxSize = 100 * 1024 * 1024;
+      if (file.size > maxSize) {
+        setError('La vidéo est trop volumineuse (maximum 100MB)');
+        return;
+      }
+      
       setVideoFile(file);
       setVideoUrl('');
+      setError('');
       
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -454,6 +462,9 @@ export default function ContentPage() {
                       onChange={handleVideoUpload}
                       className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Maximum 100MB - L'upload peut prendre plusieurs minutes
+                    </p>
                   </div>
                   
                   {/* Ou URL */}
@@ -502,7 +513,7 @@ export default function ContentPage() {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Publication...
+                    {contentType === 'video' ? 'Upload vidéo...' : 'Publication...'}
                   </>
                 ) : (
                   <>
