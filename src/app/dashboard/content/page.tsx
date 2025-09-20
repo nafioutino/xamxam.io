@@ -26,10 +26,13 @@ export default function ContentPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [contentType, setContentType] = useState<'text' | 'image'>('text');
+  const [contentType, setContentType] = useState<'text' | 'image' | 'video'>('text');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
 
   // Récupérer les canaux connectés
   useEffect(() => {
@@ -95,10 +98,31 @@ export default function ContentPage() {
     setImagePreview(url);
   };
 
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVideoFile(file);
+      setVideoUrl('');
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setVideoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoUrlChange = (url: string) => {
+    setVideoUrl(url);
+    setVideoFile(null);
+    setVideoPreview(url);
+  };
+
   const handlePublish = async () => {
     if (!message.trim() || !selectedChannelType) return;
     if (selectedChannelType === 'facebook-page' && !selectedPage) return;
     if (contentType === 'image' && !imageFile && !imageUrl) return;
+    if (contentType === 'video' && !videoFile && !videoUrl) return;
 
     setLoading(true);
     setError('');
@@ -116,6 +140,12 @@ export default function ContentPage() {
         } else if (imageUrl) {
           formData.append('imageUrl', imageUrl);
         }
+      } else if (contentType === 'video') {
+        if (videoFile) {
+          formData.append('video', videoFile);
+        } else if (videoUrl) {
+          formData.append('videoUrl', videoUrl);
+        }
       }
 
       const response = await fetch('/api/facebook/publish', {
@@ -131,6 +161,9 @@ export default function ContentPage() {
         setImageFile(null);
         setImageUrl('');
         setImagePreview(null);
+        setVideoFile(null);
+        setVideoUrl('');
+        setVideoPreview(null);
         setTimeout(() => setSuccess(''), 3000);
       } else {
         setError(data.error || 'Erreur lors de la publication');
@@ -342,9 +375,16 @@ export default function ContentPage() {
                   <Image className="h-4 w-4 mr-2" />
                   Image
                 </button>
-                <button className="flex items-center px-3 py-2 bg-gray-50 text-gray-400 rounded-lg border border-gray-200 cursor-not-allowed">
+                <button
+                  onClick={() => setContentType('video')}
+                  className={`flex items-center px-3 py-2 rounded-lg border ${
+                    contentType === 'video'
+                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
                   <Video className="h-4 w-4 mr-2" />
-                  Vidéo (bientôt)
+                  Vidéo
                 </button>
               </div>
             </div>
@@ -398,6 +438,55 @@ export default function ContentPage() {
               </div>
             )}
 
+            {/* Section vidéo (conditionnelle) */}
+            {contentType === 'video' && (
+              <div className="border-t pt-4">
+                <p className="text-sm font-medium text-gray-700 mb-3">Vidéo</p>
+                <div className="space-y-4">
+                  {/* Upload de fichier */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Télécharger une vidéo
+                    </label>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleVideoUpload}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                  </div>
+                  
+                  {/* Ou URL */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ou URL de la vidéo
+                    </label>
+                    <input
+                      type="url"
+                      value={videoUrl}
+                      onChange={(e) => handleVideoUrlChange(e.target.value)}
+                      placeholder="https://exemple.com/video.mp4"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  {/* Aperçu de la vidéo */}
+                  {videoPreview && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Aperçu
+                      </label>
+                      <video
+                        src={videoPreview}
+                        controls
+                        className="max-w-xs max-h-48 rounded-lg border border-gray-300"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Bouton de publication */}
             <div className="flex justify-between items-center pt-4">
               <div className="text-sm text-gray-600">
@@ -407,7 +496,7 @@ export default function ContentPage() {
               </div>
               <button
                 onClick={handlePublish}
-                disabled={!message.trim() || loading || (contentType === 'image' && !imageFile && !imageUrl)}
+                disabled={!message.trim() || loading || (contentType === 'image' && !imageFile && !imageUrl) || (contentType === 'video' && !videoFile && !videoUrl)}
                 className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {loading ? (
@@ -436,8 +525,8 @@ export default function ContentPage() {
           <div>
             <h4 className="font-medium mb-2">Contenu multimédia</h4>
             <ul className="space-y-1">
-              <li>• Publication d'images</li>
-              <li>• Publication de vidéos</li>
+              <li>✓ Publication d'images</li>
+              <li>✓ Publication de vidéos</li>
               <li>• Carrousels d'images</li>
             </ul>
           </div>

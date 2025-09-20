@@ -12,6 +12,8 @@ export async function POST(request: NextRequest) {
     const contentType = formData.get('contentType') as string || 'text';
     const imageFile = formData.get('image') as File | null;
     const imageUrl = formData.get('imageUrl') as string | null;
+    const videoFile = formData.get('video') as File | null;
+    const videoUrl = formData.get('videoUrl') as string | null;
 
     if (!message || !pageId) {
       return NextResponse.json(
@@ -66,6 +68,14 @@ export async function POST(request: NextRequest) {
         accessToken: pageAccessToken,
         imageFile: imageFile || undefined,
         imageUrl: imageUrl || undefined
+      });
+    } else if (contentType === 'video') {
+      result = await FacebookPublishService.publishVideoPost({
+        message,
+        pageId,
+        accessToken: pageAccessToken,
+        videoFile: videoFile || undefined,
+        videoUrl: videoUrl || undefined
       });
     } else {
       result = await FacebookPublishService.publishTextPost({

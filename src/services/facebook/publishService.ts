@@ -27,11 +27,29 @@ export interface FacebookImagePublishOptions extends FacebookPublishOptions {
 }
 
 /**
+ * Options pour publier un post avec vidéo sur Facebook.
+ */
+export interface FacebookVideoPublishOptions extends FacebookPublishOptions {
+  videoUrl?: string;
+  videoFile?: File;
+}
+
+/**
  * Résultat d'un upload de photo.
  */
 export interface FacebookPhotoUploadResult {
   success: boolean;
   photoId?: string;
+  error?: string;
+  metaError?: any;
+}
+
+/**
+ * Résultat d'un upload de vidéo.
+ */
+export interface FacebookVideoUploadResult {
+  success: boolean;
+  videoId?: string;
   error?: string;
   metaError?: any;
 }
@@ -253,6 +271,112 @@ export class FacebookPublishService {
   }
 
   /**
+   * Upload une vidéo sur Facebook et retourne l'ID de la vidéo
+   */
+  static async uploadVideo(options: {
+    pageId: string;
+    accessToken: string;
+    videoUrl?: string;
+    videoFile?: File;
+    message?: string;
+  }): Promise<FacebookVideoUploadResult> {
+    try {
+      const { pageId, accessToken, videoUrl, videoFile, message } = options;
+
+      if (!videoUrl && !videoFile) {
+        return { success: false, error: 'Vidéo URL ou fichier requis' };
+      }
+
+      const url = `${this.BASE_URL}/${this.API_VERSION}/${pageId}/videos`;
+      
+      const formData = new FormData();
+      formData.append('access_token', accessToken);
+      
+      if (message) {
+        formData.append('description', message.trim());
+      }
+
+      if (videoFile) {
+        formData.append('source', videoFile);
+      } else if (videoUrl) {
+        formData.append('file_url', videoUrl);
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Facebook Video Upload Error:', JSON.stringify(data, null, 2));
+        return {
+          success: false,
+          error: data.error?.message || 'Erreur lors de l\'upload de la vidéo',
+          metaError: data.error
+        };
+      }
+
+      return {
+        success: true,
+        videoId: data.id
+      };
+
+    } catch (error) {
+      console.error('Video upload service error:', error);
+      return {
+        success: false,
+        error: 'Erreur de connexion lors de l\'upload de la vidéo'
+      };
+    }
+  }
+
+  /**
+   * Publie un post avec vidéo sur Facebook
+   */
+  static async publishVideoPost(options: FacebookVideoPublishOptions): Promise<FacebookPublishResult> {
+    try {
+      const { message, pageId, accessToken, videoUrl, videoFile } = options;
+
+      // Validation
+      const validationError = this.validateVideoPublishOptions(options);
+      if (validationError) {
+        return { success: false, error: validationError };
+      }
+
+      // Upload de la vidéo
+      const uploadResult = await this.uploadVideo({
+        pageId,
+        accessToken,
+        videoUrl,
+        videoFile,
+        message: message.trim()
+      });
+
+      if (!uploadResult.success) {
+        return {
+          success: false,
+          error: uploadResult.error,
+          metaError: uploadResult.metaError
+        };
+      }
+
+      return {
+        success: true,
+        postId: uploadResult.videoId
+      };
+
+    } catch (error) {
+      console.error('Video post service error:', error);
+      return {
+        success: false,
+        error: 'Erreur lors de la publication de la vidéo'
+      };
+    }
+  }
+
+  /**
    * Validation pour les posts avec images
    */
   static validateImagePublishOptions(options: Partial<FacebookImagePublishOptions>): string | null {
@@ -274,6 +398,34 @@ export class FacebookPublishService {
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(options.imageFile.type)) {
         return 'Format d\'image non supporté (JPEG, PNG, GIF, WebP uniquement)';
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Validation pour les posts avec vidéos
+   */
+  static validateVideoPublishOptions(options: Partial<FacebookVideoPublishOptions>): string | null {
+    // Validation de base
+    const baseValidation = this.validatePublishOptions(options);
+    if (baseValidation) return baseValidation;
+
+    // Validation spécifique aux vidéos
+    if (!options.videoUrl && !options.videoFile) {
+      return 'Une vidéo (URL ou fichier) est requise';
+    }
+
+    if (options.videoFile) {
+      const maxSize = 100 * 1024 * 1024; // 100MB
+      if (options.videoFile.size > maxSize) {
+        return 'La vidéo est trop volumineuse (maximum 100MB)';
+      }
+
+      const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv'];
+      if (!allowedTypes.includes(options.videoFile.type)) {
+        return 'Format de vidéo non supporté (MP4, AVI, MOV, WMV, FLV uniquement)';
       }
     }
 
