@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Send, FileText, Image, Video, Calendar, BarChart3, Facebook } from 'lucide-react';
+import { Send, FileText, Image, Video, Calendar, BarChart3, Facebook, Link, Upload, Eye, Settings, Zap, Clock, TrendingUp } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface ConnectedChannel {
   id: string;
@@ -104,7 +105,10 @@ export default function ContentPage() {
       // Vérifier la taille (100MB max)
       const maxSize = 100 * 1024 * 1024;
       if (file.size > maxSize) {
-        setError('La vidéo est trop volumineuse (maximum 100MB)');
+        toast.error('❌ La vidéo est trop volumineuse (maximum 100MB)', {
+          duration: 4000,
+          position: 'top-right',
+        });
         return;
       }
       
@@ -164,7 +168,10 @@ export default function ContentPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('Publication réussie !');
+        toast.success('🎉 Publication réussie !', {
+          duration: 4000,
+          position: 'top-right',
+        });
         setMessage('');
         setImageFile(null);
         setImageUrl('');
@@ -172,12 +179,17 @@ export default function ContentPage() {
         setVideoFile(null);
         setVideoUrl('');
         setVideoPreview(null);
-        setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError(data.error || 'Erreur lors de la publication');
+        toast.error(`❌ ${data.error || 'Erreur lors de la publication'}`, {
+          duration: 5000,
+          position: 'top-right',
+        });
       }
     } catch (err) {
-      setError('Erreur de connexion');
+      toast.error('❌ Erreur de connexion', {
+        duration: 5000,
+        position: 'top-right',
+      });
     } finally {
       setLoading(false);
     }
@@ -186,56 +198,76 @@ export default function ContentPage() {
   return (
     <div className="space-y-6">
       {/* En-tête */}
-      <div className="bg-white shadow-sm rounded-lg p-6">
-        <h1 className="text-3xl font-bold text-gray-900">Création de Contenu</h1>
-        <p className="text-gray-600 mt-2">
-          Créez et publiez du contenu sur vos réseaux sociaux connectés
-        </p>
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white">
+        <div className="flex items-center space-x-3">
+          <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
+            <FileText className="h-8 w-8" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Création de Contenu</h1>
+            <p className="text-blue-100 mt-1">
+              Créez et publiez du contenu sur vos réseaux sociaux connectés
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Statistiques rapides */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center">
-            <FileText className="h-8 w-8 text-blue-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Posts aujourd'hui</p>
-              <p className="text-2xl font-bold text-gray-900">0</p>
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Posts aujourd'hui</p>
+              <p className="text-3xl font-bold text-gray-900">0</p>
+            </div>
+            <div className="p-3 bg-blue-50 rounded-xl group-hover:bg-blue-100 transition-colors">
+              <FileText className="h-8 w-8 text-blue-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center">
-            <BarChart3 className="h-8 w-8 text-green-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Engagement</p>
-              <p className="text-2xl font-bold text-gray-900">-</p>
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Engagement</p>
+              <p className="text-3xl font-bold text-gray-900">-</p>
+            </div>
+            <div className="p-3 bg-green-50 rounded-xl group-hover:bg-green-100 transition-colors">
+              <TrendingUp className="h-8 w-8 text-green-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center">
-            <Calendar className="h-8 w-8 text-purple-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Programmés</p>
-              <p className="text-2xl font-bold text-gray-900">0</p>
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Programmés</p>
+              <p className="text-3xl font-bold text-gray-900">0</p>
+            </div>
+            <div className="p-3 bg-purple-50 rounded-xl group-hover:bg-purple-100 transition-colors">
+              <Calendar className="h-8 w-8 text-purple-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center">
-            <Send className="h-8 w-8 text-orange-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Canaux actifs</p>
-              <p className="text-2xl font-bold text-gray-900">{availableChannelTypes.length}</p>
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 mb-1">Canaux actifs</p>
+              <p className="text-3xl font-bold text-gray-900">{availableChannelTypes.length}</p>
+            </div>
+            <div className="p-3 bg-orange-50 rounded-xl group-hover:bg-orange-100 transition-colors">
+              <Zap className="h-8 w-8 text-orange-600" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Formulaire de publication */}
-      <div className="bg-white shadow-sm rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Nouvelle Publication</h2>
+      <div className="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <Send className="h-6 w-6 text-blue-600" />
+          </div>
+          <h2 className="text-2xl font-semibold text-gray-900">Nouvelle Publication</h2>
+        </div>
         
         {/* Messages de statut */}
         {success && (
@@ -252,7 +284,7 @@ export default function ContentPage() {
 
         {availableChannelTypes.length === 0 ? (
           <div className="text-center py-8">
-            <Send className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <Link className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               Aucun canal connecté
             </h3>
@@ -261,8 +293,9 @@ export default function ContentPage() {
             </p>
             <a
               href="/dashboard/channels"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors"
             >
+              <Settings className="h-4 w-4 mr-2" />
               Connecter un canal
             </a>
           </div>
@@ -281,7 +314,7 @@ export default function ContentPage() {
                     setSelectedPage(channels[0].externalId);
                   }
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
               >
                 {availableChannelTypes.map((channelType) => (
                   <option key={channelType.key} value={channelType.key}>
@@ -300,7 +333,7 @@ export default function ContentPage() {
                 <select
                   value={selectedPage}
                   onChange={(e) => setSelectedPage(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
                 >
                   {channels.filter(c => c.type === 'messenger').map((channel) => (
                     <option key={channel.externalId} value={channel.externalId}>
@@ -332,6 +365,7 @@ export default function ContentPage() {
               {/* Aperçu */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Eye className="h-4 w-4 inline mr-1" />
                   Aperçu
                 </label>
                 <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 min-h-[152px]">
@@ -358,41 +392,71 @@ export default function ContentPage() {
             </div>
 
             {/* Types de contenu */}
-            <div className="border-t pt-4">
-              <p className="text-sm font-medium text-gray-700 mb-3">Type de contenu</p>
-              <div className="flex space-x-4">
+            <div className="border-t pt-6">
+              <p className="text-lg font-semibold text-gray-900 mb-4">Type de contenu</p>
+              <div className="grid grid-cols-3 gap-4">
                 <button
                   onClick={() => setContentType('text')}
-                  className={`flex items-center px-3 py-2 rounded-lg border ${
+                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
                     contentType === 'text'
-                      ? 'bg-blue-50 text-blue-700 border-blue-200'
-                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                      ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-lg'
+                      : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-md'
                   }`}
                 >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Texte
+                  <div className="flex flex-col items-center space-y-3">
+                    <div className={`p-3 rounded-xl transition-colors ${
+                      contentType === 'text' ? 'bg-blue-500' : 'bg-gray-100 group-hover:bg-blue-100'
+                    }`}>
+                      <FileText className={`h-6 w-6 ${
+                        contentType === 'text' ? 'text-white' : 'text-gray-600 group-hover:text-blue-600'
+                      }`} />
+                    </div>
+                    <span className={`font-medium ${
+                      contentType === 'text' ? 'text-blue-700' : 'text-gray-700'
+                    }`}>Texte</span>
+                  </div>
                 </button>
                 <button
                   onClick={() => setContentType('image')}
-                  className={`flex items-center px-3 py-2 rounded-lg border ${
+                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
                     contentType === 'image'
-                      ? 'bg-blue-50 text-blue-700 border-blue-200'
-                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                      ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-300 shadow-lg'
+                      : 'bg-white border-gray-200 hover:border-green-200 hover:shadow-md'
                   }`}
                 >
-                  <Image className="h-4 w-4 mr-2" />
-                  Image
+                  <div className="flex flex-col items-center space-y-3">
+                    <div className={`p-3 rounded-xl transition-colors ${
+                      contentType === 'image' ? 'bg-green-500' : 'bg-gray-100 group-hover:bg-green-100'
+                    }`}>
+                      <Image className={`h-6 w-6 ${
+                        contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
+                      }`} />
+                    </div>
+                    <span className={`font-medium ${
+                      contentType === 'image' ? 'text-green-700' : 'text-gray-700'
+                    }`}>Image</span>
+                  </div>
                 </button>
                 <button
                   onClick={() => setContentType('video')}
-                  className={`flex items-center px-3 py-2 rounded-lg border ${
+                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
                     contentType === 'video'
-                      ? 'bg-blue-50 text-blue-700 border-blue-200'
-                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                      ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 shadow-lg'
+                      : 'bg-white border-gray-200 hover:border-purple-200 hover:shadow-md'
                   }`}
                 >
-                  <Video className="h-4 w-4 mr-2" />
-                  Vidéo
+                  <div className="flex flex-col items-center space-y-3">
+                    <div className={`p-3 rounded-xl transition-colors ${
+                      contentType === 'video' ? 'bg-purple-500' : 'bg-gray-100 group-hover:bg-purple-100'
+                    }`}>
+                      <Video className={`h-6 w-6 ${
+                        contentType === 'video' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                      }`} />
+                    </div>
+                    <span className={`font-medium ${
+                      contentType === 'video' ? 'text-purple-700' : 'text-gray-700'
+                    }`}>Vidéo</span>
+                  </div>
                 </button>
               </div>
             </div>
@@ -405,19 +469,36 @@ export default function ContentPage() {
                   {/* Upload de fichier */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <Upload className="h-4 w-4 inline mr-1" />
                       Télécharger une image
                     </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        id="image-upload"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="flex items-center justify-center w-full p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-300 cursor-pointer group"
+                      >
+                        <div className="text-center">
+                          <Upload className="h-8 w-8 text-gray-400 group-hover:text-blue-500 mx-auto mb-2" />
+                          <p className="text-sm font-medium text-gray-600 group-hover:text-blue-600">
+                            Cliquez pour sélectionner une image
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF jusqu'à 10MB</p>
+                        </div>
+                      </label>
+                    </div>
                   </div>
                   
                   {/* Ou URL */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <Link className="h-4 w-4 inline mr-1" />
                       Ou URL de l'image
                     </label>
                     <input
@@ -454,14 +535,30 @@ export default function ContentPage() {
                   {/* Upload de fichier */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <Upload className="h-4 w-4 inline mr-1" />
                       Télécharger une vidéo
                     </label>
-                    <input
-                      type="file"
-                      accept="video/*"
-                      onChange={handleVideoUpload}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={handleVideoUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        id="video-upload"
+                      />
+                      <label
+                        htmlFor="video-upload"
+                        className="flex items-center justify-center w-full p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-400 hover:bg-purple-50 transition-all duration-300 cursor-pointer group"
+                      >
+                        <div className="text-center">
+                          <Upload className="h-8 w-8 text-gray-400 group-hover:text-purple-500 mx-auto mb-2" />
+                          <p className="text-sm font-medium text-gray-600 group-hover:text-purple-600">
+                            Cliquez pour sélectionner une vidéo
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">MP4, MOV, AVI jusqu'à 100MB</p>
+                        </div>
+                      </label>
+                    </div>
                     <p className="text-xs text-gray-500 mt-1">
                       Maximum 100MB - L'upload peut prendre plusieurs minutes
                     </p>
@@ -470,6 +567,7 @@ export default function ContentPage() {
                   {/* Ou URL */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <Link className="h-4 w-4 inline mr-1" />
                       Ou URL de la vidéo
                     </label>
                     <input
@@ -508,7 +606,7 @@ export default function ContentPage() {
               <button
                 onClick={handlePublish}
                 disabled={!message.trim() || loading || (contentType === 'image' && !imageFile && !imageUrl) || (contentType === 'video' && !videoFile && !videoUrl)}
-                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
               >
                 {loading ? (
                   <>
@@ -529,9 +627,12 @@ export default function ContentPage() {
 
       {/* Prochaines fonctionnalités */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-blue-900 mb-3">
-          🚀 Prochaines fonctionnalités
-        </h3>
+        <div className="flex items-center mb-3">
+          <Clock className="h-5 w-5 text-blue-600 mr-2" />
+          <h3 className="text-lg font-medium text-blue-900">
+            Prochaines fonctionnalités
+          </h3>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
           <div>
             <h4 className="font-medium mb-2">Contenu multimédia</h4>

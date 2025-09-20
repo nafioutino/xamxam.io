@@ -270,7 +270,7 @@ export default function ChannelsPage() {
             </div>
             <button
               onClick={() => setShowSuccessMessage(false)}
-              className="ml-auto text-green-600 hover:text-green-800"
+              className="ml-auto text-green-600 hover:text-green-800 cursor-pointer"
             >
               <XCircle className="h-5 w-5" />
             </button>
@@ -367,7 +367,7 @@ export default function ChannelsPage() {
                       </div>
                       <button
                         onClick={() => setSelectedChannel(channel)}
-                        className="p-1 text-gray-400 hover:text-gray-600"
+                        className="p-1 text-gray-400 hover:text-gray-600 cursor-pointer"
                       >
                         <Settings className="h-4 w-4" />
                       </button>
@@ -388,7 +388,7 @@ export default function ChannelsPage() {
                     <div className="mt-3 flex space-x-2">
                       <button
                         onClick={() => handleDisconnectChannel(channel.id)}
-                        className="text-xs px-3 py-1 bg-red-50 text-red-700 rounded-md hover:bg-red-100 transition-colors shadow-sm"
+                        className="text-xs px-3 py-1 bg-red-50 text-red-700 rounded-md hover:bg-red-100 transition-colors shadow-sm cursor-pointer"
                       >
                         Déconnecter
                       </button>
@@ -446,7 +446,7 @@ export default function ChannelsPage() {
                         className={`w-full text-xs px-3 py-2 rounded-md transition-colors shadow-sm ${
                           channel.status === 'pending'
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                            : 'bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer'
                         }`}
                       >
                         {channel.status === 'pending' ? 'Connexion en cours...' : 'Connecter'}
