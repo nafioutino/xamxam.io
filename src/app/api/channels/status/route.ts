@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import  prisma  from '@/lib/prisma';
+import { decryptToken } from '@/lib/encryption';
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,7 +29,8 @@ export async function GET(request: NextRequest) {
                 type: true,
                 externalId: true,
                 isActive: true,
-                createdAt: true
+                createdAt: true,
+                accessToken: true
               }
             }
           }
@@ -47,26 +49,52 @@ export async function GET(request: NextRequest) {
 
 
 
+    // Récupérer les canaux avec leurs informations complètes
+    const channelsWithDetails = await Promise.all(
+      shop.channels.map(async (channel: any) => {
+        let channelType = channel.type;
+        let pageName = null;
+        
+        // Mapper les types de canaux vers les noms utilisés dans l'UI
+        if (channel.type === 'FACEBOOK_PAGE') {
+          channelType = 'messenger';
+          // Récupérer le nom de la page Facebook
+          try {
+            if (channel.accessToken) {
+              const decryptedToken = decryptToken(channel.accessToken);
+              const response = await fetch(`https://graph.facebook.com/v23.0/${channel.externalId}?fields=name&access_token=${decryptedToken}`);
+              if (response.ok) {
+                const pageData = await response.json();
+                pageName = pageData.name;
+              }
+            }
+          } catch (error) {
+            console.error('Erreur récupération nom page:', error);
+          }
+        } else if (channel.type === 'WHATSAPP') {
+          channelType = 'whatsapp';
+        } else if (channel.type === 'TELEGRAM') {
+          channelType = 'telegram';
+        } else if (channel.type === 'INSTAGRAM_DM') {
+          channelType = 'instagram';
+        }
+        
+        return {
+          channelType,
+          data: {
+            id: channel.id,
+            externalId: channel.externalId,
+            isActive: channel.isActive,
+            connectedAt: channel.createdAt.toISOString(),
+            pageName
+          }
+        };
+      })
+    );
+
     // Mapper les canaux connectés par type
-    const connectedChannels = shop.channels.reduce((acc: Record<string, any>, channel: any) => {
-      // Mapper les types de canaux vers les noms utilisés dans l'UI
-      let channelType = channel.type;
-      if (channel.type === 'FACEBOOK_PAGE') {
-        channelType = 'messenger';
-      } else if (channel.type === 'WHATSAPP') {
-        channelType = 'whatsapp';
-      } else if (channel.type === 'TELEGRAM') {
-        channelType = 'telegram';
-      } else if (channel.type === 'INSTAGRAM_DM') {
-        channelType = 'instagram';
-      }
-      
-      acc[channelType] = {
-        id: channel.id,
-        externalId: channel.externalId,
-        isActive: channel.isActive,
-        connectedAt: channel.createdAt.toISOString()
-      };
+    const connectedChannels = channelsWithDetails.reduce((acc: Record<string, any>, { channelType, data }) => {
+      acc[channelType] = data;
       return acc;
     }, {});
 

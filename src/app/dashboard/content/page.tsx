@@ -8,12 +8,21 @@ interface ConnectedChannel {
   externalId: string;
   type: string;
   isActive: boolean;
+  pageName?: string;
+}
+
+interface ChannelType {
+  key: string;
+  label: string;
+  icon: any;
 }
 
 export default function ContentPage() {
   const [message, setMessage] = useState('');
-  const [selectedChannel, setSelectedChannel] = useState('');
+  const [selectedChannelType, setSelectedChannelType] = useState('');
+  const [selectedPage, setSelectedPage] = useState('');
   const [channels, setChannels] = useState<ConnectedChannel[]>([]);
+  const [availableChannelTypes, setAvailableChannelTypes] = useState<ChannelType[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -25,17 +34,33 @@ export default function ContentPage() {
         const response = await fetch('/api/channels/status');
         if (response.ok) {
           const data = await response.json();
-          const facebookChannels = Object.entries(data.connectedChannels)
-            .filter(([type]) => type === 'messenger')
-            .map(([type, channel]: [string, any]) => ({
-              id: channel.id,
-              externalId: channel.externalId,
-              type,
-              isActive: channel.isActive
-            }));
-          setChannels(facebookChannels);
-          if (facebookChannels.length > 0) {
-            setSelectedChannel(facebookChannels[0].externalId);
+          
+          // Mapper tous les canaux
+          const allChannels: ConnectedChannel[] = [];
+          const channelTypes: ChannelType[] = [];
+          
+          Object.entries(data.connectedChannels).forEach(([type, channel]: [string, any]) => {
+            if (type === 'messenger') {
+              allChannels.push({
+                id: channel.id,
+                externalId: channel.externalId,
+                type,
+                isActive: channel.isActive,
+                pageName: channel.pageName || `Page ${channel.externalId}`
+              });
+              channelTypes.push({ key: 'facebook-page', label: 'Facebook Page', icon: Facebook });
+            }
+            // Ajouter d'autres types de canaux ici
+          });
+          
+          setChannels(allChannels);
+          setAvailableChannelTypes(channelTypes);
+          
+          if (channelTypes.length > 0) {
+            setSelectedChannelType(channelTypes[0].key);
+            if (channelTypes[0].key === 'facebook-page' && allChannels.length > 0) {
+              setSelectedPage(allChannels[0].externalId);
+            }
           }
         }
       } catch (err) {
@@ -47,7 +72,8 @@ export default function ContentPage() {
   }, []);
 
   const handlePublish = async () => {
-    if (!message.trim() || !selectedChannel) return;
+    if (!message.trim() || !selectedChannelType) return;
+    if (selectedChannelType === 'facebook-page' && !selectedPage) return;
 
     setLoading(true);
     setError('');
@@ -61,7 +87,7 @@ export default function ContentPage() {
         },
         body: JSON.stringify({
           message: message.trim(),
-          pageId: selectedChannel
+          pageId: selectedPage
         })
       });
 
@@ -125,7 +151,7 @@ export default function ContentPage() {
             <Send className="h-8 w-8 text-orange-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Canaux actifs</p>
-              <p className="text-2xl font-bold text-gray-900">{channels.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{availableChannelTypes.length}</p>
             </div>
           </div>
         </div>
@@ -148,7 +174,7 @@ export default function ContentPage() {
           </div>
         )}
 
-        {channels.length === 0 ? (
+        {availableChannelTypes.length === 0 ? (
           <div className="text-center py-8">
             <Send className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -166,23 +192,48 @@ export default function ContentPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Sélection du canal */}
+            {/* Sélection du type de canal */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Canal de publication
+                Type de canal
               </label>
               <select
-                value={selectedChannel}
-                onChange={(e) => setSelectedChannel(e.target.value)}
+                value={selectedChannelType}
+                onChange={(e) => {
+                  setSelectedChannelType(e.target.value);
+                  if (e.target.value === 'facebook-page' && channels.length > 0) {
+                    setSelectedPage(channels[0].externalId);
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {channels.map((channel) => (
-                  <option key={channel.externalId} value={channel.externalId}>
-                    Facebook Page - {channel.externalId}
+                {availableChannelTypes.map((channelType) => (
+                  <option key={channelType.key} value={channelType.key}>
+                    {channelType.label}
                   </option>
                 ))}
               </select>
             </div>
+
+            {/* Sélection de la page Facebook (conditionnel) */}
+            {selectedChannelType === 'facebook-page' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Page Facebook
+                </label>
+                <select
+                  value={selectedPage}
+                  onChange={(e) => setSelectedPage(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {channels.filter(c => c.type === 'messenger').map((channel) => (
+                    <option key={channel.externalId} value={channel.externalId}>
+                      {channel.pageName || `Page ${channel.externalId}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Zone de texte */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
