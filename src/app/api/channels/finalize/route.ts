@@ -1,3 +1,8 @@
+// /app/api/channels/finalize/route.ts
+
+// ==================================================================
+// ===                        IMPORTS                             ===
+// ==================================================================
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import prisma from '@/lib/prisma';
@@ -5,301 +10,145 @@ import { encryptToken } from '@/lib/encryption';
 import { ChannelType } from '@/generated/prisma';
 import { createClient } from '@/utils/supabase/server';
 
-// Types
+// ==================================================================
+// ===                 TYPES ET INTERFACES                        ===
+// ==================================================================
 interface FacebookPage {
   id: string;
   name: string;
-  access_token: string;
+  access_token: string; // Le Page Access Token fourni par /me/accounts
   category: string;
   tasks: string[];
 }
 
-interface PageTokenResponse {
-  access_token: string;
-  id: string;
-}
-
-interface MetaError {
-  error: {
-    message: string;
-    type: string;
-    code: number;
-  };
-}
-
-interface WebhookSubscriptionResponse {
-  success: boolean;
-}
-
-// Fonction pour mapper les plateformes vers les types de canaux
-function mapPlatformToChannelType(platform: string): ChannelType {
-  switch (platform.toLowerCase()) {
-    case 'messenger':
-      return ChannelType.FACEBOOK_PAGE;
-    case 'instagram':
-      return ChannelType.INSTAGRAM_DM;
-    case 'whatsapp':
-      return ChannelType.WHATSAPP;
-    default:
-      throw new Error(`Unsupported platform: ${platform}`);
-  }
-}
-
+// ==================================================================
+// ===                 FONCTION PRINCIPALE (POST)                 ===
+// ==================================================================
 export async function POST(request: NextRequest) {
+  const logPrefix = '[Finalize API]';
+  
   try {
+    // --- ÉTAPE 1: VALIDER LA REQUÊTE ET LA SESSION ---
     const body = await request.json();
     const { pageId, pageName, platform } = body;
     
     if (!pageId || !pageName || !platform) {
-      return NextResponse.json(
-        { error: 'Missing required fields: pageId, pageName, platform' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields: pageId, pageName, platform' }, { status: 400 });
     }
     
     const cookieStore = await cookies();
+    const pagesDataString = cookieStore.get('meta_pages')?.value;
     
-    // Récupérer les données stockées
-    const pagesData = cookieStore.get('meta_pages')?.value;
-    const userToken = cookieStore.get('meta_user_token')?.value;
-    
-    if (!pagesData || !userToken) {
-      return NextResponse.json(
-        { error: 'Session expired. Please authenticate again.' },
-        { status: 401 }
-      );
+    if (!pagesDataString) {
+      return NextResponse.json({ error: 'Session expired or invalid. Please try connecting again.' }, { status: 401 });
     }
     
-    let pages: FacebookPage[];
-    try {
-      pages = JSON.parse(pagesData);
-    } catch (parseError) {
-      return NextResponse.json(
-        { error: 'Invalid session data' },
-        { status: 400 }
-      );
-    }
-    
-    // Trouver la page sélectionnée
+    const pages: FacebookPage[] = JSON.parse(pagesDataString);
+
+    // --- ÉTAPE 2: EXTRAIRE LE PAGE ACCESS TOKEN DE LA SESSION ---
+    // C'est l'étape la plus critique. Le bon token est celui qui a été fourni par l'appel `/me/accounts`
+    // lors du callback, car il a été généré en tenant compte des permissions que l'utilisateur vient d'accorder.
     const selectedPage = pages.find(page => page.id === pageId);
-    if (!selectedPage) {
-      return NextResponse.json(
-        { error: 'Selected page not found' },
-        { status: 404 }
-      );
+
+    if (!selectedPage || !selectedPage.access_token) {
+      console.error(`${logPrefix} Page or Page Access Token not found in session for pageId: ${pageId}`);
+      return NextResponse.json({ error: 'Selected page token was not found in your session. Please reconnect.' }, { status: 404 });
     }
     
-    // Étape 1: Vérifier les permissions du user token
-    const permissionsUrl = `https://graph.facebook.com/v23.0/me/permissions?access_token=${userToken}`;
+    const pageAccessToken = selectedPage.access_token;
+    logger.info(`${logPrefix} Found Page Access Token for page ${pageId} directly from session cookie.`);
+
+    // --- ÉTAPE 3 (Débogage) : VÉRIFIER LES PERMISSIONS DU TOKEN ---
+    // Cet appel à l'API `debug_token` est un excellent moyen de confirmer que le token a bien les permissions requises.
+    const appToken = `${process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}|${process.env.FACEBOOK_APP_SECRET}`;
+    const permissionsUrl = `https://graph.facebook.com/v23.0/debug_token?input_token=${pageAccessToken}&access_token=${appToken}`;
     const permissionsResponse = await fetch(permissionsUrl);
     const permissionsData = await permissionsResponse.json();
+    logger.info(`${logPrefix} Permissions for the stored Page Access Token:`, permissionsData.data?.scopes);
+
+    // --- ÉTAPE 4: SOUSCRIRE LA PAGE AUX WEBHOOKS ---
+    // Cette étape est cruciale pour que Meta nous envoie les messages en temps réel.
+    const webhookUrl = `https://graph.facebook.com/v23.0/${pageId}/subscribed_apps`;
+    const subscribedFields = ['messages', 'messaging_postbacks']; // Scopes de base pour la messagerie
     
-    if (!permissionsResponse.ok) {
-      console.error('Failed to check permissions:', permissionsData);
-      return NextResponse.json(
-        { error: 'Failed to verify user permissions' },
-        { status: 500 }
-      );
-    }
-    
-    const grantedPermissions = permissionsData.data
-      ?.filter((p: any) => p.status === 'granted')
-      ?.map((p: any) => p.permission) || [];
-    
-    const requiredPermissions = ['pages_manage_posts', 'pages_read_engagement', 'pages_show_list'];
-    const missingPermissions = requiredPermissions.filter(perm => !grantedPermissions.includes(perm));
-    
-    if (missingPermissions.length > 0) {
-      console.error('Missing permissions:', missingPermissions);
-      return NextResponse.json(
-        { 
-          error: `Permissions manquantes: ${missingPermissions.join(', ')}. Veuillez reconnecter votre compte Facebook avec toutes les permissions.`,
-          missingPermissions
-        },
-        { status: 403 }
-      );
-    }
-    
-    // Étape 2: Obtenir un Page Access Token avec les bonnes permissions
-    const pageTokenUrl = new URL(`https://graph.facebook.com/v23.0/${pageId}`);
-    pageTokenUrl.searchParams.append('fields', 'access_token');
-    pageTokenUrl.searchParams.append('access_token', userToken);
-    
-    const pageTokenResponse = await fetch(pageTokenUrl.toString());
-    const pageTokenData: PageTokenResponse | MetaError = await pageTokenResponse.json();
-    
-    if (!pageTokenResponse.ok || 'error' in pageTokenData) {
-      console.error('Page token fetch failed:', pageTokenData);
-      return NextResponse.json(
-        { error: 'Failed to obtain page access token' },
-        { status: 500 }
-      );
-    }
-    
-    const pageAccessToken = pageTokenData.access_token;
-    
-    // Étape 3: Vérifier les permissions du page token
-    const pagePermissionsUrl = `https://graph.facebook.com/v23.0/me/permissions?access_token=${pageAccessToken}`;
-    const pagePermissionsResponse = await fetch(pagePermissionsUrl);
-    
-    if (pagePermissionsResponse.ok) {
-      const pagePermissionsData = await pagePermissionsResponse.json();
-      console.log('Page token permissions:', pagePermissionsData.data);
-    }
-    
-    // Étape 4: Souscrire aux webhooks
-    const webhookUrl = new URL(`https://graph.facebook.com/v23.0/${pageId}/subscribed_apps`);
-    const webhookBody = new URLSearchParams();
-    webhookBody.append('access_token', pageAccessToken);
-    
-    // Définir les champs selon la plateforme
-    let subscribedFields: string[];
-    switch (platform) {
-      case 'messenger':
-        subscribedFields = ['messages', 'messaging_postbacks', 'message_deliveries', 'message_reads'];
-        break;
-      case 'instagram':
-        subscribedFields = ['messages', 'messaging_postbacks'];
-        break;
-      case 'whatsapp':
-        subscribedFields = ['messages', 'message_deliveries'];
-        break;
-      default:
-        subscribedFields = ['messages'];
-    }
-    
-    webhookBody.append('subscribed_fields', subscribedFields.join(','));
-    
-    const webhookResponse = await fetch(webhookUrl.toString(), {
+    const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: webhookBody
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        subscribed_fields: subscribedFields.join(','),
+        access_token: pageAccessToken,
+      })
     });
     
-    const webhookData: WebhookSubscriptionResponse | MetaError = await webhookResponse.json();
-    
-    if (!webhookResponse.ok || 'error' in webhookData) {
-      console.error('Webhook subscription failed:', webhookData);
-      // Ne pas échouer complètement, on peut configurer les webhooks manuellement
-      console.warn('Continuing without webhook subscription...');
+    if (!webhookResponse.ok) {
+      const webhookError = await webhookResponse.json();
+      logger.error(`${logPrefix} Webhook subscription failed:`, webhookError);
+      // On continue même si cela échoue, mais on le loggue comme une erreur critique.
+    } else {
+      logger.info(`${logPrefix} Successfully subscribed page ${pageId} to webhooks.`);
     }
-    
-    // Étape 3: Récupérer le shopId depuis la session utilisateur
-    // TODO: Implémenter la récupération du shopId depuis la session
-    // Récupérer l'utilisateur connecté et sa boutique
+
+    // --- ÉTAPE 5: RÉCUPÉRER LA BOUTIQUE ET CHIFFRER LE TOKEN ---
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated.');
     
-    if (authError || !user) {
-      console.error('Erreur d\'authentification:', authError);
-      return NextResponse.json({
-        success: false,
-        error: 'Non authentifié',
-        message: 'Vous devez être connecté pour finaliser la connexion du canal'
-      }, { status: 401 });
-    }
-
-    // Récupérer la boutique de l'utilisateur
-    const userShop = await prisma.shop.findUnique({
-      where: { ownerId: user.id }
-    });
-
-    if (!userShop) {
-      console.error('Aucune boutique trouvée pour l\'utilisateur:', user.id);
-      return NextResponse.json({
-        success: false,
-        error: 'Boutique non trouvée',
-        message: 'Aucune boutique associée à votre compte. Veuillez créer une boutique d\'abord.'
-      }, { status: 404 });
-    }
-
+    const userShop = await prisma.shop.findUnique({ where: { ownerId: user.id } });
+    if (!userShop) throw new Error('Shop not found for the current user.');
+    
     const shopId = userShop.id;
-    console.log('Boutique trouvée:', { shopId, shopName: userShop.name, userId: user.id });
-    
-    // Étape 4: Chiffrer et stocker les données de manière sécurisée
     const encryptedToken = encryptToken(pageAccessToken);
     const channelType = mapPlatformToChannelType(platform);
-    
-    // Vérifier si un canal existe déjà pour cette page
-    const existingChannel = await prisma.channel.findFirst({
-      where: {
-        shopId,
-        type: channelType,
-        externalId: pageId
-      }
+
+    // --- ÉTAPE 6: STOCKER LE CANAL DANS LA BASE DE DONNÉES ---
+    // On utilise `upsert` pour créer le canal s'il n'existe pas, ou le mettre à jour s'il existe déjà.
+    // C'est plus robuste qu'une logique `findFirst` + `if/else`.
+    await prisma.channel.upsert({
+      where: { shopId_type_externalId: { shopId, type: channelType, externalId: pageId } },
+      update: { accessToken: encryptedToken, isActive: true },
+      create: { type: channelType, externalId: pageId, accessToken: encryptedToken, isActive: true, shopId }
     });
+    logger.info(`${logPrefix} Channel data for page ${pageId} stored successfully in DB.`);
+
+    // --- ÉTAPE 7: NETTOYER LA SESSION ET RÉPONDRE ---
+    const response = NextResponse.json({ success: true });
     
-    let channel;
-    if (existingChannel) {
-      // Mettre à jour le canal existant
-      channel = await prisma.channel.update({
-        where: { id: existingChannel.id },
-        data: {
-          accessToken: encryptedToken,
-          isActive: true
-        }
-      });
-    } else {
-      // Créer un nouveau canal
-      channel = await prisma.channel.create({
-        data: {
-          type: channelType,
-          externalId: pageId,
-          accessToken: encryptedToken,
-          isActive: true,
-          shopId
-        }
-      });
-    }
-    
-    console.log('Channel stored successfully:', {
-      id: channel.id,
-      type: channel.type,
-      externalId: channel.externalId,
-      isActive: channel.isActive,
-      webhookSubscribed: !('error' in webhookData)
-    });
-    
-    // Étape 5: Nettoyer les cookies temporaires
-    const response = NextResponse.json({
-      success: true,
-      channel: {
-        id: channel.id,
-        type: channel.type,
-        externalId: channel.externalId,
-        pageName,
-        platform,
-        status: 'connected',
-        webhookSubscribed: !('error' in webhookData)
-      }
-    });
-    
-    // Supprimer les cookies temporaires
+    // On supprime les cookies temporaires car ils ne sont plus nécessaires et pour la sécurité.
     response.cookies.delete('meta_pages');
     response.cookies.delete('meta_user_token');
     
     return response;
     
   } catch (error) {
-    console.error('Finalize API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    const errorMessage = error instanceof Error ? error.message : 'An unknown internal error occurred.';
+    logger.error(`${logPrefix} CRITICAL ERROR:`, errorMessage);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
-// Gérer les autres méthodes HTTP
+// Logger simple
+const logger = {
+  info: (prefix: string, ...args: any[]) => console.log(prefix, ...args),
+  error: (prefix: string, ...args: any[]) => console.error(prefix, ...args)
+};
+
+// Fonction utilitaire pour mapper les plateformes vers les types de canaux
+function mapPlatformToChannelType(platform: string): ChannelType {
+  switch (platform.toLowerCase()) {
+    case 'messenger': return ChannelType.FACEBOOK_PAGE;
+    case 'instagram': return ChannelType.INSTAGRAM_DM;
+    case 'whatsapp': return ChannelType.WHATSAPP;
+    default: throw new Error(`Unsupported platform: ${platform}`);
+  }
+}
+
+// Gérer les autres méthodes HTTP pour retourner une erreur claire.
 export async function GET() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 }
-
 export async function PUT() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 }
-
 export async function DELETE() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 }
