@@ -42,11 +42,11 @@ export default function ContentPage() {
         const response = await fetch('/api/channels/status');
         if (response.ok) {
           const data = await response.json();
-          
+
           // Mapper tous les canaux
           const allChannels: ConnectedChannel[] = [];
           const channelTypes: ChannelType[] = [];
-          
+
           Object.entries(data.connectedChannels).forEach(([type, channel]: [string, any]) => {
             if (type === 'messenger') {
               allChannels.push({
@@ -72,14 +72,14 @@ export default function ContentPage() {
               }
             }
           });
-          
+
           setChannels(allChannels);
           setAvailableChannelTypes(channelTypes);
-          
+
           if (channelTypes.length > 0) {
             setSelectedChannelType(channelTypes[0].key);
             if (allChannels.length > 0) {
-              const firstChannelOfType = allChannels.find(c => 
+              const firstChannelOfType = allChannels.find(c =>
                 (channelTypes[0].key === 'facebook-page' && c.type === 'messenger') ||
                 (channelTypes[0].key === 'instagram-dm' && c.type === 'instagram')
               );
@@ -102,7 +102,7 @@ export default function ContentPage() {
     if (file) {
       setImageFile(file);
       setImageUrl('');
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
@@ -129,11 +129,11 @@ export default function ContentPage() {
         });
         return;
       }
-      
+
       setVideoFile(file);
       setVideoUrl('');
       setError('');
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         setVideoPreview(e.target?.result as string);
@@ -163,7 +163,7 @@ export default function ContentPage() {
       formData.append('message', message.trim());
       formData.append('pageId', selectedPage);
       formData.append('contentType', contentType);
-      
+
       if (contentType === 'image') {
         if (imageFile) {
           formData.append('image', imageFile);
@@ -178,9 +178,33 @@ export default function ContentPage() {
         }
       }
 
+      // Vérifier que l'ID de page correspond au type de canal sélectionné
+      const selectedChannel = channels.find(channel => 
+        (selectedChannelType === 'instagram-dm' && channel.type === 'instagram' && channel.externalId === selectedPage) ||
+        (selectedChannelType === 'facebook-page' && channel.type === 'messenger' && channel.externalId === selectedPage)
+      );
+      
+      if (!selectedChannel) {
+        // Si l'ID ne correspond pas au type, chercher le bon canal
+        const correctChannel = channels.find(channel => 
+          (selectedChannelType === 'instagram-dm' && channel.type === 'instagram') ||
+          (selectedChannelType === 'facebook-page' && channel.type === 'messenger')
+        );
+        
+        if (correctChannel) {
+          // Utiliser le bon ID
+          formData.set('pageId', correctChannel.externalId);
+          console.log(`ID corrigé: utilisation de ${correctChannel.externalId} pour ${selectedChannelType}`);
+        } else {
+          throw new Error(`Aucun canal ${selectedChannelType} trouvé`);
+        }
+      }
+      
       // Déterminer l'API à utiliser selon le type de canal
       const apiEndpoint = selectedChannelType === 'instagram-dm' ? '/api/instagram/publish' : '/api/facebook/publish';
       
+      console.log(`Publication sur ${apiEndpoint} avec pageId=${formData.get('pageId')}`);
+
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         body: formData
@@ -289,14 +313,14 @@ export default function ContentPage() {
           </div>
           <h2 className="text-2xl font-semibold text-gray-900">Nouvelle Publication</h2>
         </div>
-        
+
         {/* Messages de statut */}
         {success && (
           <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-green-800">{success}</p>
           </div>
         )}
-        
+
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-800">{error}</p>
@@ -330,9 +354,24 @@ export default function ContentPage() {
               <select
                 value={selectedChannelType}
                 onChange={(e) => {
-                  setSelectedChannelType(e.target.value);
-                  if (e.target.value === 'facebook-page' && channels.length > 0) {
-                    setSelectedPage(channels[0].externalId);
+                  const newChannelType = e.target.value;
+                  setSelectedChannelType(newChannelType);
+
+                  // === LA LOGIQUE CORRIGÉE ===
+                  // On cherche le PREMIER canal qui correspond au NOUVEAU type sélectionné.
+                  let firstChannelOfNewType;
+                  if (newChannelType === 'facebook-page') {
+                    firstChannelOfNewType = channels.find(c => c.type === 'messenger');
+                  } else if (newChannelType === 'instagram-dm') {
+                    firstChannelOfNewType = channels.find(c => c.type === 'instagram');
+                  }
+
+                  // Si on a trouvé un canal correspondant, on met à jour l'ID sélectionné.
+                  // Sinon, on met une chaîne vide pour éviter d'envoyer un mauvais ID.
+                  if (firstChannelOfNewType) {
+                    setSelectedPage(firstChannelOfNewType.externalId);
+                  } else {
+                    setSelectedPage('');
                   }
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
@@ -364,7 +403,7 @@ export default function ContentPage() {
                 </select>
               </div>
             )}
-            
+
             {selectedChannelType === 'instagram-dm' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -401,7 +440,7 @@ export default function ContentPage() {
                   {message.length} caractères
                 </p>
               </div>
-              
+
               {/* Aperçu */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -437,65 +476,53 @@ export default function ContentPage() {
               <div className="grid grid-cols-3 gap-4">
                 <button
                   onClick={() => setContentType('text')}
-                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
-                    contentType === 'text'
+                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${contentType === 'text'
                       ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-lg'
                       : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-md'
-                  }`}
+                    }`}
                 >
                   <div className="flex flex-col items-center space-y-3">
-                    <div className={`p-3 rounded-xl transition-colors ${
-                      contentType === 'text' ? 'bg-blue-500' : 'bg-gray-100 group-hover:bg-blue-100'
-                    }`}>
-                      <FileText className={`h-6 w-6 ${
-                        contentType === 'text' ? 'text-white' : 'text-gray-600 group-hover:text-blue-600'
-                      }`} />
+                    <div className={`p-3 rounded-xl transition-colors ${contentType === 'text' ? 'bg-blue-500' : 'bg-gray-100 group-hover:bg-blue-100'
+                      }`}>
+                      <FileText className={`h-6 w-6 ${contentType === 'text' ? 'text-white' : 'text-gray-600 group-hover:text-blue-600'
+                        }`} />
                     </div>
-                    <span className={`font-medium ${
-                      contentType === 'text' ? 'text-blue-700' : 'text-gray-700'
-                    }`}>Texte</span>
+                    <span className={`font-medium ${contentType === 'text' ? 'text-blue-700' : 'text-gray-700'
+                      }`}>Texte</span>
                   </div>
                 </button>
                 <button
                   onClick={() => setContentType('image')}
-                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
-                    contentType === 'image'
+                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${contentType === 'image'
                       ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-300 shadow-lg'
                       : 'bg-white border-gray-200 hover:border-green-200 hover:shadow-md'
-                  }`}
+                    }`}
                 >
                   <div className="flex flex-col items-center space-y-3">
-                    <div className={`p-3 rounded-xl transition-colors ${
-                      contentType === 'image' ? 'bg-green-500' : 'bg-gray-100 group-hover:bg-green-100'
-                    }`}>
-                      <Image className={`h-6 w-6 ${
-                        contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
-                      }`} />
+                    <div className={`p-3 rounded-xl transition-colors ${contentType === 'image' ? 'bg-green-500' : 'bg-gray-100 group-hover:bg-green-100'
+                      }`}>
+                      <Image className={`h-6 w-6 ${contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
+                        }`} />
                     </div>
-                    <span className={`font-medium ${
-                      contentType === 'image' ? 'text-green-700' : 'text-gray-700'
-                    }`}>Image</span>
+                    <span className={`font-medium ${contentType === 'image' ? 'text-green-700' : 'text-gray-700'
+                      }`}>Image</span>
                   </div>
                 </button>
                 <button
                   onClick={() => setContentType('video')}
-                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
-                    contentType === 'video'
+                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${contentType === 'video'
                       ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 shadow-lg'
                       : 'bg-white border-gray-200 hover:border-purple-200 hover:shadow-md'
-                  }`}
+                    }`}
                 >
                   <div className="flex flex-col items-center space-y-3">
-                    <div className={`p-3 rounded-xl transition-colors ${
-                      contentType === 'video' ? 'bg-purple-500' : 'bg-gray-100 group-hover:bg-purple-100'
-                    }`}>
-                      <Video className={`h-6 w-6 ${
-                        contentType === 'video' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
-                      }`} />
+                    <div className={`p-3 rounded-xl transition-colors ${contentType === 'video' ? 'bg-purple-500' : 'bg-gray-100 group-hover:bg-purple-100'
+                      }`}>
+                      <Video className={`h-6 w-6 ${contentType === 'video' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                        }`} />
                     </div>
-                    <span className={`font-medium ${
-                      contentType === 'video' ? 'text-purple-700' : 'text-gray-700'
-                    }`}>Vidéo</span>
+                    <span className={`font-medium ${contentType === 'video' ? 'text-purple-700' : 'text-gray-700'
+                      }`}>Vidéo</span>
                   </div>
                 </button>
               </div>
@@ -534,7 +561,7 @@ export default function ContentPage() {
                       </label>
                     </div>
                   </div>
-                  
+
                   {/* Ou URL */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -549,7 +576,7 @@ export default function ContentPage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-                  
+
                   {/* Aperçu de l'image */}
                   {imagePreview && (
                     <div>
@@ -603,7 +630,7 @@ export default function ContentPage() {
                       Maximum 100MB - L'upload peut prendre plusieurs minutes
                     </p>
                   </div>
-                  
+
                   {/* Ou URL */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -618,7 +645,7 @@ export default function ContentPage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-                  
+
                   {/* Aperçu de la vidéo */}
                   {videoPreview && (
                     <div>
@@ -651,11 +678,11 @@ export default function ContentPage() {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    {selectedChannelType === 'instagram-dm' && contentType === 'video' 
-                      ? 'Traitement vidéo Instagram...' 
-                      : contentType === 'video' 
-                      ? 'Upload vidéo...' 
-                      : 'Publication...'
+                    {selectedChannelType === 'instagram-dm' && contentType === 'video'
+                      ? 'Traitement vidéo Instagram...'
+                      : contentType === 'video'
+                        ? 'Upload vidéo...'
+                        : 'Publication...'
                     }
                   </>
                 ) : (
