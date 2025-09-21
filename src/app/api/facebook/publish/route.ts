@@ -45,26 +45,13 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    console.log('Boutique trouvé: ', shop);
-    
-    // Récupérer tous les canaux Facebook de la boutique pour déboguer
-    const allChannels = await prisma.channel.findMany({
-      where: {
-        shopId: shop.id
-      }
-    });
-    
-    console.log('Tous les canaux de la boutique: ', allChannels);
-    
-    // Récupérer le canal Facebook avec des critères plus souples
+    // Récupérer le canal Facebook
     const channel = await prisma.channel.findFirst({
       where: {
         shopId: shop.id,
         type: ChannelType.FACEBOOK_PAGE
       }
     });
-    
-    console.log('Canal Facebook trouvé: ', channel);
     
     // Si aucun canal n'est trouvé, retourner une erreur
     if (!channel) {
@@ -76,7 +63,6 @@ export async function POST(request: NextRequest) {
     
     // Vérifier si l'ID de page correspond
     if (channel.externalId !== pageId) {
-      console.log(`ID de page fourni (${pageId}) ne correspond pas à l'ID du canal (${channel.externalId})`);
       return NextResponse.json(
         { error: `L'ID de page fourni (${pageId}) ne correspond pas à l'ID du canal Facebook configuré (${channel.externalId})` },
         { status: 400 }

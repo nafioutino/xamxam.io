@@ -178,23 +178,20 @@ export default function ContentPage() {
         }
       }
 
-      // Vérifier que l'ID de page correspond au type de canal sélectionné
+      // S'assurer que le bon ID de page est utilisé pour le canal sélectionné
       const selectedChannel = channels.find(channel => 
         (selectedChannelType === 'instagram-dm' && channel.type === 'instagram' && channel.externalId === selectedPage) ||
         (selectedChannelType === 'facebook-page' && channel.type === 'messenger' && channel.externalId === selectedPage)
       );
       
       if (!selectedChannel) {
-        // Si l'ID ne correspond pas au type, chercher le bon canal
         const correctChannel = channels.find(channel => 
           (selectedChannelType === 'instagram-dm' && channel.type === 'instagram') ||
           (selectedChannelType === 'facebook-page' && channel.type === 'messenger')
         );
         
         if (correctChannel) {
-          // Utiliser le bon ID
           formData.set('pageId', correctChannel.externalId);
-          console.log(`ID corrigé: utilisation de ${correctChannel.externalId} pour ${selectedChannelType}`);
         } else {
           throw new Error(`Aucun canal ${selectedChannelType} trouvé`);
         }
@@ -202,8 +199,6 @@ export default function ContentPage() {
       
       // Déterminer l'API à utiliser selon le type de canal
       const apiEndpoint = selectedChannelType === 'instagram-dm' ? '/api/instagram/publish' : '/api/facebook/publish';
-      
-      console.log(`Publication sur ${apiEndpoint} avec pageId=${formData.get('pageId')}`);
 
       const response = await fetch(apiEndpoint, {
         method: 'POST',
