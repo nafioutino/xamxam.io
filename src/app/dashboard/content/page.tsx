@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Send, FileText, Image, Video, Calendar, BarChart3, Facebook, Link, Upload, Eye, Settings, Zap, Clock, TrendingUp } from 'lucide-react';
+import { Send, FileText, Image, Video, Calendar, BarChart3, Facebook, Link, Upload, Eye, Settings, Zap, Clock, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ConnectedChannel {
@@ -34,6 +34,10 @@ export default function ContentPage() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState('');
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  
+  // États pour l'IA
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState('07a9df90-8286-4161-9071-721bbc2f8934');
 
   // Récupérer les canaux connectés
   useEffect(() => {
@@ -146,6 +150,80 @@ export default function ContentPage() {
     setVideoUrl(url);
     setVideoFile(null);
     setVideoPreview(url);
+  };
+
+  // Fonction de génération IA
+  const handleGenerateAIContent = async () => {
+    if (!selectedPage) {
+      toast.error('❌ Veuillez sélectionner une page', {
+        duration: 4000,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    setIsGeneratingAI(true);
+    const toastId = toast.loading('🤖 Génération du contenu avec l\'IA...', {
+      position: 'top-right',
+    });
+
+    try {
+      const response = await fetch('/api/ai/generate-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: selectedProduct
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de la génération');
+      }
+
+      const result = await response.json();
+      
+      // La réponse est un objet direct, pas un tableau
+      const data = result;
+
+      // Vérifier que les données existent
+      if (!data || !data.generatedText || !data.generatedImageUrl) {
+        console.error('Données manquantes:', { data, hasText: !!data?.generatedText, hasImage: !!data?.generatedImageUrl });
+        throw new Error('Données incomplètes reçues de l\'API');
+      }
+
+      // Décoder les entités HTML
+      const decodedText = data.generatedText
+        .replace(/&quot;/g, '"')
+        .replace(/&amp;/g, '&')
+        .replace(/&#39;/g, "'");
+      
+      const decodedImageUrl = data.generatedImageUrl
+        .replace(/&amp;/g, '&');
+
+      // Mettre à jour le formulaire avec les résultats
+      setMessage(decodedText);
+      setContentType('image');
+      setImageUrl(decodedImageUrl);
+      setImagePreview(decodedImageUrl);
+      setImageFile(null);
+
+      toast.success('✨ Contenu généré avec succès !', {
+        id: toastId,
+        duration: 4000,
+        position: 'top-right',
+      });
+    } catch (error: any) {
+      toast.error(`❌ ${error.message}`, {
+        id: toastId,
+        duration: 5000,
+        position: 'top-right',
+      });
+    } finally {
+      setIsGeneratingAI(false);
+    }
   };
 
   const handlePublish = async () => {
@@ -421,13 +499,32 @@ export default function ContentPage() {
             {/* Zone de texte */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Message
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Message
+                  </label>
+                  <button
+                    onClick={handleGenerateAIContent}
+                    disabled={isGeneratingAI || loading}
+                    className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    {isGeneratingAI ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                        Génération...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-1.5 cursor-pointer" />
+                        Générer avec l'IA
+                      </>
+                    )}
+                  </button>
+                </div>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Écrivez votre message ici..."
+                  placeholder="Écrivez votre message ou cliquez sur 'Générer avec l'IA'..."
                   rows={6}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                 />
