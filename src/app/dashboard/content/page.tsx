@@ -18,6 +18,20 @@ interface ChannelType {
   icon: any;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  images?: string[];
+  sku?: string;
+  stock: number;
+  category?: {
+    id: string;
+    name: string;
+  };
+}
+
 export default function ContentPage() {
   const [message, setMessage] = useState('');
   const [selectedChannelType, setSelectedChannelType] = useState('');
@@ -37,7 +51,9 @@ export default function ContentPage() {
   
   // États pour l'IA
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState('07a9df90-8286-4161-9071-721bbc2f8934');
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
 
   // Récupérer les canaux connectés
   useEffect(() => {
@@ -101,6 +117,35 @@ export default function ContentPage() {
     fetchChannels();
   }, []);
 
+  // Récupérer les produits de l'utilisateur
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoadingProducts(true);
+      try {
+        const response = await fetch('/api/products/user');
+        if (response.ok) {
+          const data = await response.json();
+          setProducts(data.data || []);
+          
+          // Sélectionner le premier produit par défaut
+          if (data.data && data.data.length > 0) {
+            setSelectedProduct(data.data[0].id);
+          }
+        } else {
+          console.error('Erreur récupération produits:', response.statusText);
+          toast.error('Impossible de charger vos produits');
+        }
+      } catch (err) {
+        console.error('Erreur récupération produits:', err);
+        toast.error('Erreur lors du chargement des produits');
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -156,6 +201,14 @@ export default function ContentPage() {
   const handleGenerateAIContent = async () => {
     if (!selectedPage) {
       toast.error('❌ Veuillez sélectionner une page', {
+        duration: 4000,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    if (!selectedProduct) {
+      toast.error('❌ Veuillez sélectionner un produit', {
         duration: 4000,
         position: 'top-right',
       });
@@ -495,6 +548,65 @@ export default function ContentPage() {
                 </select>
               </div>
             )}
+
+            {/* Sélecteur de produit pour l'IA */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Sparkles className="h-4 w-4 inline mr-1" />
+                Produit pour la génération IA
+              </label>
+              {loadingProducts ? (
+                <div className="flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg bg-gray-50">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <span className="text-sm text-gray-600">Chargement des produits...</span>
+                </div>
+              ) : products.length > 0 ? (
+                <select
+                  value={selectedProduct}
+                  onChange={(e) => setSelectedProduct(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 cursor-pointer"
+                >
+                  <option value="">Sélectionner un produit</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name} - {product.price}€ {product.category ? `(${product.category.name})` : ''}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="py-3 px-4 border border-gray-300 rounded-lg bg-gray-50">
+                  <p className="text-sm text-gray-600">
+                    Aucun produit trouvé. Ajoutez des produits dans votre catalogue pour utiliser la génération IA.
+                  </p>
+                </div>
+              )}
+              {selectedProduct && products.find(p => p.id === selectedProduct) && (
+                <div className="mt-2 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                  <div className="flex items-start space-x-3">
+                    {products.find(p => p.id === selectedProduct)?.images?.[0] && (
+                      <img
+                        src={products.find(p => p.id === selectedProduct)?.images?.[0]}
+                        alt="Produit"
+                        className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-purple-900">
+                        {products.find(p => p.id === selectedProduct)?.name}
+                      </p>
+                      <p className="text-sm text-purple-700">
+                        {products.find(p => p.id === selectedProduct)?.price}€
+                      </p>
+                      {products.find(p => p.id === selectedProduct)?.description && (
+                        <p className="text-xs text-purple-600 mt-1 truncate">
+                          {products.find(p => p.id === selectedProduct)?.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Zone de texte */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
