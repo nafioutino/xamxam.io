@@ -1,0 +1,120 @@
+### Tests API Messenger Send
+
+# Variables
+@baseUrl = http://localhost:3000
+@conversationId = 550e8400-e29b-41d4-a716-446655440000
+
+### 1. GET - Récupérer l'historique des messages d'une conversation
+GET {{baseUrl}}/api/messenger/send?conversationId={{conversationId}}&limit=20&offset=0
+Content-Type: application/json
+
+###
+
+### 2. POST - Envoyer un message texte simple
+POST {{baseUrl}}/api/messenger/send
+Content-Type: application/json
+
+{
+  "conversationId": "{{conversationId}}",
+  "message": "Bonjour ! Merci pour votre message. Comment puis-je vous aider ?",
+  "messageType": "TEXT"
+}
+
+###
+
+### 3. POST - Envoyer un message avec image
+POST {{baseUrl}}/api/messenger/send
+Content-Type: application/json
+
+{
+  "conversationId": "{{conversationId}}",
+  "message": "Voici notre nouveau produit !",
+  "messageType": "IMAGE",
+  "mediaUrl": "https://example.com/product-image.jpg"
+}
+
+###
+
+### 4. POST - Envoyer un fichier
+POST {{baseUrl}}/api/messenger/send
+Content-Type: application/json
+
+{
+  "conversationId": "{{conversationId}}",
+  "message": "Voici notre catalogue PDF",
+  "messageType": "FILE",
+  "mediaUrl": "https://example.com/catalogue.pdf"
+}
+
+###
+
+### 5. POST - Test avec données manquantes (doit échouer)
+POST {{baseUrl}}/api/messenger/send
+Content-Type: application/json
+
+{
+  "conversationId": "{{conversationId}}"
+  // message manquant
+}
+
+###
+
+### 6. POST - Test avec conversation inexistante (doit échouer)
+POST {{baseUrl}}/api/messenger/send
+Content-Type: application/json
+
+{
+  "conversationId": "00000000-0000-0000-0000-000000000000",
+  "message": "Test avec conversation inexistante"
+}
+
+###
+
+### 7. GET - Test avec conversationId manquant (doit échouer)
+GET {{baseUrl}}/api/messenger/send
+Content-Type: application/json
+
+###
+
+### 8. POST - Message de réponse automatique
+POST {{baseUrl}}/api/messenger/send
+Content-Type: application/json
+
+{
+  "conversationId": "{{conversationId}}",
+  "message": "Merci pour votre intérêt ! Un de nos conseillers va vous répondre dans les plus brefs délais. En attendant, vous pouvez consulter notre catalogue sur notre site web.",
+  "messageType": "TEXT"
+}
+
+###
+
+### 9. POST - Message avec émojis
+POST {{baseUrl}}/api/messenger/send
+Content-Type: application/json
+
+{
+  "conversationId": "{{conversationId}}",
+  "message": "Salut ! 👋 Nous avons de super offres cette semaine ! 🎉 Voulez-vous en savoir plus ? 😊",
+  "messageType": "TEXT"
+}
+
+###
+
+### 10. GET - Récupérer plus de messages (pagination)
+GET {{baseUrl}}/api/messenger/send?conversationId={{conversationId}}&limit=10&offset=20
+Content-Type: application/json
+
+###
+
+### Notes pour les tests :
+# 1. Remplacez {{conversationId}} par un ID de conversation valide de votre base de données
+# 2. Assurez-vous que la conversation a un customer avec un externalId valide
+# 3. Vérifiez que le canal (channel) associé a un accessToken valide
+# 4. Pour les tests d'images/fichiers, utilisez des URLs accessibles publiquement
+# 5. Les tests nécessitent une base de données configurée avec des données de test
+
+### Données de test recommandées à insérer en base :
+# - Un Shop avec un ownerId valide
+# - Un Channel de type FACEBOOK_PAGE ou INSTAGRAM_DM avec accessToken
+# - Un Customer avec externalId (ID utilisateur Meta)
+# - Une Conversation liée au Customer et au Shop

@@ -4,9 +4,13 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { ChatBubbleLeftRightIcon, PhoneIcon, VideoCameraIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { useAuth } from '@/hooks/useAuth';
+import { useShop } from '@/hooks/useShop';
+import { createClient } from '@/utils/supabase/client';
 
 interface Contact {
   id: string;
+  customerId: string;
   name: string;
   avatar: string;
   lastMessage: string;
@@ -14,6 +18,8 @@ interface Contact {
   unread: number;
   platform: 'whatsapp' | 'facebook' | 'instagram' | 'telegram' | 'tiktok' | 'email';
   online?: boolean;
+  channelId: string;
+  updatedAt: string;
 }
 
 interface Message {
@@ -24,188 +30,155 @@ interface Message {
   read: boolean;
   type: 'text' | 'image' | 'audio' | 'video';
   mediaUrl?: string;
+  messageId?: string;
+}
+
+interface ConversationDetails {
+  id: string;
+  customer: {
+    id: string;
+    name: string;
+    avatar: string;
+    phone?: string;
+  };
+  channel: {
+    id: string;
+    type: string;
+    name: string;
+  };
 }
 
 export default function InboxPage() {
+  const { user, session } = useAuth();
+  const { shop } = useShop();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [conversationDetails, setConversationDetails] = useState<ConversationDetails | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [sendingMessage, setSendingMessage] = useState(false);
   const [filter, setFilter] = useState<string>('all');
+  const supabase = createClient();
 
-  // Simulate fetching contacts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const demoContacts: Contact[] = [
-        {
-          id: 'c1',
-          name: 'Sophie Martin',
-          avatar: 'https://placehold.co/100x100?text=SM',
-          lastMessage: 'Bonjour, est-ce que vous avez ce produit en taille M ?',
-          lastMessageTime: '10:23',
-          unread: 2,
-          platform: 'whatsapp',
-          online: true,
+  // Fetch conversations from API
+  const fetchConversations = async () => {
+    if (!session?.access_token) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch('/api/conversations', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
         },
-        {
-          id: 'c2',
-          name: 'Thomas Dubois',
-          avatar: 'https://placehold.co/100x100?text=TD',
-          lastMessage: 'Merci pour votre réponse rapide !',
-          lastMessageTime: '09:45',
-          unread: 0,
-          platform: 'facebook',
-        },
-        {
-          id: 'c3',
-          name: 'Emma Petit',
-          avatar: 'https://placehold.co/100x100?text=EP',
-          lastMessage: 'Je voudrais commander le sac à main en cuir noir',
-          lastMessageTime: 'Hier',
-          unread: 1,
-          platform: 'instagram',
-        },
-        {
-          id: 'c4',
-          name: 'Lucas Bernard',
-          avatar: 'https://placehold.co/100x100?text=LB',
-          lastMessage: 'Est-ce que vous livrez à l\'international ?',
-          lastMessageTime: 'Hier',
-          unread: 0,
-          platform: 'telegram',
-          online: true,
-        },
-        {
-          id: 'c5',
-          name: 'Chloé Moreau',
-          avatar: 'https://placehold.co/100x100?text=CM',
-          lastMessage: 'J\'ai un problème avec ma commande #12345',
-          lastMessageTime: 'Lun',
-          unread: 3,
-          platform: 'whatsapp',
-        },
-        {
-          id: 'c6',
-          name: 'info@client.com',
-          avatar: 'https://placehold.co/100x100?text=IC',
-          lastMessage: 'Demande de catalogue produits',
-          lastMessageTime: 'Dim',
-          unread: 0,
-          platform: 'email',
-        },
-        {
-          id: 'c7',
-          name: '@fashion_lover',
-          avatar: 'https://placehold.co/100x100?text=FL',
-          lastMessage: 'J\'adore vos nouveaux produits !',
-          lastMessageTime: '23 Mai',
-          unread: 0,
-          platform: 'tiktok',
-        },
-      ];
-      setContacts(demoContacts);
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch conversations');
+      }
+
+      const data = await response.json();
+      setContacts(data.conversations || []);
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      toast.error('Erreur lors du chargement des conversations');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
+  };
 
-    return () => clearTimeout(timer);
-  }, []);
+  // Fetch messages for selected conversation
+  const fetchMessages = async (conversationId: string) => {
+    if (!session?.access_token) return;
 
-  // Simulate fetching messages when a contact is selected
+    try {
+      const response = await fetch(`/api/conversations/${conversationId}/messages`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch messages');
+      }
+
+      const data = await response.json();
+      setMessages(data.messages || []);
+      setConversationDetails(data.conversation);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      toast.error('Erreur lors du chargement des messages');
+    }
+  };
+
+  // Send message via API
+  const sendMessage = async (content: string, type: 'text' | 'image' | 'audio' | 'video' = 'text') => {
+    if (!selectedContact || !session?.access_token) return;
+
+    try {
+      setSendingMessage(true);
+      const response = await fetch('/api/messenger/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversationId: selectedContact.id,
+          content,
+          type,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      const data = await response.json();
+      
+      // Add message to local state immediately for better UX
+      const newMsg: Message = {
+        id: `temp-${Date.now()}`,
+        content,
+        timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        sender: 'user',
+        read: true,
+        type,
+      };
+
+      setMessages(prev => [...prev, newMsg]);
+      setNewMessage('');
+      toast.success('Message envoyé avec succès');
+
+      // Refresh conversations to update last message
+      fetchConversations();
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Erreur lors de l\'envoi du message');
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Load conversations on component mount
+  useEffect(() => {
+    if (user && shop && session) {
+      fetchConversations();
+    }
+  }, [user, shop, session]);
+
+  // Load messages when a contact is selected
   useEffect(() => {
     if (selectedContact) {
-      const demoMessages: Message[] = [
-        {
-          id: 'm1',
-          content: `Bonjour, je suis intéressé(e) par vos produits.`,
-          timestamp: '10:10',
-          sender: 'contact',
-          read: true,
-          type: 'text',
-        },
-        {
-          id: 'm2',
-          content: `Bonjour ! Comment puis-je vous aider aujourd'hui ?`,
-          timestamp: '10:12',
-          sender: 'user',
-          read: true,
-          type: 'text',
-        },
-        {
-          id: 'm3',
-          content: selectedContact.lastMessage,
-          timestamp: selectedContact.lastMessageTime,
-          sender: 'contact',
-          read: selectedContact.unread === 0,
-          type: 'text',
-        },
-      ];
-
-      // Add some media messages for demo purposes
-      if (selectedContact.id === 'c3') {
-        demoMessages.push({
-          id: 'm4',
-          content: '',
-          timestamp: '10:20',
-          sender: 'contact',
-          read: false,
-          type: 'image',
-          mediaUrl: 'https://placehold.co/400x300?text=Product+Image',
-        });
-      }
-
-      if (selectedContact.id === 'c5') {
-        demoMessages.push({
-          id: 'm5',
-          content: '',
-          timestamp: '10:25',
-          sender: 'contact',
-          read: false,
-          type: 'audio',
-          mediaUrl: '#audio-message',
-        });
-      }
-
-      setMessages(demoMessages);
-
-      // Mark messages as read
-      if (selectedContact.unread > 0) {
-        const updatedContacts = contacts.map((contact) =>
-          contact.id === selectedContact.id ? { ...contact, unread: 0 } : contact
-        );
-        setContacts(updatedContacts);
-      }
+      fetchMessages(selectedContact.id);
     }
   }, [selectedContact]);
 
   const handleSendMessage = () => {
-    if (!newMessage.trim() || !selectedContact) return;
-
-    const newMsg: Message = {
-      id: `m${Date.now()}`,
-      content: newMessage,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      sender: 'user',
-      read: true,
-      type: 'text',
-    };
-
-    setMessages([...messages, newMsg]);
-    setNewMessage('');
-
-    // Simulate response after 1 second
-    setTimeout(() => {
-      const responseMsg: Message = {
-        id: `m${Date.now() + 1}`,
-        content: 'Merci pour votre message. Un conseiller va vous répondre prochainement.',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        sender: 'contact',
-        read: true,
-        type: 'text',
-      };
-      setMessages((prev) => [...prev, responseMsg]);
-      toast.success('Message envoyé avec succès');
-    }, 1000);
+    if (!newMessage.trim() || !selectedContact || sendingMessage) return;
+    sendMessage(newMessage.trim());
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -229,15 +202,15 @@ export default function InboxPage() {
           </div>
         );
       case 'facebook':
-        return <div className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center">f</div>;
+        return <div className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">f</div>;
       case 'instagram':
-        return <div className="w-4 h-4 rounded-full bg-pink-500 flex items-center justify-center">i</div>;
+        return <div className="w-4 h-4 rounded-full bg-pink-500 flex items-center justify-center text-white text-xs font-bold">i</div>;
       case 'telegram':
-        return <div className="w-4 h-4 rounded-full bg-blue-400 flex items-center justify-center">t</div>;
+        return <div className="w-4 h-4 rounded-full bg-blue-400 flex items-center justify-center text-white text-xs font-bold">t</div>;
       case 'tiktok':
-        return <div className="w-4 h-4 rounded-full bg-black flex items-center justify-center">tt</div>;
+        return <div className="w-4 h-4 rounded-full bg-black flex items-center justify-center text-white text-xs font-bold">tt</div>;
       case 'email':
-        return <div className="w-4 h-4 rounded-full bg-gray-500 flex items-center justify-center">@</div>;
+        return <div className="w-4 h-4 rounded-full bg-gray-500 flex items-center justify-center text-white text-xs font-bold">@</div>;
       default:
         return null;
     }
@@ -287,6 +260,16 @@ export default function InboxPage() {
     );
   }
 
+  if (!user || !shop) {
+    return (
+      <div className="flex h-[calc(100vh-12rem)] bg-white rounded-lg shadow overflow-hidden items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500">Vous devez être connecté et avoir une boutique pour accéder à la messagerie.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-[calc(100vh-12rem)] bg-white rounded-lg shadow overflow-hidden">
       {/* Contacts sidebar */}
@@ -311,7 +294,9 @@ export default function InboxPage() {
         </div>
         <div className="overflow-y-auto h-[calc(100%-4rem)]">
           {filteredContacts.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">Aucun contact trouvé</div>
+            <div className="p-4 text-center text-gray-500">
+              {contacts.length === 0 ? 'Aucune conversation' : 'Aucun contact trouvé'}
+            </div>
           ) : (
             filteredContacts.map((contact) => (
               <div
@@ -354,21 +339,21 @@ export default function InboxPage() {
 
       {/* Chat area */}
       <div className="hidden sm:flex flex-1 flex-col">
-        {selectedContact ? (
+        {selectedContact && conversationDetails ? (
           <>
             <div className="h-16 border-b border-gray-200 flex items-center justify-between px-4">
               <div className="flex items-center space-x-3">
                 <img
-                  src={selectedContact.avatar}
-                  alt={selectedContact.name}
+                  src={conversationDetails.customer.avatar}
+                  alt={conversationDetails.customer.name}
                   className="h-10 w-10 rounded-full object-cover"
                 />
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900">{selectedContact.name}</h3>
+                  <h3 className="text-sm font-medium text-gray-900">{conversationDetails.customer.name}</h3>
                   <div className="flex items-center">
                     {getPlatformIcon(selectedContact.platform)}
                     <span className="ml-1 text-xs text-gray-500">
-                      {selectedContact.platform.charAt(0).toUpperCase() + selectedContact.platform.slice(1)}
+                      {conversationDetails.channel.name}
                     </span>
                     {selectedContact.online && (
                       <span className="ml-2 text-xs text-green-500 flex items-center">
@@ -476,18 +461,23 @@ export default function InboxPage() {
                   placeholder="Écrivez votre message..."
                   className="flex-1 border border-gray-300 rounded-l-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   rows={1}
+                  disabled={sendingMessage}
                 ></textarea>
                 <button
                   onClick={handleSendMessage}
-                  disabled={!newMessage.trim()}
-                  className="bg-blue-600 text-white rounded-r-md px-4 py-2 font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                  disabled={!newMessage.trim() || sendingMessage}
+                  className="bg-blue-600 text-white rounded-r-md px-4 py-2 font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <PaperAirplaneIcon className="h-5 w-5" />
+                  {sendingMessage ? (
+                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                  ) : (
+                    <PaperAirplaneIcon className="h-5 w-5" />
+                  )}
                 </button>
               </div>
               <div className="mt-2 flex justify-between">
                 <div className="flex space-x-2">
-                  <button className="text-gray-500 hover:text-gray-700">
+                  <button className="text-gray-500 hover:text-gray-700" disabled={sendingMessage}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -503,7 +493,7 @@ export default function InboxPage() {
                       />
                     </svg>
                   </button>
-                  <button className="text-gray-500 hover:text-gray-700">
+                  <button className="text-gray-500 hover:text-gray-700" disabled={sendingMessage}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -519,7 +509,7 @@ export default function InboxPage() {
                       />
                     </svg>
                   </button>
-                  <button className="text-gray-500 hover:text-gray-700">
+                  <button className="text-gray-500 hover:text-gray-700" disabled={sendingMessage}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -541,7 +531,7 @@ export default function InboxPage() {
                       />
                     </svg>
                   </button>
-                  <button className="text-gray-500 hover:text-gray-700">
+                  <button className="text-gray-500 hover:text-gray-700" disabled={sendingMessage}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -553,7 +543,7 @@ export default function InboxPage() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 00-3 3z"
                       />
                     </svg>
                   </button>
