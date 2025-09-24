@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    let messagePayload: any = {
+    const messagePayload: any = {
       recipient: { id: recipientId },
       message: {}
     };
