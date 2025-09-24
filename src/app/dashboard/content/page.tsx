@@ -705,8 +705,10 @@ export default function ContentPage() {
                   <div className="flex flex-col items-center space-y-3">
                     <div className={`p-3 rounded-xl transition-colors ${contentType === 'image' ? 'bg-green-500' : 'bg-gray-100 group-hover:bg-green-100'
                       }`}>
-                      <Image className={`h-6 w-6 ${contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
-                        }`} />
+                      <Image 
+                        className={`h-6 w-6 ${contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
+                        }`} 
+                      />
                     </div>
                     <span className={`font-medium ${contentType === 'image' ? 'text-green-700' : 'text-gray-700'
                       }`}>Image</span>

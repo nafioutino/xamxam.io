@@ -12,7 +12,7 @@ const supabase = createClient(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get user from Supabase auth
@@ -38,7 +38,8 @@ export async function GET(
       return NextResponse.json({ error: 'Shop not found' }, { status: 404 });
     }
 
-    const conversationId = params.id;
+    const { id } = await params;
+    const conversationId = id;
 
     // Verify conversation belongs to user's shop
     const conversation = await prisma.conversation.findFirst({
