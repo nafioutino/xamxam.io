@@ -48,7 +48,16 @@ export async function GET(
         shopId: userProfile.shop.id
       },
       include: {
-        customer: true
+        customer: true,
+        shop: {
+          include: {
+            channels: {
+              where: {
+                type: 'WHATSAPP' // You might need to adjust this based on conversation.platform
+              }
+            }
+          }
+        }
       }
     });
 
@@ -102,6 +111,11 @@ export async function GET(
           name: conversation.customer.name || conversation.customer.phone || 'Client inconnu',
           avatar: `https://placehold.co/100x100?text=${(conversation.customer.name || 'C').charAt(0).toUpperCase()}`,
           phone: conversation.customer.phone
+        } : null,
+        channel: conversation.shop?.channels?.[0] ? {
+          id: conversation.shop.channels[0].id,
+          type: conversation.shop.channels[0].type,
+          name: conversation.platform.charAt(0).toUpperCase() + conversation.platform.slice(1).toLowerCase()
         } : null,
         platform: conversation.platform.toLowerCase()
       }

@@ -35,17 +35,17 @@ interface Message {
 
 interface ConversationDetails {
   id: string;
-  customer: {
+  customer?: {
     id: string;
     name: string;
     avatar: string;
     phone?: string;
-  };
-  channel: {
+  } | null;
+  channel?: {
     id: string;
     type: string;
     name: string;
-  };
+  } | null;
 }
 
 export default function InboxPage() {
@@ -344,16 +344,16 @@ export default function InboxPage() {
             <div className="h-16 border-b border-gray-200 flex items-center justify-between px-4">
               <div className="flex items-center space-x-3">
                 <img
-                  src={conversationDetails.customer.avatar}
-                  alt={conversationDetails.customer.name}
+                  src={conversationDetails.customer?.avatar || `https://placehold.co/100x100?text=C`}
+                  alt={conversationDetails.customer?.name || 'Client inconnu'}
                   className="h-10 w-10 rounded-full object-cover"
                 />
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900">{conversationDetails.customer.name}</h3>
+                  <h3 className="text-sm font-medium text-gray-900">{conversationDetails.customer?.name || 'Client inconnu'}</h3>
                   <div className="flex items-center">
                     {getPlatformIcon(selectedContact.platform)}
                     <span className="ml-1 text-xs text-gray-500">
-                      {conversationDetails.channel.name}
+                      {conversationDetails.channel?.name || selectedContact.platform}
                     </span>
                     {selectedContact.online && (
                       <span className="ml-2 text-xs text-green-500 flex items-center">
