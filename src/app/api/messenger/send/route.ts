@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { ChannelType } from '@/generated/prisma';
+import { decryptToken } from '@/lib/encryption';
 
 const logPrefix = '[Messenger Send]';
 
@@ -121,11 +122,14 @@ export async function POST(request: NextRequest) {
       ? `https://graph.facebook.com/v18.0/me/messages`
       : `https://graph.facebook.com/v18.0/me/messages`; // Même endpoint pour Instagram
 
+    // Déchiffrer le token d'accès avant utilisation
+    const decryptedToken = decryptToken(channel.accessToken);
+
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${channel.accessToken}`
+        'Authorization': `Bearer ${decryptedToken}`
       },
       body: JSON.stringify(messagePayload)
     });
