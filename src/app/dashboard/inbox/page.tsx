@@ -596,16 +596,16 @@ export default function InboxPage() {
               </button>
               <div className="flex items-center space-x-3">
                 <img
-                  src={selectedContact.avatar}
-                  alt={selectedContact.name}
+                  src={selectedContact?.avatar || `https://placehold.co/100x100?text=${(selectedContact?.name || 'C').charAt(0).toUpperCase()}`}
+                  alt={selectedContact?.name || 'Contact'}
                   className="h-10 w-10 rounded-full object-cover"
                 />
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900">{selectedContact.name}</h3>
+                  <h3 className="text-sm font-medium text-gray-900">{selectedContact?.name || 'Contact inconnu'}</h3>
                   <div className="flex items-center">
-                    {getPlatformIcon(selectedContact.platform)}
+                    {selectedContact?.platform && getPlatformIcon(selectedContact.platform)}
                     <span className="ml-1 text-xs text-gray-500">
-                      {selectedContact.platform.charAt(0).toUpperCase() + selectedContact.platform.slice(1)}
+                      {selectedContact?.platform ? selectedContact.platform.charAt(0).toUpperCase() + selectedContact.platform.slice(1) : 'Plateforme inconnue'}
                     </span>
                   </div>
                 </div>
