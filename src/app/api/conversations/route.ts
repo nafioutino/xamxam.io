@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
         id: conversation.id,
         customerId: customer?.id || null,
         name: customer?.name || customer?.phone || 'Client inconnu',
-        avatar: `https://placehold.co/100x100?text=${(customer?.name || 'C').charAt(0).toUpperCase()}`,
+        avatar: customer?.avatarUrl || `https://placehold.co/100x100?text=${(customer?.name || 'C').charAt(0).toUpperCase()}`,
         lastMessage: lastMessage?.content || 'Aucun message',
         lastMessageTime: lastMessage ? new Date(lastMessage.createdAt).toLocaleTimeString('fr-FR', { 
           hour: '2-digit', 

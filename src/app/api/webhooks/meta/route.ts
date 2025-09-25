@@ -128,9 +128,19 @@ async function processMessage(event: any) {
     where: { shopId, phone: senderId }
   });
   if (!customer) {
+    // Récupérer les informations réelles du profil Facebook
+    const { getFacebookUserInfo } = await import('@/lib/facebook-utils');
+    const userInfo = await getFacebookUserInfo(senderId, channel.accessToken || '');
+    
     customer = await prisma.customer.create({
-      data: { shopId, phone: senderId, name: `Client ${senderId.slice(-4)}` } // On pourrait récupérer le nom via l'API plus tard
+      data: { 
+        shopId, 
+        phone: senderId, 
+        name: userInfo.name,
+        avatarUrl: userInfo.avatarUrl
+      }
     });
+    console.log(`${logPrefix} Created new customer with real Facebook profile data: ${userInfo.name}`);
   }
 
   // 3. Trouver ou créer la conversation.
