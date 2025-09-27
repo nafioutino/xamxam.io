@@ -347,7 +347,7 @@ export async function DELETE(request: NextRequest) {
     const channelsWithConversations = await prisma.conversation.findMany({
       where: {
         platform: {
-          in: existingChannels.map((channel: { type: string }) => channel.type)
+          in: existingChannels.map((channel: { type: ChannelType }) => channel.type)
         },
         shopId: {
           in: existingChannels.map((channel: { shopId: string }) => channel.shopId)

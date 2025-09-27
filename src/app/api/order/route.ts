@@ -472,7 +472,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         { 
           error: 'Cannot delete orders with linked conversations',
-          linkedOrders: ordersWithConversations.map((order: { id: any; orderNumber: any; conversation: { id: any; }; }) => ({
+          linkedOrders: ordersWithConversations.map((order: { id: any; orderNumber: any; conversation: { id: any; } | null; }) => ({
             id: order.id,
             orderNumber: order.orderNumber,
             conversationId: order.conversation?.id
