@@ -134,49 +134,53 @@ async function processMessage(event: any) {
   let channel: any;
   
   try {
-    // Test de connexion Prisma d'abord
-    console.log(`${logPrefix} Testing Prisma connection...`);
+    // Test ultra-simple sans Prisma d'abord
+    console.log(`${logPrefix} Step 1: Basic environment check`);
+    console.log(`${logPrefix} NODE_ENV:`, process.env.NODE_ENV);
+    console.log(`${logPrefix} DATABASE_URL exists:`, !!process.env.DATABASE_URL);
+    
+    console.log(`${logPrefix} Step 2: Testing setTimeout`);
+    await new Promise(resolve => setTimeout(resolve, 100));
+    console.log(`${logPrefix} setTimeout test passed`);
+    
+    console.log(`${logPrefix} Step 3: Testing Promise.race`);
+    const raceTest = await Promise.race([
+      Promise.resolve('race-success'),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('race-timeout')), 1000))
+    ]);
+    console.log(`${logPrefix} Promise.race test result:`, raceTest);
+    
+    console.log(`${logPrefix} Step 4: Attempting Prisma connection`);
+    // Test de connexion Prisma ultra-simple
     const testQuery = await Promise.race([
       prisma.$queryRaw`SELECT 1 as test`,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Database query timeout')), 5000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('DB timeout after 3s')), 3000))
     ]);
-    console.log(`${logPrefix} Prisma connection test result:`, testQuery);
+    console.log(`${logPrefix} Prisma test successful:`, testQuery);
     
-    // Requête simplifiée d'abord
-    console.log(`${logPrefix} Executing simplified channel query...`);
-    const allChannels = await Promise.race([
-      prisma.channel.findMany({
-        select: { id: true, type: true, externalId: true, isActive: true, shopId: true }
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Channel query timeout')), 5000))
-    ]);
-    console.log(`${logPrefix} All channels in database:`, allChannels);
-    
-    // Maintenant la requête spécifique
-    console.log(`${logPrefix} Executing specific channel query...`);
-    channel = await Promise.race([
-      prisma.channel.findFirst({
-        where: {
-          externalId: pageId,
-          isActive: true,
-          type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] }
-        }
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Specific channel query timeout')), 5000))
-    ]);
+    // Si on arrive ici, on peut continuer avec les vraies requêtes
+    console.log(`${logPrefix} Step 5: Looking for channel`);
+    channel = await prisma.channel.findFirst({
+      where: {
+        externalId: pageId,
+        isActive: true,
+        type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] }
+      }
+    });
 
-    console.log(`${logPrefix} Channel query completed. Result:`, channel);
+    console.log(`${logPrefix} Channel found:`, !!channel);
 
     if (!channel) {
-      console.warn(`${logPrefix} Received message for unknown page/channel ID: ${pageId}. Ignoring.`);
+      console.warn(`${logPrefix} No channel found for pageId: ${pageId}`);
       return;
     }
     
-    console.log(`${logPrefix} Found channel: ${channel.id} (${channel.type}) for shop: ${channel.shopId}`);
     shopId = channel.shopId;
+    console.log(`${logPrefix} Success! Channel: ${channel.id}, Shop: ${shopId}`);
+    
   } catch (error) {
-    console.error(`${logPrefix} Error during channel lookup:`, error);
-    console.error(`${logPrefix} Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
+    console.error(`${logPrefix} ERROR:`, error instanceof Error ? error.message : error);
+    console.error(`${logPrefix} ERROR STACK:`, error instanceof Error ? error.stack : 'No stack');
     return;
   }
 
