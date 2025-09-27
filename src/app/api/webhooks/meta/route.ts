@@ -136,25 +136,34 @@ async function processMessage(event: any) {
   try {
     // Test de connexion Prisma d'abord
     console.log(`${logPrefix} Testing Prisma connection...`);
-    const testQuery = await prisma.$queryRaw`SELECT 1 as test`;
+    const testQuery = await Promise.race([
+      prisma.$queryRaw`SELECT 1 as test`,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Database query timeout')), 5000))
+    ]);
     console.log(`${logPrefix} Prisma connection test result:`, testQuery);
     
     // Requête simplifiée d'abord
     console.log(`${logPrefix} Executing simplified channel query...`);
-    const allChannels = await prisma.channel.findMany({
-      select: { id: true, type: true, externalId: true, isActive: true, shopId: true }
-    });
+    const allChannels = await Promise.race([
+      prisma.channel.findMany({
+        select: { id: true, type: true, externalId: true, isActive: true, shopId: true }
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Channel query timeout')), 5000))
+    ]);
     console.log(`${logPrefix} All channels in database:`, allChannels);
     
     // Maintenant la requête spécifique
     console.log(`${logPrefix} Executing specific channel query...`);
-    channel = await prisma.channel.findFirst({
-      where: {
-        externalId: pageId,
-        isActive: true,
-        type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] }
-      }
-    });
+    channel = await Promise.race([
+      prisma.channel.findFirst({
+        where: {
+          externalId: pageId,
+          isActive: true,
+          type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] }
+        }
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Specific channel query timeout')), 5000))
+    ]);
 
     console.log(`${logPrefix} Channel query completed. Result:`, channel);
 
