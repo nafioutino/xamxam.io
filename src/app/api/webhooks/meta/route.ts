@@ -73,16 +73,31 @@ export async function POST(request: NextRequest) {
   // On utilise `setTimeout` pour s'assurer que la réponse est envoyée avant de commencer le travail lourd.
   setTimeout(async () => {
     try {
+      console.log(`${logPrefix} Starting async message processing...`);
       const body = JSON.parse(rawBody);
+      console.log(`${logPrefix} Parsed body:`, JSON.stringify(body, null, 2));
 
       if (body.object === 'page') {
+        console.log(`${logPrefix} Processing page object with ${body.entry?.length || 0} entries`);
         for (const entry of body.entry) {
-          for (const event of entry.messaging) {
-            if (event.message) {
-              await processMessage(event);
+          console.log(`${logPrefix} Processing entry:`, JSON.stringify(entry, null, 2));
+          if (entry.messaging && Array.isArray(entry.messaging)) {
+            console.log(`${logPrefix} Found ${entry.messaging.length} messaging events`);
+            for (const event of entry.messaging) {
+              console.log(`${logPrefix} Processing messaging event:`, JSON.stringify(event, null, 2));
+              if (event.message) {
+                console.log(`${logPrefix} Found message, calling processMessage...`);
+                await processMessage(event);
+              } else {
+                console.log(`${logPrefix} No message found in event`);
+              }
             }
+          } else {
+            console.log(`${logPrefix} No messaging array found in entry`);
           }
         }
+      } else {
+        console.log(`${logPrefix} Body object is not 'page', it's: ${body.object}`);
       }
     } catch (error) {
       console.error(`${logPrefix} Error during async processing:`, error);
@@ -105,9 +120,15 @@ async function processMessage(event: any) {
   const messageText = event.message.text;
   const messageId = event.message.mid;
 
-  if (!messageText) return; // Pour l'instant, on ne gère que les messages texte.
+  console.log(`${logPrefix} Processing message from ${senderId} to page ${pageId}: "${messageText}"`);
+
+  if (!messageText) {
+    console.log(`${logPrefix} No message text found, skipping...`);
+    return; // Pour l'instant, on ne gère que les messages texte.
+  }
 
   // 1. Identifier le canal et la boutique correspondants dans notre base de données.
+  console.log(`${logPrefix} Looking for channel with externalId: ${pageId}`);
   const channel = await prisma.channel.findFirst({
     where: {
       externalId: pageId,
@@ -119,8 +140,14 @@ async function processMessage(event: any) {
 
   if (!channel) {
     console.warn(`${logPrefix} Received message for unknown page/channel ID: ${pageId}. Ignoring.`);
+    console.log(`${logPrefix} Available channels:`, await prisma.channel.findMany({
+      where: { isActive: true, type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] } },
+      select: { id: true, type: true, externalId: true, shopId: true }
+    }));
     return;
   }
+  
+  console.log(`${logPrefix} Found channel: ${channel.id} (${channel.type}) for shop: ${channel.shopId}`);
   const shopId = channel.shopId;
 
   // 2. Trouver ou créer le client.
