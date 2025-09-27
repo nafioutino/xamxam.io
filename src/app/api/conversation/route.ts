@@ -569,14 +569,14 @@ export async function DELETE(request: NextRequest) {
 
     // Check if any conversation has messages
     const conversationsWithMessages = existingConversations.filter(
-      conversation => conversation.messages.length > 0
+      (conversation: { messages: { id: string }[] }) => conversation.messages.length > 0
     );
 
     if (conversationsWithMessages.length > 0) {
       return NextResponse.json(
         { 
           error: 'Cannot delete conversations with messages',
-          conversationsWithMessages: conversationsWithMessages.map(conv => ({
+          conversationsWithMessages: conversationsWithMessages.map((conv: { id: any; title: any; messages: string | any[]; }) => ({
             conversationId: conv.id,
             title: conv.title,
             messageCount: conv.messages.length

@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     // --- TROUVER LE CANAL APPROPRIÉ ---
-    const channel = conversation.shop.channels.find(c => c.type === conversation.platform);
+    const channel = conversation.shop.channels.find((c: { type: any; }) => c.type === conversation.platform);
     if (!channel || !channel.accessToken) {
       return NextResponse.json({
         success: false,
