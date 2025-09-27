@@ -133,12 +133,12 @@ async function processMessage(event: any) {
 
     // 2. Trouver ou créer le client.
     let customer = await prisma.customer.findFirst({
-      where: { shopId, externalId: senderId }
+      where: { shopId, phone: senderId }
     });
     if (!customer) {
       // Pour le débogage, on utilise un nom générique. On pourra ajouter l'appel à l'API Graph plus tard.
       customer = await prisma.customer.create({
-        data: { shopId, externalId: senderId, name: `Client ${senderId.slice(-4)}`, platform: 'META' }
+        data: { shopId, phone: senderId, name: `Client ${senderId.slice(-4)}` }
       });
       console.log(`${logPrefix} [processMessage] Created new customer: ${customer.id}`);
     }

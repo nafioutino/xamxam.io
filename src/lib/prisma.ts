@@ -1,6 +1,6 @@
 // /lib/prisma.ts
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@/generated/prisma";
 
 // Cette structure "singleton" est cruciale pour les environnements serverless.
 declare global {
