@@ -129,26 +129,38 @@ async function processMessage(event: any) {
 
   // 1. Identifier le canal et la boutique correspondants dans notre base de données.
   console.log(`${logPrefix} Looking for channel with externalId: ${pageId}`);
-  const channel = await prisma.channel.findFirst({
-    where: {
-      externalId: pageId,
-      isActive: true,
-      // On s'assure que c'est bien un canal Facebook ou Instagram
-      type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] }
-    }
-  });
+  
+  let shopId: string;
+  let channel: any;
+  
+  try {
+    channel = await prisma.channel.findFirst({
+      where: {
+        externalId: pageId,
+        isActive: true,
+        // On s'assure que c'est bien un canal Facebook ou Instagram
+        type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] }
+      }
+    });
 
-  if (!channel) {
-    console.warn(`${logPrefix} Received message for unknown page/channel ID: ${pageId}. Ignoring.`);
-    console.log(`${logPrefix} Available channels:`, await prisma.channel.findMany({
-      where: { isActive: true, type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] } },
-      select: { id: true, type: true, externalId: true, shopId: true }
-    }));
+    console.log(`${logPrefix} Channel query completed. Result:`, channel);
+
+    if (!channel) {
+      console.warn(`${logPrefix} Received message for unknown page/channel ID: ${pageId}. Ignoring.`);
+      const availableChannels = await prisma.channel.findMany({
+        where: { isActive: true, type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] } },
+        select: { id: true, type: true, externalId: true, shopId: true }
+      });
+      console.log(`${logPrefix} Available channels:`, availableChannels);
+      return;
+    }
+    
+    console.log(`${logPrefix} Found channel: ${channel.id} (${channel.type}) for shop: ${channel.shopId}`);
+    shopId = channel.shopId;
+  } catch (error) {
+    console.error(`${logPrefix} Error during channel lookup:`, error);
     return;
   }
-  
-  console.log(`${logPrefix} Found channel: ${channel.id} (${channel.type}) for shop: ${channel.shopId}`);
-  const shopId = channel.shopId;
 
   // 2. Trouver ou créer le client.
   let customer = await prisma.customer.findFirst({
