@@ -7,6 +7,8 @@ import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '@/hooks/useAuth';
 import { useShop } from '@/hooks/useShop';
 import { createClient } from '@/utils/supabase/client';
+import { useConversationsRealtime } from '@/hooks/useConversationsRealtime';
+import { useMessagesRealtime } from '@/hooks/useMessagesRealtime';
 
 interface Contact {
   id: string;
@@ -31,6 +33,8 @@ interface Message {
   type: 'text' | 'image' | 'audio' | 'video';
   mediaUrl?: string;
   messageId?: string;
+  conversationId: string;
+  createdAt?: string;
 }
 
 interface ConversationDetails {
@@ -51,15 +55,34 @@ interface ConversationDetails {
 export default function InboxPage() {
   const { user, session } = useAuth();
   const { shop } = useShop();
-  const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [conversationDetails, setConversationDetails] = useState<ConversationDetails | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [filter, setFilter] = useState<string>('all');
   const supabase = createClient();
+
+  // Utiliser les hooks Realtime
+  const {
+    conversations: contacts,
+    updateConversations: setContacts,
+    markAsRead: markConversationAsRead,
+    isConnected: conversationsConnected
+  } = useConversationsRealtime({
+    shopId: shop?.id,
+    enabled: !!shop?.id
+  });
+
+  const {
+    messages,
+    updateMessages: setMessages,
+    addMessage,
+    isConnected: messagesConnected
+  } = useMessagesRealtime({
+    conversationId: selectedContact?.id,
+    enabled: !!selectedContact?.id
+  });
 
   // Fetch conversations from API
   const fetchConversations = async () => {
@@ -79,6 +102,7 @@ export default function InboxPage() {
       }
 
       const data = await response.json();
+      // Utiliser le hook Realtime pour mettre à jour les conversations
       setContacts(data.conversations || []);
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -105,6 +129,7 @@ export default function InboxPage() {
       }
 
       const data = await response.json();
+      // Utiliser le hook Realtime pour mettre à jour les messages
       setMessages(data.messages || []);
       setConversationDetails(data.conversation);
     } catch (error) {
@@ -146,9 +171,12 @@ export default function InboxPage() {
         sender: 'user',
         read: true,
         type,
+        conversationId: selectedContact.id,
+        createdAt: new Date().toISOString()
       };
 
-      setMessages(prev => [...prev, newMsg]);
+      // Utiliser le hook Realtime pour ajouter le message
+      addMessage({ ...newMsg, createdAt: newMsg.createdAt ?? new Date().toISOString() });
       setNewMessage('');
       toast.success('Message envoyé avec succès');
 
@@ -276,7 +304,12 @@ export default function InboxPage() {
       <div className="w-full sm:w-1/3 lg:w-1/4 border-r border-gray-200 bg-gray-50">
         <div className="h-16 border-b border-gray-200 flex items-center justify-between px-4">
           <h2 className="font-semibold text-gray-800">Messages</h2>
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-2">
+            {/* Indicateur de connexion Realtime */}
+            <div className="flex items-center space-x-1">
+              <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse"></div>
+              <span className="text-xs text-gray-500">En temps réel</span>
+            </div>
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
