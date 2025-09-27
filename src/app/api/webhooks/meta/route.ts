@@ -134,11 +134,24 @@ async function processMessage(event: any) {
   let channel: any;
   
   try {
+    // Test de connexion Prisma d'abord
+    console.log(`${logPrefix} Testing Prisma connection...`);
+    const testQuery = await prisma.$queryRaw`SELECT 1 as test`;
+    console.log(`${logPrefix} Prisma connection test result:`, testQuery);
+    
+    // Requête simplifiée d'abord
+    console.log(`${logPrefix} Executing simplified channel query...`);
+    const allChannels = await prisma.channel.findMany({
+      select: { id: true, type: true, externalId: true, isActive: true, shopId: true }
+    });
+    console.log(`${logPrefix} All channels in database:`, allChannels);
+    
+    // Maintenant la requête spécifique
+    console.log(`${logPrefix} Executing specific channel query...`);
     channel = await prisma.channel.findFirst({
       where: {
         externalId: pageId,
         isActive: true,
-        // On s'assure que c'est bien un canal Facebook ou Instagram
         type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] }
       }
     });
@@ -147,11 +160,6 @@ async function processMessage(event: any) {
 
     if (!channel) {
       console.warn(`${logPrefix} Received message for unknown page/channel ID: ${pageId}. Ignoring.`);
-      const availableChannels = await prisma.channel.findMany({
-        where: { isActive: true, type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] } },
-        select: { id: true, type: true, externalId: true, shopId: true }
-      });
-      console.log(`${logPrefix} Available channels:`, availableChannels);
       return;
     }
     
@@ -159,17 +167,25 @@ async function processMessage(event: any) {
     shopId = channel.shopId;
   } catch (error) {
     console.error(`${logPrefix} Error during channel lookup:`, error);
+    console.error(`${logPrefix} Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
     return;
   }
 
   // 2. Trouver ou créer le client.
+  console.log(`${logPrefix} Looking for customer with phone: ${senderId} and shopId: ${shopId}`);
   let customer = await prisma.customer.findFirst({
     where: { shopId, phone: senderId }
   });
+  
+  console.log(`${logPrefix} Customer query result:`, customer);
+  
   if (!customer) {
+    console.log(`${logPrefix} Customer not found, creating new customer...`);
     // Récupérer les informations réelles du profil Facebook
     const { getFacebookUserInfo } = await import('@/lib/facebook-utils');
     const userInfo = await getFacebookUserInfo(senderId, channel.accessToken || '');
+    
+    console.log(`${logPrefix} Facebook user info retrieved:`, userInfo);
     
     customer = await prisma.customer.create({
       data: { 
@@ -180,20 +196,31 @@ async function processMessage(event: any) {
       }
     });
     console.log(`${logPrefix} Created new customer with real Facebook profile data: ${userInfo.name}`);
+  } else {
+    console.log(`${logPrefix} Found existing customer: ${customer.name}`);
   }
 
   // 3. Trouver ou créer la conversation.
+  console.log(`${logPrefix} Looking for conversation with shopId: ${shopId}, customerId: ${customer.id}, platform: ${channel.type}`);
   let conversation = await prisma.conversation.findFirst({
     where: { shopId, customerId: customer.id, platform: channel.type }
   });
+  
+  console.log(`${logPrefix} Conversation query result:`, conversation);
+  
   if (!conversation) {
+    console.log(`${logPrefix} Conversation not found, creating new conversation...`);
     conversation = await prisma.conversation.create({
       data: { shopId, customerId: customer.id, platform: channel.type, externalId: senderId, status: 'OPEN' }
     });
+    console.log(`${logPrefix} Created new conversation: ${conversation.id}`);
+  } else {
+    console.log(`${logPrefix} Found existing conversation: ${conversation.id}`);
   }
 
   // 4. Stocker le message.
-  await prisma.message.create({
+  console.log(`${logPrefix} Creating message in conversation: ${conversation.id}`);
+  const newMessage = await prisma.message.create({
     data: {
       conversationId: conversation.id,
       content: messageText,
@@ -203,6 +230,7 @@ async function processMessage(event: any) {
     }
   });
 
+  console.log(`${logPrefix} Message created successfully: ${newMessage.id}`);
   console.log(`${logPrefix} Message from ${senderId} for shop ${shopId} stored successfully.`);
 
   // 5. Déclencher le workflow n8n (logique à ajouter)
