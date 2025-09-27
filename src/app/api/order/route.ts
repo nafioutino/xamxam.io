@@ -467,12 +467,12 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if any order has linked conversations
-    const ordersWithConversations = existingOrders.filter(order => order.conversation);
+    const ordersWithConversations = existingOrders.filter((order: { conversation?: { id: string } | null }) => order.conversation);
     if (ordersWithConversations.length > 0) {
       return NextResponse.json(
         { 
           error: 'Cannot delete orders with linked conversations',
-          linkedOrders: ordersWithConversations.map(order => ({
+          linkedOrders: ordersWithConversations.map((order: { id: any; orderNumber: any; conversation: { id: any; }; }) => ({
             id: order.id,
             orderNumber: order.orderNumber,
             conversationId: order.conversation?.id

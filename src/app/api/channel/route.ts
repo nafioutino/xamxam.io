@@ -347,10 +347,10 @@ export async function DELETE(request: NextRequest) {
     const channelsWithConversations = await prisma.conversation.findMany({
       where: {
         platform: {
-          in: existingChannels.map(channel => channel.type)
+          in: existingChannels.map((channel: { type: string }) => channel.type)
         },
         shopId: {
-          in: existingChannels.map(channel => channel.shopId)
+          in: existingChannels.map((channel: { shopId: string }) => channel.shopId)
         }
       },
       select: {
@@ -364,7 +364,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         { 
           error: 'Cannot delete channels with linked conversations',
-          linkedConversations: channelsWithConversations.map(conv => ({
+          linkedConversations: channelsWithConversations.map((conv: { id: any; platform: any; shopId: any; }) => ({
             conversationId: conv.id,
             platform: conv.platform,
             shopId: conv.shopId
