@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     console.log(`${logPrefix} Parsed body:`, JSON.stringify(body, null, 2));
 
     // Validation de la structure du body
-    if (!body.object || body.object !== 'page') {
+    if (!body.object || (body.object !== 'page' && body.object !== 'instagram')) {
       console.warn(`${logPrefix} Received webhook for object type: ${body.object}, ignoring.`);
       return NextResponse.json({ status: 'ignored' }, { status: 200 });
     }
