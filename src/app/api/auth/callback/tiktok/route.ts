@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { Prisma } from '@/generated/prisma';
 import { encryptToken } from '@/lib/encryption';
+import prisma from '@/lib/prisma';
 
 // Interface pour la réponse d'échange de token TikTok
 interface TikTokTokenResponse {
@@ -177,9 +178,7 @@ export async function GET(request: NextRequest) {
       await prisma?.channel.update({
         where: { id: existingChannel.id },
         data: {
-          name: userInfo.data.user.display_name,
           accessToken: encryptedAccessToken,
-          refreshToken: encryptedRefreshToken,
           isActive: true
         }
       });
@@ -191,9 +190,7 @@ export async function GET(request: NextRequest) {
           shopId: shop?.id,
           type: 'TIKTOK',
           externalId: userInfo.data.user.open_id,
-          name: userInfo.data.user.display_name,
           accessToken: encryptedAccessToken,
-          refreshToken: encryptedRefreshToken,
           isActive: true
         }
       });
