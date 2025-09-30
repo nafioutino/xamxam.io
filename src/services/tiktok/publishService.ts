@@ -93,19 +93,25 @@ export class TikTokPublishService {
         return { success: false, error: validationError };
       }
 
-      // Étape 1: Calculer la taille de la vidéo
-      const videoSize = await this.getVideoSize(videoFile || videoUrl!);
-      if (videoSize === 0) {
-        return { success: false, error: 'Impossible de déterminer la taille de la vidéo' };
+      // Obtenir la taille de la vidéo si possible
+      let videoSize: number | undefined;
+      if (videoFile) {
+        videoSize = videoFile.size;
       }
 
-      // Étape 2: Initialiser l'upload
-      const initResult = await this.initializeVideoUpload(accessToken, title, privacy, false, videoSize);
+      // Étape 1: Initialiser l'upload
+      const initResult = await this.initializeVideoUpload(
+        accessToken, 
+        title, 
+        privacy, 
+        false, // publication directe
+        videoSize
+      );
       if (!initResult.success) {
         return initResult;
       }
 
-      // Étape 3: Uploader la vidéo
+      // Étape 2: Uploader la vidéo
       const uploadResult = await this.uploadVideoFile(
         initResult.uploadUrl!,
         videoFile || videoUrl!
@@ -114,7 +120,7 @@ export class TikTokPublishService {
         return { success: false, error: 'Échec de l\'upload de la vidéo' };
       }
 
-      // Étape 4: Publier la vidéo
+      // Étape 3: Publier la vidéo
       const publishResult = await this.publishVideoContent(
         accessToken,
         initResult.publishId!
@@ -146,13 +152,13 @@ export class TikTokPublishService {
         return { success: false, error: validationError };
       }
 
-      // Étape 1: Calculer la taille de la vidéo
-      const videoSize = await this.getVideoSize(videoFile || videoUrl!);
-      if (videoSize === 0) {
-        return { success: false, error: 'Impossible de déterminer la taille de la vidéo' };
+      // Obtenir la taille de la vidéo si possible
+      let videoSize: number | undefined;
+      if (videoFile) {
+        videoSize = videoFile.size;
       }
 
-      // Étape 2: Initialiser l'upload en mode brouillon
+      // Étape 1: Initialiser l'upload en mode brouillon
       const initResult = await this.initializeVideoUpload(
         accessToken, 
         title, 
@@ -164,7 +170,7 @@ export class TikTokPublishService {
         return initResult;
       }
 
-      // Étape 3: Uploader la vidéo
+      // Étape 2: Uploader la vidéo
       const uploadResult = await this.uploadVideoFile(
         initResult.uploadUrl!,
         videoFile || videoUrl!
@@ -196,30 +202,43 @@ export class TikTokPublishService {
     title: string,
     privacy: string,
     isDraft: boolean = false,
-    videoSize: number = 0
+    videoSize?: number
   ): Promise<TikTokUploadResult & { uploadUrl?: string }> {
-    const url = `${this.BASE_URL}/${this.API_VERSION}/post/publish/video/init/`;
+    // Utiliser l'endpoint correct selon le mode
+    const url = isDraft 
+      ? `${this.BASE_URL}/${this.API_VERSION}/post/publish/inbox/video/init/`
+      : `${this.BASE_URL}/${this.API_VERSION}/post/publish/video/init/`;
     
-    const body = {
-      post_info: {
-        title: title.trim(),
-        privacy_level: privacy,
-        disable_duet: false,
-        disable_comment: false,
-        disable_stitch: false,
-        video_cover_timestamp_ms: 1000
-      },
-      source_info: {
-        source: 'FILE_UPLOAD',
-        video_size: videoSize, // Utiliser la taille réelle de la vidéo
-        chunk_size: 10485760, // 10MB chunks
-        total_chunk_count: Math.ceil(videoSize / 10485760) || 1
-      }
-    };
+    let body: any;
 
-    // Si c'est un brouillon, on ajoute le paramètre auto_publish à false
     if (isDraft) {
-      (body as any).post_info.auto_publish = false;
+      // Pour le mode brouillon, structure simplifiée selon la documentation
+      body = {
+        source_info: {
+          source: 'FILE_UPLOAD',
+          video_size: videoSize || 50000000, // Taille par défaut si non fournie
+          chunk_size: videoSize || 50000000, // Utiliser la taille complète comme chunk
+          total_chunk_count: 1
+        }
+      };
+    } else {
+      // Pour la publication directe, structure complète
+      body = {
+        post_info: {
+          title: title.trim(),
+          privacy_level: privacy,
+          disable_duet: false,
+          disable_comment: false,
+          disable_stitch: false,
+          video_cover_timestamp_ms: 1000
+        },
+        source_info: {
+          source: 'FILE_UPLOAD',
+          video_size: videoSize || 50000000, // Taille par défaut si non fournie
+          chunk_size: 10485760, // 10MB chunks pour publication directe
+          total_chunk_count: Math.ceil((videoSize || 50000000) / 10485760)
+        }
+      };
     }
 
     try {
@@ -341,30 +360,6 @@ export class TikTokPublishService {
         success: false,
         error: 'Erreur de connexion lors de la publication'
       };
-    }
-  }
-
-  /**
-   * Calcule la taille d'une vidéo (fichier ou URL)
-   */
-  private static async getVideoSize(videoSource: File | string): Promise<number> {
-    try {
-      if (typeof videoSource === 'string') {
-        // Si c'est une URL, faire une requête HEAD pour obtenir la taille
-        const response = await fetch(videoSource, { method: 'HEAD' });
-        if (!response.ok) {
-          console.error('Impossible d\'obtenir les informations de la vidéo depuis l\'URL');
-          return 0;
-        }
-        const contentLength = response.headers.get('content-length');
-        return contentLength ? parseInt(contentLength, 10) : 0;
-      } else {
-        // Si c'est un fichier, retourner sa taille
-        return videoSource.size;
-      }
-    } catch (error) {
-      console.error('Erreur lors du calcul de la taille de la vidéo:', error);
-      return 0;
     }
   }
 
