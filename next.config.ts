@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
     // Ignore TypeScript errors during builds
     ignoreBuildErrors: true,
   },
+  // Configuration pour les uploads de fichiers
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '100mb', // Augmenter la limite pour les vidéos TikTok
+    },
+  },
 };
 
 export default nextConfig;
