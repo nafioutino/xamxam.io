@@ -209,6 +209,31 @@ export class TikTokPublishService {
       ? `${this.BASE_URL}/${this.API_VERSION}/post/publish/inbox/video/init/`
       : `${this.BASE_URL}/${this.API_VERSION}/post/publish/video/init/`;
     
+    const actualVideoSize = videoSize || 50000000;
+    
+    // Calcul des chunks selon les règles TikTok
+    const MIN_CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_CHUNK_SIZE = 64 * 1024 * 1024; // 64MB
+    
+    let chunkSize: number;
+    let totalChunkCount: number;
+    
+    if (actualVideoSize < MIN_CHUNK_SIZE) {
+      // Vidéos < 5MB : upload en un seul chunk
+      chunkSize = actualVideoSize;
+      totalChunkCount = 1;
+    } else {
+      // Vidéos >= 5MB : utiliser des chunks de 64MB max
+      chunkSize = Math.min(MAX_CHUNK_SIZE, actualVideoSize);
+      totalChunkCount = Math.ceil(actualVideoSize / chunkSize);
+      
+      // Vérifier la limite de 1000 chunks
+      if (totalChunkCount > 1000) {
+        chunkSize = Math.ceil(actualVideoSize / 1000);
+        totalChunkCount = Math.ceil(actualVideoSize / chunkSize);
+      }
+    }
+    
     let body: any;
 
     if (isDraft) {
@@ -216,9 +241,9 @@ export class TikTokPublishService {
       body = {
         source_info: {
           source: 'FILE_UPLOAD',
-          video_size: videoSize || 50000000, // Taille par défaut si non fournie
-          chunk_size: videoSize || 50000000, // Utiliser la taille complète comme chunk
-          total_chunk_count: 1
+          video_size: actualVideoSize,
+          chunk_size: chunkSize,
+          total_chunk_count: totalChunkCount
         }
       };
     } else {
@@ -234,9 +259,9 @@ export class TikTokPublishService {
         },
         source_info: {
           source: 'FILE_UPLOAD',
-          video_size: videoSize || 50000000, // Taille par défaut si non fournie
-          chunk_size: 10485760, // 10MB chunks pour publication directe
-          total_chunk_count: Math.ceil((videoSize || 50000000) / 10485760)
+          video_size: actualVideoSize,
+          chunk_size: chunkSize,
+          total_chunk_count: totalChunkCount
         }
       };
     }
