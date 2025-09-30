@@ -25,7 +25,7 @@ export async function GET() {
     const authParams = new URLSearchParams({
       client_key: clientKey,
       redirect_uri: redirectUri,
-      scope: 'user.info.basic,user.info.profile,video.list,video.upload', // Scopes de base pour TikTok
+      scope: 'user.info.basic,user.info.profile,video.list,video.upload,video.publish', // Scopes pour TikTok incluant publication
       response_type: 'code',
       state: csrfState
     });
