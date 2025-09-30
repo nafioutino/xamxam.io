@@ -93,28 +93,26 @@ model Shop {
 }
 
 model Channel {
-  id           String      @id @default(uuid()) @db.Uuid
-  type         ChannelType
-  externalId   String
-  name         String?
-  accessToken  String?
-  refreshToken String?
-  isActive     Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  shopId       String      @db.Uuid
-  shop         Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  id          String      @id @default(uuid()) @db.Uuid
+  type        ChannelType
+  externalId  String
+  accessToken String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  shopId      String      @db.Uuid
+  shop        Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   @@unique([shopId, type, externalId])
   @@schema("public")
 }
 
 model WhatsAppSession {
-  id          String    @id @default(uuid()) @db.Uuid
-  sessionId   String    @unique // L'identifiant de session, ex: le numéro de téléphone ou un ID de boutique
-  sessionData Json      // L'objet JSON complet des credentials de la session
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id          String   @id @default(uuid()) @db.Uuid
+  sessionId   String   @unique
+  sessionData Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   @@schema("public")
 }
 
@@ -166,10 +164,10 @@ model Customer {
   city          String?
   country       String?
   notes         String?
-  avatarUrl     String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   shopId        String         @db.Uuid
+  avatarUrl     String?
   conversations Conversation[]
   shop          Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
   orders        Order[]
