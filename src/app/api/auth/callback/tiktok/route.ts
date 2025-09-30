@@ -122,7 +122,9 @@ export async function GET(request: NextRequest) {
 
     const userInfo: TikTokUserInfo = await userInfoResponse.json();
 
-    if (!userInfoResponse.ok || userInfo.error) {
+    // Dans l'API TikTok v2, une réponse réussie contient toujours error.code = "ok"
+    // On vérifie donc le statut HTTP ET que le code d'erreur n'est pas "ok"
+    if (!userInfoResponse.ok || (userInfo.error && userInfo.error.code !== 'ok')) {
       console.error('TikTok OAuth - Erreur lors de la récupération des infos utilisateur:', userInfo.error);
       return NextResponse.redirect(
         new URL('/dashboard/channels?error=user_info_failed', request.url)
