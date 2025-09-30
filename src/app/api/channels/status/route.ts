@@ -90,6 +90,8 @@ export async function GET(request: NextRequest) {
           channelType = 'whatsapp';
         } else if (channel.type === 'TELEGRAM') {
           channelType = 'telegram';
+        } else if (channel.type === 'TIKTOK') {
+          channelType = 'tiktok';
         }
         
         return {
