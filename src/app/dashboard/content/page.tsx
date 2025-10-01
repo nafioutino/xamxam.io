@@ -648,62 +648,132 @@ export default function ContentPage() {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    Message
+                    {selectedChannelType === 'tiktok' ? 'Description' : 
+                     selectedChannelType === 'facebook' ? 'Que voulez-vous dire ?' : 
+                     selectedChannelType === 'instagram' ? 'Légende' : 'Message'}
                   </label>
-                  <button
-                    onClick={handleGenerateAIContent}
-                    disabled={isGeneratingAI || loading}
-                    className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                  >
-                    {isGeneratingAI ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                        Génération...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4 mr-1.5 cursor-pointer" />
-                        Générer avec l'IA
-                      </>
-                    )}
-                  </button>
+                  {selectedChannelType !== 'tiktok' && (
+                    <button
+                      onClick={handleGenerateAIContent}
+                      disabled={isGeneratingAI || loading}
+                      className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    >
+                      {isGeneratingAI ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                          Génération...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-1.5 cursor-pointer" />
+                          Générer avec l'IA
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Écrivez votre message ou cliquez sur 'Générer avec l'IA'..."
+                  placeholder={
+                    selectedChannelType === 'tiktok' ? 'Décrivez votre vidéo TikTok... Ajoutez des hashtags populaires !' :
+                    selectedChannelType === 'facebook' ? 'Que voulez-vous partager avec vos amis ?' :
+                    selectedChannelType === 'instagram' ? 'Rédigez une légende captivante... #hashtags' :
+                    'Écrivez votre message ou cliquez sur \'Générer avec l\'IA\'...'
+                  }
                   rows={6}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-blue-500 resize-none ${
+                    selectedChannelType === 'tiktok' ? 'focus:ring-pink-500 focus:border-pink-500' :
+                    selectedChannelType === 'facebook' ? 'focus:ring-blue-500 focus:border-blue-500' :
+                    selectedChannelType === 'instagram' ? 'focus:ring-purple-500 focus:border-purple-500' :
+                    'focus:ring-blue-500 focus:border-blue-500'
+                  }`}
                 />
-                <p className="text-sm text-gray-500 mt-1">
-                  {message.length} caractères
-                </p>
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-sm text-gray-500">
+                    {message.length} caractères
+                    {selectedChannelType === 'tiktok' && message.length > 150 && (
+                      <span className="text-orange-500 ml-1">(Optimal: 100-150 caractères)</span>
+                    )}
+                    {selectedChannelType === 'facebook' && message.length > 250 && (
+                      <span className="text-orange-500 ml-1">(Optimal: moins de 250 caractères)</span>
+                    )}
+                    {selectedChannelType === 'instagram' && message.length > 125 && (
+                      <span className="text-orange-500 ml-1">(Optimal: 125 caractères max)</span>
+                    )}
+                  </p>
+                  {selectedChannelType === 'tiktok' && (
+                    <p className="text-xs text-pink-600">
+                      💡 Utilisez des hashtags tendance
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Aperçu */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Eye className="h-4 w-4 inline mr-1" />
-                  Aperçu
+                  {selectedChannelType === 'tiktok' ? 'Aperçu de la description' : 'Aperçu'}
                 </label>
                 <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 min-h-[152px]">
-                  {message.trim() ? (
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      <div className="flex items-center mb-3">
-                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-bold">P</span>
+                  {selectedChannelType === 'tiktok' ? (
+                    // Aperçu spécifique TikTok
+                    message.trim() ? (
+                      <div className="bg-black rounded-lg p-4 text-white relative">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center">
+                              <Music className="h-4 w-4 text-white" />
+                            </div>
+                            <div className="ml-3">
+                              <p className="text-sm font-medium">@votre_compte</p>
+                              <p className="text-xs text-gray-300">Vidéo TikTok</p>
+                            </div>
+                          </div>
+                          <div className="text-pink-500 text-xs">🎵 Son original</div>
                         </div>
-                        <div className="ml-3">
-                          <p className="text-sm font-medium text-gray-900">Votre Page</p>
-                          <p className="text-xs text-gray-500">À l'instant</p>
+                        <div className="bg-gray-900 rounded-lg p-3 border-l-4 border-pink-500">
+                          <p className="text-sm text-white whitespace-pre-wrap">{message}</p>
+                        </div>
+                        <div className="mt-2 text-xs text-gray-400">
+                          💡 Cette description apparaîtra sous votre vidéo TikTok
                         </div>
                       </div>
-                      <p className="text-gray-800 whitespace-pre-wrap">{message}</p>
-                    </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                        <Music className="h-8 w-8 mb-2 text-pink-400" />
+                        <p className="text-sm text-center">
+                          Votre description TikTok apparaîtra ici
+                        </p>
+                        <p className="text-xs text-center mt-1">
+                          Ajoutez des hashtags pour plus de visibilité !
+                        </p>
+                      </div>
+                    )
                   ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400">
-                      <p className="text-sm">L'aperçu apparaîtra ici</p>
-                    </div>
+                    // Aperçu classique pour Facebook/Instagram
+                    message.trim() ? (
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <div className="flex items-center mb-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            selectedChannelType === 'facebook' ? 'bg-blue-600' :
+                            selectedChannelType === 'instagram' ? 'bg-purple-600' : 'bg-blue-600'
+                          }`}>
+                            <span className="text-white text-sm font-bold">P</span>
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-sm font-medium text-gray-900">Votre Page</p>
+                            <p className="text-xs text-gray-500">À l'instant</p>
+                          </div>
+                        </div>
+                        <p className="text-gray-800 whitespace-pre-wrap">{message}</p>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        <p className="text-sm">L'aperçu apparaîtra ici</p>
+                      </div>
+                    )
                   )}
                 </div>
               </div>
@@ -723,8 +793,11 @@ export default function ContentPage() {
               
               {/* Options spécifiques à TikTok */}
               {selectedChannelType === 'tiktok' && (
-                <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Options TikTok</h4>
+                <div className="mb-6 p-4 bg-pink-50 border border-pink-200 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                    <Music className="h-4 w-4 mr-2 text-pink-600" />
+                    Paramètres TikTok
+                  </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -733,26 +806,39 @@ export default function ContentPage() {
                       <select 
                         value={publishMode}
                         onChange={(e) => setPublishMode(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                       >
-                        <option value="draft">Brouillon</option>
-                        <option value="direct">Publication directe</option>
+                        <option value="draft">Enregistrer en brouillon</option>
+                        <option value="direct">Publier maintenant</option>
                       </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {publishMode === 'draft' ? '📝 Sera sauvegardé dans vos brouillons TikTok' : '🚀 Publication immédiate sur votre profil'}
+                      </p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Confidentialité
+                        Qui peut voir cette vidéo
                       </label>
                       <select 
                         value={privacy}
                         onChange={(e) => setPrivacy(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                       >
-                        <option value="SELF_ONLY">Privé</option>
-                        <option value="MUTUAL_FOLLOW_FRIENDS">Amis</option>
-                        <option value="PUBLIC_TO_EVERYONE">Public</option>
+                        <option value="private">Moi uniquement</option>
+                        <option value="friends">Amis</option>
+                        <option value="public">Tout le monde</option>
                       </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {privacy === 'private' ? '🔒 Visible par vous seulement' : 
+                         privacy === 'friends' ? '👥 Visible par vos amis' : 
+                         '🌍 Visible par tous les utilisateurs TikTok'}
+                      </p>
                     </div>
+                  </div>
+                  <div className="mt-4 p-3 bg-pink-100 rounded-lg">
+                    <p className="text-xs text-pink-800">
+                      💡 <strong>Conseil TikTok :</strong> Utilisez des hashtags tendance (#fyp #viral #trending) et publiez aux heures de pointe (18h-22h) pour maximiser votre portée !
+                    </p>
                   </div>
                 </div>
               )}
