@@ -191,6 +191,7 @@ export async function GET(request: NextRequest) {
           type: 'TIKTOK',
           externalId: userInfo.data.user.open_id,
           accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
           isActive: true
         }
       });

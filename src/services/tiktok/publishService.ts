@@ -4,15 +4,25 @@
 // ===                        IMPORTS                             ===
 // ==================================================================
 import { decryptToken } from '@/lib/encryption';
+import prisma from '@/lib/prisma';
+import { TikTokTokenService } from './tokenService';
 
 // ==================================================================
 // ===                 TYPES ET INTERFACES                        ===
 // ==================================================================
 
-/**
- * Options requises pour publier une vidéo sur TikTok.
- */
 export interface TikTokPublishOptions {
+  channelId: string;
+  videoFile: File;
+  description: string;
+  privacy: 'SELF_ONLY' | 'MUTUAL_FOLLOW_FRIENDS' | 'PUBLIC_TO_EVERYONE';
+  isDraft?: boolean;
+}
+
+/**
+ * Options requises pour publier une vidéo sur TikTok (legacy).
+ */
+export interface TikTokPublishOptionsLegacy {
   title: string;        // Le titre/description de la vidéo
   accessToken: string;  // Le token d'accès TikTok de l'utilisateur
   videoUrl?: string;    // URL de la vidéo à publier
@@ -43,8 +53,33 @@ export interface TikTokPublishResult {
   tikTokError?: any;
 }
 
+interface TikTokVideoUploadResponse {
+  data: {
+    video: {
+      upload_url: string;
+    };
+    publish_id: string;
+  };
+  error: {
+    code: string;
+    message: string;
+    log_id: string;
+  };
+}
+
+interface TikTokVideoPublishResponse {
+  data: {
+    publish_id: string;
+  };
+  error: {
+    code: string;
+    message: string;
+    log_id: string;
+  };
+}
+
 /**
- * Réponse de l'API TikTok pour l'initialisation de l'upload
+ * Réponse de l'API TikTok pour l'initialisation de l'upload (legacy)
  */
 interface TikTokUploadInitResponse {
   data: {
@@ -58,7 +93,7 @@ interface TikTokUploadInitResponse {
 }
 
 /**
- * Réponse de l'API TikTok pour la publication
+ * Réponse de l'API TikTok pour la publication (legacy)
  */
 interface TikTokPublishResponse {
   data: {
@@ -72,18 +107,79 @@ interface TikTokPublishResponse {
 }
 
 // ==================================================================
-// ===                 CLASSE DU SERVICE DE PUBLICATION           ===
+// ===                 SERVICE DE PUBLICATION TIKTOK             ===
 // ==================================================================
+
 export class TikTokPublishService {
   private static readonly BASE_URL = 'https://open.tiktokapis.com';
   private static readonly API_VERSION = 'v2';
 
   /**
-   * Publie une vidéo directement sur TikTok (video.publish scope)
+   * Publie une vidéo sur TikTok
+   */
+  static async publishVideo(options: TikTokPublishOptions): Promise<{ success: boolean; error?: string; publishId?: string }> {
+    try {
+      // Valider les nouvelles options
+      const validationError = this.validateNewPublishOptions(options);
+      if (validationError) {
+        return { success: false, error: validationError };
+      }
+
+      // Obtenir un token d'accès valide (avec rafraîchissement automatique si nécessaire)
+      const tokenResult = await TikTokTokenService.getValidAccessToken(options.channelId);
+      
+      if (!tokenResult.success) {
+        if (tokenResult.needsReauth) {
+          // Marquer le canal pour reconnexion
+          await TikTokTokenService.markChannelForReauth(options.channelId);
+        }
+        return { 
+          success: false, 
+          error: tokenResult.error || 'Token TikTok invalide, reconnexion requise' 
+        };
+      }
+
+      const accessToken = tokenResult.accessToken!;
+
+      // Utiliser l'ancienne méthode avec les nouvelles options
+      const legacyOptions: TikTokPublishOptionsLegacy = {
+        title: options.description,
+        accessToken: accessToken,
+        videoFile: options.videoFile,
+        privacy: options.privacy,
+        publishMode: options.isDraft ? 'draft' : 'direct'
+      };
+
+      if (options.isDraft) {
+        const result = await this.uploadVideoDraft(legacyOptions);
+        return {
+          success: result.success,
+          error: result.error,
+          publishId: result.publishId
+        };
+      } else {
+        const result = await this.publishVideoLegacy(legacyOptions);
+        return {
+          success: result.success,
+          error: result.error,
+          publishId: result.publishId
+        };
+      }
+    } catch (error) {
+      console.error('TikTok publish service error:', error);
+      return {
+        success: false,
+        error: 'Erreur lors de la publication sur TikTok'
+      };
+    }
+  }
+
+  /**
+   * Publie une vidéo directement sur TikTok (video.publish scope) - Version legacy
    * @param options Les options de publication
    * @returns Un objet TikTokPublishResult
    */
-  static async publishVideo(options: TikTokPublishOptions): Promise<TikTokPublishResult> {
+  static async publishVideoLegacy(options: TikTokPublishOptionsLegacy): Promise<TikTokPublishResult> {
     try {
       const { title, accessToken, videoUrl, videoFile, privacy = 'SELF_ONLY' } = options;
 
@@ -153,11 +249,11 @@ export class TikTokPublishService {
   }
 
   /**
-   * Upload une vidéo en brouillon sur TikTok (video.upload scope)
+   * Upload une vidéo en tant que brouillon sur TikTok (video.upload scope) - Version legacy
    * @param options Les options d'upload
-   * @returns Un objet TikTokUploadResult
+   * @returns Un objet TikTokPublishResult
    */
-  static async uploadVideoDraft(options: TikTokPublishOptions): Promise<TikTokUploadResult> {
+  static async uploadVideoDraft(options: TikTokPublishOptionsLegacy): Promise<TikTokPublishResult> {
     try {
       const { title, accessToken, videoUrl, videoFile, privacy = 'SELF_ONLY' } = options;
 
@@ -415,9 +511,9 @@ export class TikTokPublishService {
   }
 
   /**
-   * Validation des options de publication
+   * Validation des options de publication (legacy)
    */
-  private static validatePublishOptions(options: Partial<TikTokPublishOptions>): string | null {
+  private static validatePublishOptions(options: Partial<TikTokPublishOptionsLegacy>): string | null {
     if (!options.title?.trim()) {
       return 'Le titre est requis';
     }
@@ -432,6 +528,41 @@ export class TikTokPublishService {
 
     if (!options.videoUrl && !options.videoFile) {
       return 'Une vidéo (URL ou fichier) est requise';
+    }
+
+    if (options.videoFile) {
+      const maxSize = 4 * 1024 * 1024 * 1024; // 4GB (limite TikTok)
+      if (options.videoFile.size > maxSize) {
+        return 'La vidéo est trop volumineuse (maximum 4GB)';
+      }
+
+      const allowedTypes = ['video/mp4', 'video/webm', 'video/mov'];
+      if (!allowedTypes.includes(options.videoFile.type)) {
+        return 'Format de vidéo non supporté (MP4, WebM, MOV uniquement)';
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Validation des nouvelles options de publication
+   */
+  private static validateNewPublishOptions(options: Partial<TikTokPublishOptions>): string | null {
+    if (!options.description?.trim()) {
+      return 'La description est requise';
+    }
+
+    if (options.description.length > 2200) {
+      return 'La description ne peut pas dépasser 2200 caractères';
+    }
+
+    if (!options.channelId) {
+      return 'ID du canal requis';
+    }
+
+    if (!options.videoFile) {
+      return 'Un fichier vidéo est requis';
     }
 
     if (options.videoFile) {
