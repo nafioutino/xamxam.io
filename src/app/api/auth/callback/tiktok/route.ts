@@ -199,8 +199,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Étape 6: Rediriger vers la page des canaux avec succès
+    const successParams = new URLSearchParams({
+      success: 'tiktok_connected',
+      account_name: userInfo.data.user.display_name,
+      account_type: 'TikTok'
+    });
+    
     return NextResponse.redirect(
-      new URL('/dashboard/channels?success=tiktok_connected', request.url)
+      new URL(`/dashboard/channels?${successParams.toString()}`, request.url)
     );
 
   } catch (error) {
