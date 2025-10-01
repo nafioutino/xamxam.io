@@ -785,6 +785,9 @@ export default function ContentPage() {
                         ? 'text-gray-400'
                         : contentType === 'text' ? 'text-blue-700' : 'text-gray-700'
                       }`}>Texte</span>
+                    {selectedChannelType === 'facebook-page' && contentType !== 'text' && (
+                      <span className="text-xs text-blue-600">Idéal pour Facebook</span>
+                    )}
                   </div>
                 </button>
                 <button
@@ -817,23 +820,38 @@ export default function ContentPage() {
                         ? 'text-gray-400'
                         : contentType === 'image' ? 'text-green-700' : 'text-gray-700'
                       }`}>Image</span>
+                    {selectedChannelType === 'instagram-dm' && contentType !== 'image' && (
+                      <span className="text-xs text-purple-600">Parfait pour Instagram</span>
+                    )}
                   </div>
                 </button>
                 <button
                   onClick={() => setContentType('video')}
                   className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${contentType === 'video'
-                      ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 shadow-lg'
+                      ? selectedChannelType === 'tiktok' 
+                        ? 'bg-gradient-to-br from-pink-50 to-purple-100 border-pink-300 shadow-lg'
+                        : 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 shadow-lg'
                       : 'bg-white border-gray-200 hover:border-purple-200 hover:shadow-md'
                     }`}
                 >
                   <div className="flex flex-col items-center space-y-3">
-                    <div className={`p-3 rounded-xl transition-colors ${contentType === 'video' ? 'bg-purple-500' : 'bg-gray-100 group-hover:bg-purple-100'
+                    <div className={`p-3 rounded-xl transition-colors ${
+                      contentType === 'video' 
+                        ? selectedChannelType === 'tiktok' ? 'bg-pink-500' : 'bg-purple-500'
+                        : 'bg-gray-100 group-hover:bg-purple-100'
                       }`}>
-                      <Video className={`h-6 w-6 ${contentType === 'video' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                      <Video className={`h-6 w-6 ${
+                        contentType === 'video' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
                         }`} />
                     </div>
-                    <span className={`font-medium ${contentType === 'video' ? 'text-purple-700' : 'text-gray-700'
+                    <span className={`font-medium ${
+                      contentType === 'video' 
+                        ? selectedChannelType === 'tiktok' ? 'text-pink-700' : 'text-purple-700'
+                        : 'text-gray-700'
                       }`}>Vidéo</span>
+                    {selectedChannelType === 'tiktok' && (
+                      <span className="text-xs text-pink-600 font-medium">Obligatoire</span>
+                    )}
                   </div>
                 </button>
               </div>
@@ -842,7 +860,19 @@ export default function ContentPage() {
             {/* Section image (conditionnelle) */}
             {contentType === 'image' && (
               <div className="border-t pt-4">
-                <p className="text-sm font-medium text-gray-700 mb-3">Image</p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-medium text-gray-700">Image</p>
+                  {selectedChannelType === 'instagram-dm' && (
+                    <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                      📐 Format carré ou vertical recommandé
+                    </span>
+                  )}
+                  {selectedChannelType === 'facebook-page' && (
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                      📐 Format 1200x630px optimal
+                    </span>
+                  )}
+                </div>
                 <div className="space-y-4">
                   {/* Upload de fichier */}
                   <div>
@@ -860,14 +890,36 @@ export default function ContentPage() {
                       />
                       <label
                         htmlFor="image-upload"
-                        className="flex items-center justify-center w-full p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-300 cursor-pointer group"
+                        className={`flex items-center justify-center w-full p-6 border-2 border-dashed rounded-xl transition-all duration-300 cursor-pointer group ${
+                          selectedChannelType === 'instagram-dm' 
+                            ? 'border-purple-300 hover:border-purple-400 hover:bg-purple-50'
+                            : selectedChannelType === 'facebook-page'
+                            ? 'border-blue-300 hover:border-blue-400 hover:bg-blue-50'
+                            : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                        }`}
                       >
                         <div className="text-center">
-                          <Upload className="h-8 w-8 text-gray-400 group-hover:text-blue-500 mx-auto mb-2" />
-                          <p className="text-sm font-medium text-gray-600 group-hover:text-blue-600">
+                          <Upload className={`h-8 w-8 mx-auto mb-2 ${
+                            selectedChannelType === 'instagram-dm' 
+                              ? 'text-purple-400 group-hover:text-purple-500'
+                              : selectedChannelType === 'facebook-page'
+                              ? 'text-blue-400 group-hover:text-blue-500'
+                              : 'text-gray-400 group-hover:text-blue-500'
+                          }`} />
+                          <p className={`text-sm font-medium ${
+                            selectedChannelType === 'instagram-dm' 
+                              ? 'text-purple-600 group-hover:text-purple-600'
+                              : selectedChannelType === 'facebook-page'
+                              ? 'text-blue-600 group-hover:text-blue-600'
+                              : 'text-gray-600 group-hover:text-blue-600'
+                          }`}>
                             Cliquez pour sélectionner une image
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF jusqu'à 10MB</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            PNG, JPG, GIF jusqu'à 10MB
+                            {selectedChannelType === 'instagram-dm' && ' • Format carré/vertical optimal'}
+                            {selectedChannelType === 'facebook-page' && ' • 1200x630px recommandé'}
+                          </p>
                         </div>
                       </label>
                     </div>
@@ -908,7 +960,14 @@ export default function ContentPage() {
             {/* Section vidéo (conditionnelle) */}
             {contentType === 'video' && (
               <div className="border-t pt-4">
-                <p className="text-sm font-medium text-gray-700 mb-3">Vidéo</p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-medium text-gray-700">Vidéo</p>
+                  {selectedChannelType === 'tiktok' && (
+                    <span className="text-xs bg-pink-100 text-pink-800 px-2 py-1 rounded-full">
+                      📱 Format vertical 9:16 optimal
+                    </span>
+                  )}
+                </div>
                 <div className="space-y-4">
                   {/* Upload de fichier */}
                   <div>
@@ -926,19 +985,39 @@ export default function ContentPage() {
                       />
                       <label
                         htmlFor="video-upload"
-                        className="flex items-center justify-center w-full p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-400 hover:bg-purple-50 transition-all duration-300 cursor-pointer group"
+                        className={`flex items-center justify-center w-full p-6 border-2 border-dashed rounded-xl transition-all duration-300 cursor-pointer group ${
+                          selectedChannelType === 'tiktok' 
+                            ? 'border-pink-300 hover:border-pink-400 hover:bg-pink-50'
+                            : 'border-purple-300 hover:border-purple-400 hover:bg-purple-50'
+                        }`}
                       >
                         <div className="text-center">
-                          <Upload className="h-8 w-8 text-gray-400 group-hover:text-purple-500 mx-auto mb-2" />
-                          <p className="text-sm font-medium text-gray-600 group-hover:text-purple-600">
+                          <Upload className={`h-8 w-8 mx-auto mb-2 ${
+                            selectedChannelType === 'tiktok' 
+                              ? 'text-pink-400 group-hover:text-pink-500'
+                              : 'text-purple-400 group-hover:text-purple-500'
+                          }`} />
+                          <p className={`text-sm font-medium ${
+                            selectedChannelType === 'tiktok' 
+                              ? 'text-pink-600 group-hover:text-pink-600'
+                              : 'text-purple-600 group-hover:text-purple-600'
+                          }`}>
                             Cliquez pour sélectionner une vidéo
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">MP4, MOV, AVI jusqu'à 100MB</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            MP4, MOV, AVI jusqu'à 100MB
+                            {selectedChannelType === 'tiktok' && ' • Vertical 9:16 recommandé'}
+                          </p>
                         </div>
                       </label>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
                       Maximum 100MB - L'upload peut prendre plusieurs minutes
+                      {selectedChannelType === 'tiktok' && (
+                        <span className="block text-pink-600 mt-1">
+                          💡 TikTok : Durée optimale 15-60 secondes
+                        </span>
+                      )}
                     </p>
                   </div>
 
@@ -974,22 +1053,43 @@ export default function ContentPage() {
               </div>
             )}
 
-            {/* Bouton de publication */}
+            {/* Bouton de publication adaptatif */}
             <div className="flex justify-between items-center pt-4">
               <div className="text-sm text-gray-600">
                 {message.trim() && (
-                  <span>✓ Prêt à publier sur Facebook</span>
+                  <span className="flex items-center space-x-2">
+                    {selectedChannelType === 'tiktok' && <Music className="h-4 w-4 text-pink-600" />}
+                    {selectedChannelType === 'facebook-page' && <Facebook className="h-4 w-4 text-blue-600" />}
+                    {selectedChannelType === 'instagram-dm' && <Image className="h-4 w-4 text-purple-600" />}
+                    <span>
+                      ✓ Prêt à publier sur {
+                        selectedChannelType === 'tiktok' ? 'TikTok' :
+                        selectedChannelType === 'facebook-page' ? 'Facebook' :
+                        selectedChannelType === 'instagram-dm' ? 'Instagram' : 'votre canal'
+                      }
+                    </span>
+                  </span>
                 )}
               </div>
               <button
                 onClick={handlePublish}
                 disabled={!message.trim() || loading || (contentType === 'image' && !imageFile && !imageUrl) || (contentType === 'video' && !videoFile && !videoUrl)}
-                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200"
+                className={`inline-flex items-center px-6 py-3 font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200 ${
+                  selectedChannelType === 'tiktok' 
+                    ? 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white focus:ring-pink-500'
+                    : selectedChannelType === 'facebook-page'
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500'
+                    : selectedChannelType === 'instagram-dm'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white focus:ring-purple-500'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500'
+                }`}
               >
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                     {selectedChannelType === 'instagram-dm' && contentType === 'video'
+                      ? publishMode === 'draft' ? 'Sauvegarde en brouillon...' : 'Publication TikTok...'
+                      : selectedChannelType === 'instagram-dm' && contentType === 'video'
                       ? 'Traitement vidéo Instagram...'
                       : contentType === 'video'
                         ? 'Upload vidéo...'
@@ -999,7 +1099,14 @@ export default function ContentPage() {
                 ) : (
                   <>
                     <Send className="h-4 w-4 mr-2" />
-                    Publier maintenant
+                    {selectedChannelType === 'tiktok' 
+                      ? publishMode === 'draft' ? '📝 Sauvegarder en brouillon' : '🚀 Publier sur TikTok'
+                      : selectedChannelType === 'facebook-page' 
+                      ? '📘 Publier sur Facebook'
+                      : selectedChannelType === 'instagram-dm'
+                      ? '📸 Publier sur Instagram'
+                      : 'Publier'
+                    }
                   </>
                 )}
               </button>
