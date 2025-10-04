@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import prisma from '@/lib/prisma';
+import  prisma  from '@/lib/prisma';
 import { decryptToken } from '@/lib/encryption';
 
 export async function GET(request: NextRequest) {
@@ -92,26 +92,26 @@ export async function GET(request: NextRequest) {
           channelType = 'telegram';
         } else if (channel.type === 'TIKTOK') {
           channelType = 'tiktok';
-          // Récupérer le nom d'utilisateur et l'avatar TikTok
+          // Récupérer le nom d'utilisateur TikTok
           try {
             if (channel.accessToken) {
               const decryptedToken = decryptToken(channel.accessToken);
-              const response = await fetch(`https://open.tiktokapis.com/v2/user/info/?fields=display_name,profile_deep_link,avatar_url_100&access_token=${decryptedToken}`);
+              const response = await fetch(`https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name`, {
+                method: 'GET',
+                headers: {
+                  'Authorization': `Bearer ${decryptedToken}`,
+                  'Content-Type': 'application/json'
+                }
+              });
               if (response.ok) {
-                const tiktokData = await response.json();
-                pageName = tiktokData.data.user.display_name;
-                // Stocker l'avatar dans le canal
-                await prisma.channel.update({
-                  where: { id: channel.id },
-                  data: { 
-                    pageName: tiktokData.data.user.display_name,
-                    pageImageUrl: tiktokData.data.user.avatar_url_100
-                  }
-                });
+                const tikTokData = await response.json();
+                if (tikTokData.data && tikTokData.data.user) {
+                  pageName = tikTokData.data.user.display_name;
+                }
               }
             }
           } catch (error) {
-            console.error('Erreur récupération profil TikTok:', error);
+            console.error('Erreur récupération nom TikTok:', error);
           }
         }
         

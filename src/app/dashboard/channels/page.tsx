@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Zap, Settings, CheckCircle, XCircle, AlertCircle, MessageCircle, User } from 'lucide-react';
+import { Plus, Zap, Settings, CheckCircle, XCircle, AlertCircle, MessageCircle } from 'lucide-react';
 import { 
   WhatsAppIcon, 
   TikTokIcon, 
@@ -27,6 +27,7 @@ interface Channel {
   hoverColor: string;
   lastActivity?: string;
   messageCount?: number;
+  pageName?: string; // Nom de la page/profil connecté
 }
 
 const availableChannels: Channel[] = [
@@ -178,8 +179,7 @@ export default function ChannelsPage() {
                  status: 'connected' as const,
                  lastActivity: new Date(connectedChannel.connectedAt).toLocaleDateString('fr-FR'),
                  messageCount: Math.floor(Math.random() * 50), // Simulation pour l'instant
-                 profileName: connectedChannel.pageName,
-                 profileImage: connectedChannel.pageImageUrl
+                 pageName: connectedChannel.pageName // Nom du profil/page connecté
                };
              }
              return channel;
@@ -363,6 +363,11 @@ export default function ChannelsPage() {
                         </div>
                         <div className="ml-3">
                           <h3 className="text-sm font-medium text-gray-900">{channel.name}</h3>
+                          {channel.pageName && (
+                            <p className="text-xs text-gray-600 mt-0.5">
+                              {channel.pageName}
+                            </p>
+                          )}
                           <div className="flex items-center mt-1">
                             {getStatusIcon(channel.status)}
                             <span className={`ml-1 text-xs px-2 py-1 rounded-full border ${getStatusColor(channel.status)}`}>
@@ -378,27 +383,6 @@ export default function ChannelsPage() {
                         <Settings className="h-4 w-4" />
                       </button>
                     </div>
-                    
-                    {/* Profil TikTok connecté */}
-                    {channel.type === 'tiktok' && channel.profileName && (
-                      <div className="mt-4 flex items-center p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        {channel.profileImage ? (
-                          <img 
-                            src={channel.profileImage} 
-                            alt={`Profil ${channel.profileName}`}
-                            className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                            <User className="w-5 h-5 text-gray-500" />
-                          </div>
-                        )}
-                        <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">{channel.profileName}</div>
-                          <div className="text-xs text-gray-500">Profil TikTok connecté</div>
-                        </div>
-                      </div>
-                    )}
                     
                     {channel.lastActivity && (
                       <div className="mt-3 text-xs text-gray-500">
