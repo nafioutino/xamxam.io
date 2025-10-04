@@ -174,15 +174,16 @@ export async function GET(request: NextRequest) {
     });
 
     if (existingChannel) {
-      // Mettre à jour le canal existant
+      // Mettre à jour le canal existant (inclure le refresh token)
       await prisma?.channel.update({
         where: { id: existingChannel.id },
         data: {
           accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
           isActive: true
         }
       });
-      console.log('TikTok OAuth - Canal existant mis à jour');
+      console.log('TikTok OAuth - Canal existant mis à jour (access + refresh token)');
     } else {
       // Créer un nouveau canal
       await prisma?.channel.create({

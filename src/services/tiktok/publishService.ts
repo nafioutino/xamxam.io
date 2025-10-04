@@ -117,7 +117,10 @@ export class TikTokPublishService {
   /**
    * Publie une vidéo sur TikTok
    */
-  static async publishVideo(options: TikTokPublishOptions): Promise<{ success: boolean; error?: string; publishId?: string }> {
+  static async publishVideo(options: TikTokPublishOptions): Promise<{
+    shareId: any;
+    tikTokError: any; success: boolean; error?: string; publishId?: string 
+}> {
     try {
       // Valider les nouvelles options
       const validationError = this.validateNewPublishOptions(options);

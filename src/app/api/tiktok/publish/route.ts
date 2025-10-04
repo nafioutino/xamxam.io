@@ -61,44 +61,22 @@ export async function POST(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // --- ÉTAPE 4: DÉCHIFFRER LE TOKEN D'ACCÈS ---
-    if (!channel.accessToken) {
-      console.error(`${logPrefix} No access token found for channel`);
-      return NextResponse.json({ 
-        error: 'Token d\'accès manquant' 
-      }, { status: 500 });
-    }
-
-    let accessToken: string;
-    try {
-      accessToken = decryptToken(channel.accessToken);
-    } catch (decryptError) {
-      console.error(`${logPrefix} Token decryption failed:`, decryptError);
-      return NextResponse.json({ 
-        error: 'Erreur de déchiffrement du token' 
-      }, { status: 500 });
-    }
-
-    // --- ÉTAPE 5: PUBLIER SUR TIKTOK ---
-    const publishOptions = {
-      title,
-      accessToken,
-      videoFile: videoFile || undefined,
-      videoUrl: videoUrl || undefined,
-      privacy: privacy as 'PUBLIC_TO_EVERYONE' | 'MUTUAL_FOLLOW_FRIENDS' | 'SELF_ONLY',
-      publishMode: publishMode as 'direct' | 'draft'
+    // --- ÉTAPE 4: CONSTRUIRE LES OPTIONS ET PUBLIER AVEC RAFRAÎCHISSEMENT AUTOMATIQUE ---
+    const publishOptionsNew = {
+      channelId: channel.id,
+      videoFile: videoFile!,
+      description: title,
+      privacy: (privacy as 'SELF_ONLY' | 'MUTUAL_FOLLOW_FRIENDS' | 'PUBLIC_TO_EVERYONE'),
+      isDraft: publishMode !== 'direct'
     };
 
     let result;
-    
     if (publishMode === 'direct') {
-      // Publication directe (nécessite video.publish scope)
       console.log(`${logPrefix} Publishing directly to TikTok...`);
-      result = await TikTokPublishService.publishVideo(publishOptions);
+      result = await TikTokPublishService.publishVideo(publishOptionsNew);
     } else {
-      // Upload en brouillon (nécessite video.upload scope)
       console.log(`${logPrefix} Uploading as draft to TikTok...`);
-      result = await TikTokPublishService.uploadVideoDraft(publishOptions);
+      result = await TikTokPublishService.publishVideo(publishOptionsNew);
     }
 
     if (!result.success) {
