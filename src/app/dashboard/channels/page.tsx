@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Zap, Settings, CheckCircle, XCircle, AlertCircle, MessageCircle } from 'lucide-react';
+import { Plus, Zap, Settings, CheckCircle, XCircle, AlertCircle, MessageCircle, User } from 'lucide-react';
 import { 
   WhatsAppIcon, 
   TikTokIcon, 
@@ -177,7 +177,9 @@ export default function ChannelsPage() {
                  ...channel,
                  status: 'connected' as const,
                  lastActivity: new Date(connectedChannel.connectedAt).toLocaleDateString('fr-FR'),
-                 messageCount: Math.floor(Math.random() * 50) // Simulation pour l'instant
+                 messageCount: Math.floor(Math.random() * 50), // Simulation pour l'instant
+                 profileName: connectedChannel.pageName,
+                 profileImage: connectedChannel.pageImageUrl
                };
              }
              return channel;
@@ -376,6 +378,27 @@ export default function ChannelsPage() {
                         <Settings className="h-4 w-4" />
                       </button>
                     </div>
+                    
+                    {/* Profil TikTok connecté */}
+                    {channel.type === 'tiktok' && channel.profileName && (
+                      <div className="mt-4 flex items-center p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        {channel.profileImage ? (
+                          <img 
+                            src={channel.profileImage} 
+                            alt={`Profil ${channel.profileName}`}
+                            className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                            <User className="w-5 h-5 text-gray-500" />
+                          </div>
+                        )}
+                        <div className="ml-3">
+                          <div className="text-sm font-medium text-gray-900">{channel.profileName}</div>
+                          <div className="text-xs text-gray-500">Profil TikTok connecté</div>
+                        </div>
+                      </div>
+                    )}
                     
                     {channel.lastActivity && (
                       <div className="mt-3 text-xs text-gray-500">
