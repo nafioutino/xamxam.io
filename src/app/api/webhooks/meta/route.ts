@@ -193,14 +193,28 @@ async function processMessage(event: any) {
 
   try {
     // --- ÉTAPE 1: IDENTIFIER LE CANAL ET LA BOUTIQUE ---
+    // Rechercher un canal actif selon le type d'événement
+    // Pour Instagram : pageId = Instagram Business Account ID
+    // Pour Facebook : pageId = Facebook Page ID
     console.log(`${logPrefix} Looking for channel with externalId: ${pageId}`);
-    const channel = await prisma.channel.findFirst({
+    let channel = await prisma.channel.findFirst({
       where: {
         externalId: pageId,
-        isActive: true,
-        type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] }
+        type: ChannelType.INSTAGRAM_DM,
+        isActive: true
       }
     });
+
+    // Si pas trouvé en tant qu'Instagram, chercher en tant que Facebook Page
+    if (!channel) {
+      channel = await prisma.channel.findFirst({
+        where: {
+          externalId: pageId,
+          type: ChannelType.FACEBOOK_PAGE,
+          isActive: true
+        }
+      });
+    }
 
     if (!channel) {
       console.error(`${logPrefix} No active channel found for pageId: ${pageId}`);
@@ -211,6 +225,8 @@ async function processMessage(event: any) {
       console.error(`${logPrefix} Channel ${channel.id} has no access token`);
       throw new Error('Channel missing access token');
     }
+
+    console.log(`${logPrefix} Found channel: ${channel.type} with ID ${channel.externalId}`);
 
     const shopId = channel.shopId;
     console.log(`${logPrefix} Found channel ${channel.id} for shop ${shopId}`);
