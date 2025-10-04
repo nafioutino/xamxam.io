@@ -73,13 +73,10 @@ export async function POST(request: NextRequest) {
 
     // --- ÉTAPE 4: SOUSCRIRE LA PAGE AUX WEBHOOKS ---
     // Cette étape est cruciale pour que Meta nous envoie les messages en temps réel.
-    // Pour Instagram, nous devons souscrire le compte Instagram Business, pas la page Facebook
-    let webhookTargetId = pageId;
-    if (platform === 'instagram' && selectedPage.instagram_business_account) {
-      webhookTargetId = selectedPage.instagram_business_account.id;
-    }
-    
-    const webhookUrl = `https://graph.facebook.com/v23.0/${webhookTargetId}/subscribed_apps`;
+    // IMPORTANT: Pour Instagram, nous devons TOUJOURS souscrire la page Facebook,
+    // même si nous voulons recevoir des messages Instagram. Meta route automatiquement
+    // les messages Instagram via la page Facebook connectée.
+    const webhookUrl = `https://graph.facebook.com/v23.0/${pageId}/subscribed_apps`;
     const subscribedFields = ['messages', 'messaging_postbacks']; // Scopes de base pour la messagerie
     
     const webhookResponse = await fetch(webhookUrl, {
@@ -93,10 +90,14 @@ export async function POST(request: NextRequest) {
     
     if (!webhookResponse.ok) {
       const webhookError = await webhookResponse.json();
-      logger.error(`${logPrefix} Webhook subscription failed for ${platform} (${webhookTargetId}):`, webhookError);
-      // On continue même si cela échoue, mais on le loggue comme une erreur critique.
+      logger.error(`${logPrefix} Webhook subscription failed for ${platform} via page ${pageId}:`, webhookError);
+      
+      // Si c'est une erreur de permissions, on continue mais on log l'erreur
+      if (webhookError.error?.code === 3) {
+        logger.error(`${logPrefix} Permission error: Your app needs 'pages_manage_metadata' permission and Advanced Access for Instagram webhooks.`);
+      }
     } else {
-      logger.info(`${logPrefix} Successfully subscribed ${platform} (${webhookTargetId}) to webhooks.`);
+      logger.info(`${logPrefix} Successfully subscribed ${platform} via page ${pageId} to webhooks.`);
     }
 
     // --- ÉTAPE 5: RÉCUPÉRER LA BOUTIQUE ET CHIFFRER LE TOKEN ---

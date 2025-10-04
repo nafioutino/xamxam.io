@@ -35,6 +35,7 @@ export default function ConnectInstagramPage() {
       'instagram_basic',
       'instagram_manage_messages',
       'pages_show_list',
+      'pages_manage_metadata',
       'business_management'
     ]
   };
