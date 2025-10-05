@@ -307,16 +307,11 @@ export default function InboxPage() {
       <div className="w-full sm:w-1/3 lg:w-1/4 border-r border-gray-200 bg-gray-50">
         <div className="h-16 border-b border-gray-200 flex items-center justify-between px-4">
           <h2 className="font-semibold text-gray-800">Messages</h2>
-          <div className="flex items-center space-x-2">
-            {/* Indicateur de connexion Realtime */}
-            <div className="flex items-center space-x-1">
-              <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse"></div>
-              <span className="text-xs text-gray-500">En temps réel</span>
-            </div>
+          <div className="flex items-center">
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 max-w-[180px]"
             >
               <option value="all">Toutes les plateformes</option>
               <option value="whatsapp">WhatsApp</option>

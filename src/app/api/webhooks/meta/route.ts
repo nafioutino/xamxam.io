@@ -236,8 +236,8 @@ async function processMessage(event: any) {
     let userInfo: { name: string; avatarUrl?: string } = { name: `Client ${senderId.slice(-4)}`, avatarUrl: undefined };
     
     try {
-      // Déterminer si c'est un utilisateur Instagram ou Facebook
-      const isInstagram = isInstagramUserId(senderId) || channel.type === 'INSTAGRAM_DM';
+      // Déterminer si c'est un utilisateur Instagram ou Facebook basé sur le type de canal trouvé
+      const isInstagram = channel.type === ChannelType.INSTAGRAM_DM;
       
       if (isInstagram) {
         console.log(`${logPrefix} Fetching Instagram user info for senderId: ${senderId}`);
