@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import prisma from '@/lib/prisma'; // Assurez-vous que ce chemin est correct
 import { ChannelType } from '@/generated/prisma';
 import { getFacebookUserInfo } from '@/lib/facebook-utils';
+import { getInstagramUserInfo, isInstagramUserId } from '@/lib/instagram-utils';
 
 // Préfixe pour tous les logs, pour les retrouver facilement.
 const logPrefix = '[Meta Webhook]';
@@ -231,18 +232,33 @@ async function processMessage(event: any) {
     const shopId = channel.shopId;
     console.log(`${logPrefix} Found channel ${channel.id} for shop ${shopId}`);
 
-    // --- ÉTAPE 2: RÉCUPÉRER LES INFORMATIONS DU CLIENT FACEBOOK ---
+    // --- ÉTAPE 2: RÉCUPÉRER LES INFORMATIONS DU CLIENT (FACEBOOK OU INSTAGRAM) ---
     let userInfo: { name: string; avatarUrl?: string } = { name: `Client ${senderId.slice(-4)}`, avatarUrl: undefined };
     
     try {
-      console.log(`${logPrefix} Fetching Facebook user info for senderId: ${senderId}`);
-      const facebookUserInfo = await getFacebookUserInfo(senderId, channel.accessToken);
+      // Déterminer si c'est un utilisateur Instagram ou Facebook
+      const isInstagram = isInstagramUserId(senderId) || channel.type === 'INSTAGRAM_DM';
       
-      if (facebookUserInfo) {
-        userInfo = facebookUserInfo;
-        console.log(`${logPrefix} Successfully fetched user info:`, { name: userInfo.name, hasAvatar: !!userInfo.avatarUrl });
+      if (isInstagram) {
+        console.log(`${logPrefix} Fetching Instagram user info for senderId: ${senderId}`);
+        const instagramUserInfo = await getInstagramUserInfo(senderId, channel.accessToken);
+        
+        if (instagramUserInfo) {
+          userInfo = instagramUserInfo;
+          console.log(`${logPrefix} Successfully fetched Instagram user info:`, { name: userInfo.name, hasAvatar: !!userInfo.avatarUrl });
+        } else {
+          console.warn(`${logPrefix} Could not retrieve Instagram user info for ${senderId}, using fallback name`);
+        }
       } else {
-        console.warn(`${logPrefix} Could not retrieve user info for ${senderId}, using fallback name`);
+        console.log(`${logPrefix} Fetching Facebook user info for senderId: ${senderId}`);
+        const facebookUserInfo = await getFacebookUserInfo(senderId, channel.accessToken);
+        
+        if (facebookUserInfo) {
+          userInfo = facebookUserInfo;
+          console.log(`${logPrefix} Successfully fetched Facebook user info:`, { name: userInfo.name, hasAvatar: !!userInfo.avatarUrl });
+        } else {
+          console.warn(`${logPrefix} Could not retrieve Facebook user info for ${senderId}, using fallback name`);
+        }
       }
     } catch (userInfoError) {
       console.warn(`${logPrefix} Error fetching user info for ${senderId}:`, userInfoError);
