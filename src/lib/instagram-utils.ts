@@ -2,15 +2,13 @@ import { decryptToken } from '@/lib/encryption';
 
 /**
  * Interface pour les données de profil Instagram Business
+ * Utilise uniquement les champs disponibles pour IGBusinessScopedID
  */
 export interface InstagramUserProfile {
   id: string;
   username?: string;
   name?: string;
   profile_pic?: string;
-  followers_count?: number;
-  media_count?: number;
-  biography?: string;
 }
 
 /**
@@ -41,9 +39,9 @@ export async function fetchInstagramUserProfile(
     const decryptedToken = decryptToken(pageAccessToken);
     
     // Construire l'URL de l'API Graph Instagram
-    // Pour Instagram, on utilise des champs différents
+    // Pour Instagram, on utilise uniquement les champs disponibles pour IGBusinessScopedID
     const apiUrl = new URL(`https://graph.facebook.com/v23.0/${userId}`);
-    apiUrl.searchParams.append('fields', 'username,name,profile_pic,followers_count,media_count,biography');
+    apiUrl.searchParams.append('fields', 'id,username,name,profile_pic');
     apiUrl.searchParams.append('access_token', decryptedToken);
 
     console.log(`Fetching Instagram profile for user ${userId}`);
