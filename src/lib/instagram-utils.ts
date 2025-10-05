@@ -7,7 +7,7 @@ export interface InstagramUserProfile {
   id: string;
   username?: string;
   name?: string;
-  profile_picture_url?: string;
+  profile_pic?: string;
   followers_count?: number;
   media_count?: number;
   biography?: string;
@@ -43,7 +43,7 @@ export async function fetchInstagramUserProfile(
     // Construire l'URL de l'API Graph Instagram
     // Pour Instagram, on utilise des champs différents
     const apiUrl = new URL(`https://graph.facebook.com/v23.0/${userId}`);
-    apiUrl.searchParams.append('fields', 'username,name,profile_picture_url,followers_count,media_count,biography');
+    apiUrl.searchParams.append('fields', 'username,name,profile_pic,followers_count,media_count,biography');
     apiUrl.searchParams.append('access_token', decryptedToken);
 
     console.log(`Fetching Instagram profile for user ${userId}`);
@@ -104,7 +104,7 @@ export async function getInstagramUserInfo(
   
   return {
     name: formatInstagramUserName(profile),
-    avatarUrl: profile.profile_picture_url
+    avatarUrl: profile.profile_pic
   };
 }
 
