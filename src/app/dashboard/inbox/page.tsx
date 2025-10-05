@@ -152,16 +152,18 @@ export default function InboxPage() {
         },
         body: JSON.stringify({
           conversationId: selectedContact.id,
-          content,
-          type,
+          message: content,
+          messageType: type.toUpperCase(),
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
-
       const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('API Error Response:', data);
+        const errorMessage = data.error || data.message || 'Failed to send message';
+        throw new Error(errorMessage);
+      }
       
       // Add message to local state immediately for better UX
       const newMsg: Message = {
@@ -184,7 +186,8 @@ export default function InboxPage() {
       fetchConversations();
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error('Erreur lors de l\'envoi du message');
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de l\'envoi du message';
+      toast.error(errorMessage);
     } finally {
       setSendingMessage(false);
     }

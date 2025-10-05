@@ -62,14 +62,32 @@ export async function POST(request: NextRequest) {
     }
 
     // --- TROUVER LE CANAL APPROPRIÉ ---
-    const channel = conversation.shop.channels.find((c: { type: any; }) => c.type === conversation.platform);
+    let channel;
+    // Normaliser la plateforme pour la comparaison
+    const platformLower = conversation.platform.toLowerCase();
+    
+    if (platformLower === 'facebook' || conversation.platform === ChannelType.FACEBOOK_PAGE) {
+      channel = conversation.shop.channels.find((c: { type: any; }) => c.type === ChannelType.FACEBOOK_PAGE);
+    } else if (platformLower === 'instagram' || conversation.platform === ChannelType.INSTAGRAM_DM) {
+      channel = conversation.shop.channels.find((c: { type: any; }) => c.type === ChannelType.INSTAGRAM_DM);
+    }
+    
+    console.log(`${logPrefix} Recherche de canal pour platform: ${conversation.platform} (normalized: ${platformLower}), canal trouvé:`, !!channel);
+    
     if (!channel || !channel.accessToken) {
       return NextResponse.json({
         success: false,
-        error: 'Canal non configuré ou token d\'accès manquant'
+        error: `Canal ${conversation.platform} non configuré ou token d'accès manquant`
       }, { status: 400 });
     }
 
+    console.log(`${logPrefix} Envoi du message pour conversation ${conversationId}:`, {
+      platform: conversation.platform,
+      messageType,
+      hasChannel: !!channel,
+      hasToken: !!channel?.accessToken
+    });
+    
     // --- PRÉPARER LE PAYLOAD POUR L'API META ---
     const recipientId = conversation.externalId;
     if (!recipientId) {
@@ -81,6 +99,7 @@ export async function POST(request: NextRequest) {
 
     const messagePayload: any = {
       recipient: { id: recipientId },
+      messaging_type: "RESPONSE",
       message: {}
     };
 
@@ -98,7 +117,10 @@ export async function POST(request: NextRequest) {
         }
         messagePayload.message.attachment = {
           type: 'image',
-          payload: { url: mediaUrl }
+          payload: { 
+            url: mediaUrl,
+            is_reusable: true
+          }
         };
         break;
       case 'FILE':
@@ -110,20 +132,39 @@ export async function POST(request: NextRequest) {
         }
         messagePayload.message.attachment = {
           type: 'file',
-          payload: { url: mediaUrl }
+          payload: { 
+            url: mediaUrl,
+            is_reusable: true
+          }
         };
         break;
       default:
         messagePayload.message.text = message;
     }
 
+    // Pour Instagram, ajouter des paramètres spécifiques si nécessaire
+    const platformLowerForCheck = conversation.platform.toLowerCase();
+    if (platformLowerForCheck === 'instagram' || conversation.platform === ChannelType.INSTAGRAM_DM) {
+      // Instagram Direct Messages peuvent nécessiter des paramètres supplémentaires
+      messagePayload.messaging_type = "RESPONSE";
+    }
+
     // --- ENVOYER LE MESSAGE VIA L'API META ---
-    const apiUrl = conversation.platform === ChannelType.FACEBOOK_PAGE 
-      ? `https://graph.facebook.com/v18.0/me/messages`
-      : `https://graph.facebook.com/v18.0/me/messages`; // Même endpoint pour Instagram
+    // Facebook Messenger et Instagram Direct Messages utilisent le même endpoint
+    const apiUrl = `https://graph.facebook.com/v23.0/me/messages`;
 
     // Déchiffrer le token d'accès avant utilisation
-    const decryptedToken = decryptToken(channel.accessToken);
+    let decryptedToken;
+    try {
+      decryptedToken = decryptToken(channel.accessToken);
+      console.log(`${logPrefix} Token déchiffré avec succès pour ${conversation.platform}`);
+    } catch (error) {
+      console.error(`${logPrefix} Erreur lors du déchiffrement du token:`, error);
+      return NextResponse.json({
+        success: false,
+        error: 'Erreur de configuration du token d\'accès'
+      }, { status: 500 });
+    }
 
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -138,6 +179,24 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       console.error(`${logPrefix} Erreur API Meta:`, responseData);
+      
+      // Gestion spécifique des erreurs Instagram
+      const platformLowerForError = conversation.platform.toLowerCase();
+      if ((platformLowerForError === 'instagram' || conversation.platform === ChannelType.INSTAGRAM_DM) && responseData.error) {
+        const errorCode = responseData.error.code;
+        const errorMessage = responseData.error.message;
+        
+        // Erreurs courantes Instagram
+        if (errorCode === 10 || errorCode === 551) {
+          console.error(`${logPrefix} Erreur Instagram - Utilisateur non autorisé ou conversation fermée:`, errorMessage);
+          return NextResponse.json({
+            success: false,
+            error: 'Impossible d\'envoyer le message Instagram. L\'utilisateur doit d\'abord vous envoyer un message.',
+            details: responseData
+          }, { status: 400 });
+        }
+      }
+      
       return NextResponse.json({
         success: false,
         error: 'Erreur lors de l\'envoi du message',
