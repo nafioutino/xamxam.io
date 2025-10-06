@@ -147,29 +147,100 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    console.log('🔍 [INSTAGRAM AUTH] Étape 4 - Recherche de la page Facebook liée...');
+    
+    // Étape 4: Récupérer la page Facebook liée à ce compte Instagram Business
+    // Pour publier sur Instagram via l'API Facebook Graph, nous avons besoin du Page Access Token Facebook
+    const facebookAppId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
+    const facebookAppSecret = process.env.FACEBOOK_APP_SECRET;
+    
+    if (!facebookAppId || !facebookAppSecret) {
+      console.error('❌ [INSTAGRAM AUTH] Configuration Facebook manquante');
+      return NextResponse.redirect(
+        new URL('/dashboard/channels?error=facebook_config_missing', request.url)
+      );
+    }
+
+    // Utiliser l'App Access Token pour rechercher la page Facebook liée à ce compte Instagram
+    const appAccessToken = `${facebookAppId}|${facebookAppSecret}`;
+    const searchUrl = `https://graph.facebook.com/v23.0/search?type=page&q=${userData.username}&fields=id,name,access_token,instagram_business_account{id}&access_token=${appAccessToken}`;
+    
+    console.log('🌐 [INSTAGRAM AUTH] Recherche de la page Facebook pour:', userData.username);
+    
+    const searchResponse = await fetch(searchUrl);
+    const searchData = await searchResponse.json();
+    
+    if (!searchResponse.ok || searchData.error) {
+      console.error('❌ [INSTAGRAM AUTH] Erreur recherche page Facebook:', searchData);
+      return NextResponse.redirect(
+        new URL('/dashboard/channels?error=facebook_page_search_failed', request.url)
+      );
+    }
+
+    // Trouver la page Facebook qui a ce compte Instagram Business lié
+    const linkedPage = searchData.data?.find((page: any) => 
+      page.instagram_business_account?.id === userData.id
+    );
+
+    if (!linkedPage) {
+      console.error('❌ [INSTAGRAM AUTH] Aucune page Facebook trouvée pour ce compte Instagram');
+      return NextResponse.redirect(
+        new URL('/dashboard/channels?error=no_linked_facebook_page', request.url)
+      );
+    }
+
+    console.log('✅ [INSTAGRAM AUTH] Page Facebook trouvée:', {
+      pageId: linkedPage.id,
+      pageName: linkedPage.name,
+      instagramId: linkedPage.instagram_business_account?.id
+    });
+
+    // Récupérer le Page Access Token permanent pour cette page
+    const pageTokenUrl = `https://graph.facebook.com/v23.0/${linkedPage.id}?fields=access_token&access_token=${appAccessToken}`;
+    const pageTokenResponse = await fetch(pageTokenUrl);
+    const pageTokenData = await pageTokenResponse.json();
+
+    if (!pageTokenResponse.ok || pageTokenData.error || !pageTokenData.access_token) {
+      console.error('❌ [INSTAGRAM AUTH] Impossible de récupérer le Page Access Token:', pageTokenData);
+      return NextResponse.redirect(
+        new URL('/dashboard/channels?error=page_token_failed', request.url)
+      );
+    }
+
+    const pageAccessToken = pageTokenData.access_token;
+    console.log('🔑 [INSTAGRAM AUTH] Page Access Token récupéré avec succès');
+    console.log('📋 [INSTAGRAM AUTH] Page Access Token:', pageAccessToken?.substring(0, 20) + '...');
+    console.log('⏰ [INSTAGRAM AUTH] Token type: PAGE ACCESS TOKEN (permanent)');
+    console.log('🎯 [INSTAGRAM AUTH] Ce token sera utilisé pour publier sur Instagram via Facebook Graph API');
+
     // Stocker temporairement les données dans des cookies sécurisés
     // (Similaire au pattern Facebook - les données seront finalisées via /api/channels/finalize)
     const response = NextResponse.redirect(
       `${baseUrl}/dashboard/channels/setup-instagram`
     );
 
-    // Stocker le token d'accès temporairement
-    console.log('💾 [INSTAGRAM AUTH] Stockage du token long-lived dans cookie temporaire...');
-    response.cookies.set('instagram_access_token', accessToken, {
+    // Stocker le Page Access Token Facebook (le vrai token pour publier)
+    console.log('💾 [INSTAGRAM AUTH] Stockage du Page Access Token Facebook dans cookie temporaire...');
+    response.cookies.set('instagram_access_token', pageAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 60 * 60 * 24, // 24 heures (temporaire)
       path: '/'
     });
-    console.log('✅ [INSTAGRAM AUTH] Token stocké dans cookie: instagram_access_token');
+    console.log('✅ [INSTAGRAM AUTH] Page Access Token stocké dans cookie: instagram_access_token');
 
-    // Stocker les données utilisateur temporairement
+    // Stocker les données utilisateur Instagram temporairement
     response.cookies.set('instagram_user_data', JSON.stringify({
       id: userData.id,
       username: userData.username,
       account_type: userData.account_type,
-      media_count: userData.media_count
+      media_count: userData.media_count,
+      // Ajouter les informations de la page Facebook liée
+      linkedFacebookPage: {
+        id: linkedPage.id,
+        name: linkedPage.name
+      }
     }), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

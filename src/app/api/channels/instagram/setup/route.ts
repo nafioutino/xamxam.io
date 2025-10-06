@@ -63,12 +63,13 @@ export async function POST(request: NextRequest) {
 
     const shopId = profile.shop.id;
 
-    // Chiffrer le token d'accès
+    // Chiffrer le token d'accès (maintenant un Page Access Token Facebook)
     const encryptedToken = encryptToken(accessToken);
-    console.log('🔐 [INSTAGRAM SETUP] Token chiffré:', {
+    console.log('🔐 [INSTAGRAM SETUP] Page Access Token Facebook chiffré:', {
       originalTokenLength: accessToken.length,
       encryptedTokenLength: encryptedToken.length,
-      tokenType: accessToken.length > 200 ? 'LONG-LIVED' : 'SHORT-LIVED'
+      tokenType: 'FACEBOOK_PAGE_ACCESS_TOKEN',
+      linkedFacebookPage: userData.linkedFacebookPage?.name || 'N/A'
     });
 
     // Stocker le canal Instagram dans la base de données
@@ -102,7 +103,8 @@ export async function POST(request: NextRequest) {
       mediaCount: userData.media_count,
       shopId,
       tokenStoredLength: encryptedToken.length,
-      originalTokenType: accessToken.length > 200 ? 'LONG-LIVED' : 'SHORT-LIVED'
+      tokenType: 'FACEBOOK_PAGE_ACCESS_TOKEN',
+      linkedFacebookPage: userData.linkedFacebookPage?.name || 'N/A'
     });
 
     // Créer la réponse de succès
