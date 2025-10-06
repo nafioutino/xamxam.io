@@ -22,6 +22,8 @@ export async function POST(request: NextRequest) {
   const logPrefix = '[Instagram Publish API]';
   
   try {
+    console.log(`${logPrefix} 🚀 Début de la publication Instagram`);
+    
     // --- ÉTAPE 1: VALIDER LA REQUÊTE ET L'AUTHENTIFICATION ---
     const formData = await request.formData();
     const message = formData.get('message') as string;
@@ -31,6 +33,16 @@ export async function POST(request: NextRequest) {
     const imageUrl = formData.get('imageUrl') as string | null;
     const videoFile = formData.get('video') as File | null;
     const videoUrl = formData.get('videoUrl') as string | null;
+
+    console.log(`${logPrefix} 📋 Paramètres reçus:`, {
+      message: message?.substring(0, 50) + '...',
+      instagramAccountId,
+      contentType,
+      hasImageFile: !!imageFile,
+      hasImageUrl: !!imageUrl,
+      hasVideoFile: !!videoFile,
+      hasVideoUrl: !!videoUrl
+    });
 
     if (!message || !instagramAccountId) {
       return NextResponse.json({ error: 'Message et pageId requis' }, { status: 400 });
@@ -51,6 +63,8 @@ export async function POST(request: NextRequest) {
     }
 
     // --- ÉTAPE 2: RÉCUPÉRER LE TOKEN D'ACCÈS VIA LE CANAL INSTAGRAM ---
+    console.log(`${logPrefix} 🔍 Recherche du canal Instagram pour l'ID: ${instagramAccountId}`);
+    
     const shop = await prisma.shop.findUnique({
       where: { ownerId: user.id },
       include: {
@@ -65,11 +79,33 @@ export async function POST(request: NextRequest) {
     });
 
     if (!shop || shop.channels.length === 0) {
+      console.error(`${logPrefix} ❌ Canal Instagram non trouvé pour l'ID: ${instagramAccountId}`);
       return NextResponse.json({ error: 'Canal Instagram non trouvé ou inactif' }, { status: 404 });
     }
 
     const channel = shop.channels[0];
+    console.log(`${logPrefix} ✅ Canal Instagram trouvé:`, {
+      channelId: channel.id,
+      externalId: channel.externalId,
+      type: channel.type,
+      isActive: channel.isActive,
+      hasAccessToken: !!channel.accessToken,
+      tokenLength: channel.accessToken?.length || 0
+    });
+
     const accessToken = decryptToken(channel.accessToken!);
+    console.log(`${logPrefix} 🔓 Token déchiffré avec succès:`, {
+      tokenLength: accessToken.length,
+      tokenPrefix: accessToken.substring(0, 20) + '...',
+      tokenSuffix: '...' + accessToken.substring(accessToken.length - 10)
+    });
+
+    // Vérifier si c'est un token long-lived (ils sont généralement plus longs)
+    if (accessToken.length > 200) {
+      console.log(`${logPrefix} ✅ Token semble être un token long-lived (longueur: ${accessToken.length})`);
+    } else {
+      console.warn(`${logPrefix} ⚠️ Token semble être un token court (longueur: ${accessToken.length}) - cela pourrait causer des erreurs`);
+    }
 
     // --- ÉTAPE 3: PUBLIER SELON LE TYPE DE CONTENU ---
     let postId;

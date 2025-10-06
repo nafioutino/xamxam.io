@@ -91,27 +91,41 @@ export async function GET(request: NextRequest) {
     const shortLivedToken = tokenData.access_token;
     const userId = tokenData.user_id;
 
-    console.log('Instagram short-lived token obtained:', shortLivedToken);
-    console.log('Instagram user ID:', userId);
+    console.log('🔄 [INSTAGRAM AUTH] Étape 1 - Token de courte durée obtenu');
+    console.log('📋 [INSTAGRAM AUTH] Short-lived token:', shortLivedToken?.substring(0, 20) + '...');
+    console.log('👤 [INSTAGRAM AUTH] User ID:', userId);
+    console.log('⏰ [INSTAGRAM AUTH] Token type: SHORT-LIVED (expires in 1 hour)');
 
     // Étape 2: Échanger le token de courte durée contre un token de longue durée
+    console.log('🔄 [INSTAGRAM AUTH] Étape 2 - Début échange vers token long-lived...');
     const longLivedTokenUrl = `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${shortLivedToken}`;
+    
+    console.log('🌐 [INSTAGRAM AUTH] URL d\'échange:', longLivedTokenUrl.replace(clientSecret, '***SECRET***').replace(shortLivedToken, '***TOKEN***'));
     
     const longLivedResponse = await fetch(longLivedTokenUrl, {
       method: 'GET',
     });
 
     const longLivedData = await longLivedResponse.json();
+    console.log('📥 [INSTAGRAM AUTH] Réponse échange token:', { 
+      status: longLivedResponse.status, 
+      ok: longLivedResponse.ok,
+      hasAccessToken: !!longLivedData.access_token,
+      hasError: !!longLivedData.error 
+    });
 
     if (!longLivedResponse.ok || longLivedData.error) {
-      console.error('Instagram long-lived token exchange failed:', longLivedData);
+      console.error('❌ [INSTAGRAM AUTH] Échec échange token long-lived:', longLivedData);
       return NextResponse.redirect(
         new URL('/dashboard/channels?error=long_lived_token_failed', request.url)
       );
     }
 
     const accessToken = longLivedData.access_token;
-    console.log('Instagram long-lived token obtained:', accessToken);
+    console.log('✅ [INSTAGRAM AUTH] Token long-lived obtenu avec succès!');
+    console.log('📋 [INSTAGRAM AUTH] Long-lived token:', accessToken?.substring(0, 20) + '...');
+    console.log('⏰ [INSTAGRAM AUTH] Token type: LONG-LIVED (expires in 60 days)');
+    console.log('🔒 [INSTAGRAM AUTH] Ce token sera stocké et utilisé pour les publications');
 
     // Étape 3: Récupérer les informations du profil Instagram
     const userInfoUrl = `https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${accessToken}`;
@@ -140,6 +154,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Stocker le token d'accès temporairement
+    console.log('💾 [INSTAGRAM AUTH] Stockage du token long-lived dans cookie temporaire...');
     response.cookies.set('instagram_access_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -147,6 +162,7 @@ export async function GET(request: NextRequest) {
       maxAge: 60 * 60 * 24, // 24 heures (temporaire)
       path: '/'
     });
+    console.log('✅ [INSTAGRAM AUTH] Token stocké dans cookie: instagram_access_token');
 
     // Stocker les données utilisateur temporairement
     response.cookies.set('instagram_user_data', JSON.stringify({
