@@ -351,8 +351,7 @@ async function processInstagramMessage(event: any) {
         content: messageContent,
         mediaUrl: mediaUrl,
         mediaType: mediaType as any,
-        isFromCustomer: true,
-        sentAt: new Date(timestamp)
+        isFromCustomer: true
       }
     });
 
