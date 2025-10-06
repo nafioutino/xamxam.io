@@ -100,6 +100,9 @@ export async function POST(request: NextRequest) {
       tokenSuffix: '...' + accessToken.substring(accessToken.length - 10)
     });
 
+    // 🔍 DEBUG: Token complet pour vérification Meta
+    console.log(`${logPrefix} 🔍 [DEBUG] Token complet pour Meta Debugger:`, accessToken);
+
     // Vérifier si c'est un token long-lived (ils sont généralement plus longs)
     if (accessToken.length > 200) {
       console.log(`${logPrefix} ✅ Token semble être un token long-lived (longueur: ${accessToken.length})`);
