@@ -157,7 +157,8 @@ export async function POST(request: NextRequest) {
 async function createInstagramContainer(instagramAccountId: string, accessToken: string, mediaUrl: string, caption: string, mediaType: 'IMAGE' | 'VIDEO') {
   const logPrefix = '[Instagram Container]';
   
-  const containerUrl = `https://graph.facebook.com/v23.0/${instagramAccountId}/media`;
+  // Utilisation de l'API Instagram native
+  const containerUrl = `https://graph.instagram.com/v21.0/${instagramAccountId}/media`;
   const containerParams = new URLSearchParams({
     [mediaType === 'IMAGE' ? 'image_url' : 'video_url']: mediaUrl,
     caption,
@@ -168,7 +169,7 @@ async function createInstagramContainer(instagramAccountId: string, accessToken:
     containerParams.append('media_type', 'REELS');
   }
 
-  console.log(`${logPrefix} Creating ${mediaType} container...`);
+  console.log(`${logPrefix} Creating ${mediaType} container using Instagram API...`);
   const containerResponse = await fetch(`${containerUrl}?${containerParams.toString()}`, {
     method: 'POST',
   });
@@ -193,13 +194,14 @@ async function publishInstagramMedia(instagramAccountId: string, accessToken: st
 async function publishInstagramContainer(instagramAccountId: string, accessToken: string, containerId: string) {
   const logPrefix = '[Instagram Publish]';
   
-  const publishUrl = `https://graph.facebook.com/v23.0/${instagramAccountId}/media_publish`;
+  // Utilisation de l'API Instagram native
+  const publishUrl = `https://graph.instagram.com/v21.0/${instagramAccountId}/media_publish`;
   const publishParams = new URLSearchParams({
     creation_id: containerId,
     access_token: accessToken,
   });
   
-  console.log(`${logPrefix} Publishing container ${containerId}...`);
+  console.log(`${logPrefix} Publishing container ${containerId} using Instagram API...`);
   const publishResponse = await fetch(`${publishUrl}?${publishParams.toString()}`, {
     method: 'POST',
   });
@@ -224,7 +226,8 @@ async function publishInstagramContainerAsync(instagramAccountId: string, access
     try {
       console.log(`${logPrefix} Attempt ${i + 1}/${maxRetries} to publish container ${containerId}`);
       
-      const statusUrl = `https://graph.facebook.com/v23.0/${containerId}?fields=status_code&access_token=${accessToken}`;
+      // Utilisation de l'API Instagram native pour vérifier le statut
+      const statusUrl = `https://graph.instagram.com/v21.0/${containerId}?fields=status_code&access_token=${accessToken}`;
       const statusResponse = await fetch(statusUrl);
       const statusData = await statusResponse.json();
       

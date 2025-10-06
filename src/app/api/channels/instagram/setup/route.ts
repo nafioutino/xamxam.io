@@ -63,13 +63,21 @@ export async function POST(request: NextRequest) {
 
     const shopId = profile.shop.id;
 
-    // Chiffrer le token d'accès (maintenant un Page Access Token Facebook)
+    // Chiffrer le token d'accès
     const encryptedToken = encryptToken(accessToken);
-    console.log('🔐 [INSTAGRAM SETUP] Page Access Token Facebook chiffré:', {
+    
+    // Pour Instagram, les tokens de longue durée ont généralement 150-200 caractères
+    // Les tokens de courte durée ont généralement 100-150 caractères
+    // Avec l'API Instagram native, nous utilisons des Instagram User Access Tokens
+    const isLongLivedToken = accessToken.length >= 150;
+    
+    console.log('🔐 [INSTAGRAM SETUP] Token chiffré:', {
       originalTokenLength: accessToken.length,
       encryptedTokenLength: encryptedToken.length,
-      tokenType: 'FACEBOOK_PAGE_ACCESS_TOKEN',
-      linkedFacebookPage: userData.linkedFacebookPage?.name || 'N/A'
+      tokenPrefix: accessToken.substring(0, 20) + '...',
+      tokenType: isLongLivedToken ? 'LONG-LIVED' : 'SHORT-LIVED',
+      detectionMethod: 'length_based_instagram_native',
+      apiType: 'Instagram Native API'
     });
 
     // Stocker le canal Instagram dans la base de données
@@ -103,8 +111,7 @@ export async function POST(request: NextRequest) {
       mediaCount: userData.media_count,
       shopId,
       tokenStoredLength: encryptedToken.length,
-      tokenType: 'FACEBOOK_PAGE_ACCESS_TOKEN',
-      linkedFacebookPage: userData.linkedFacebookPage?.name || 'N/A'
+      originalTokenType: isLongLivedToken ? 'LONG-LIVED' : 'SHORT-LIVED'
     });
 
     // Créer la réponse de succès

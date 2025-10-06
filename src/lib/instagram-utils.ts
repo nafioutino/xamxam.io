@@ -27,24 +27,23 @@ export interface InstagramError {
 /**
  * Récupère les informations de profil d'un utilisateur Instagram Business
  * @param userId L'ID de l'utilisateur Instagram (IGBusinessScopedID)
- * @param pageAccessToken Le token d'accès de la page (chiffré)
+ * @param instagramAccessToken Le token d'accès Instagram (chiffré)
  * @returns Les informations du profil utilisateur ou null en cas d'erreur
  */
 export async function fetchInstagramUserProfile(
   userId: string,
-  pageAccessToken: string
+  instagramAccessToken: string
 ): Promise<InstagramUserProfile | null> {
   try {
     // Déchiffrer le token d'accès
-    const decryptedToken = decryptToken(pageAccessToken);
+    const decryptedToken = decryptToken(instagramAccessToken);
     
-    // Construire l'URL de l'API Graph Instagram
-    // Pour Instagram, on utilise uniquement les champs disponibles pour IGBusinessScopedID
-    const apiUrl = new URL(`https://graph.facebook.com/v23.0/${userId}`);
+    // Utiliser l'API Instagram native pour récupérer le profil
+    const apiUrl = new URL(`https://graph.instagram.com/v21.0/${userId}`);
     apiUrl.searchParams.append('fields', 'id,username,name,profile_pic');
     apiUrl.searchParams.append('access_token', decryptedToken);
 
-    console.log(`Fetching Instagram profile for user ${userId}`);
+    console.log(`Fetching Instagram profile for user ${userId} using native API`);
     
     // Faire l'appel à l'API
     const response = await fetch(apiUrl.toString());
@@ -84,14 +83,14 @@ export function formatInstagramUserName(profile: InstagramUserProfile): string {
 /**
  * Récupère et formate les informations d'un utilisateur Instagram
  * @param userId L'ID de l'utilisateur Instagram (IGBusinessScopedID)
- * @param pageAccessToken Le token d'accès de la page (chiffré)
+ * @param instagramAccessToken Le token d'accès Instagram (chiffré)
  * @returns Un objet avec le nom formaté et l'URL de l'avatar
  */
 export async function getInstagramUserInfo(
   userId: string,
-  pageAccessToken: string
+  instagramAccessToken: string
 ): Promise<{ name: string; avatarUrl?: string }> {
-  const profile = await fetchInstagramUserProfile(userId, pageAccessToken);
+  const profile = await fetchInstagramUserProfile(userId, instagramAccessToken);
   
   if (!profile) {
     return {
