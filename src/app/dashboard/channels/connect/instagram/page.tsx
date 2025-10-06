@@ -27,16 +27,16 @@ export default function ConnectInstagramPage() {
     });
   }, []);
 
-  // Configuration Meta pour Instagram
+  // Configuration Instagram API avec Instagram Login (nouvelle méthode 2024)
   const instagramConfig = {
-    clientId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || 'YOUR_FACEBOOK_APP_ID',
-    redirectUri: 'https://www.xamxam.io/api/auth/callback/meta',
+    clientId: '792146549889933',
+    redirectUri: 'https://www.xamxam.io/api/auth/callback/instagram',
     scopes: [
-      'instagram_basic',
-      'instagram_manage_messages',
-      'pages_show_list',
-      'pages_manage_metadata',
-      'business_management'
+      'instagram_business_basic',
+      'instagram_business_manage_messages',
+      'instagram_business_manage_comments',
+      'instagram_business_content_publish',
+      'instagram_business_manage_insights'
     ]
   };
 
@@ -45,18 +45,18 @@ export default function ConnectInstagramPage() {
     
     setIsConnecting(true);
     
-    // Construire l'URL d'authentification Meta pour Instagram
-    const metaAuthUrl = 
-      `https://www.facebook.com/v23.0/dialog/oauth?` +
+    // Utiliser la nouvelle Instagram API avec connexion Instagram directe
+    const instagramAuthUrl = 
+      `https://www.instagram.com/oauth/authorize?` +
+      `force_reauth=true&` +
       `client_id=${instagramConfig.clientId}&` +
       `redirect_uri=${encodeURIComponent(instagramConfig.redirectUri)}&` +
-      `scope=${encodeURIComponent(instagramConfig.scopes.join(','))}&` +
       `response_type=code&` +
-      `state=${csrfToken}&` +
-      `extras={"setup":{"channel":"instagram"}}`;
+      `scope=${encodeURIComponent(instagramConfig.scopes.join(','))}&` +
+      `state=${csrfToken}`;
     
-    // Rediriger vers Meta
-    window.location.href = metaAuthUrl;
+    // Rediriger vers Instagram directement
+    window.location.href = instagramAuthUrl;
   };
 
   return (
