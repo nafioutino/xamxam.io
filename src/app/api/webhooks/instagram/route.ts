@@ -66,19 +66,11 @@ export async function POST(request: NextRequest) {
       return new NextResponse('Internal Server Error', { status: 500 });
     }
 
-    // LOGS DE DÉBOGAGE POUR LA SIGNATURE
-    console.log(`${logPrefix} DEBUG - Signature reçue:`, signature);
-    console.log(`${logPrefix} DEBUG - Longueur du body:`, rawBody.length);
-    console.log(`${logPrefix} DEBUG - App Secret configuré:`, appSecret ? 'OUI' : 'NON');
-    console.log(`${logPrefix} DEBUG - Début du body:`, rawBody.substring(0, 100));
-
+    // Validation de la signature (même méthode que le webhook Meta qui fonctionne)
     const expectedSignature = `sha256=${crypto
       .createHmac('sha256', appSecret)
       .update(rawBody)
       .digest('hex')}`;
-
-    console.log(`${logPrefix} DEBUG - Signature attendue:`, expectedSignature);
-    console.log(`${logPrefix} DEBUG - Signatures identiques:`, signature === expectedSignature);
 
     if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
       console.error(`${logPrefix} Invalid signature.`);
