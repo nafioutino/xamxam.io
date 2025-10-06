@@ -6,6 +6,8 @@ import { ChannelType } from '@/generated/prisma';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔧 [INSTAGRAM SETUP] Début de la configuration du canal Instagram');
+    
     // Récupérer l'utilisateur authentifié depuis Supabase
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -21,7 +23,16 @@ export async function POST(request: NextRequest) {
     const accessToken = request.cookies.get('instagram_access_token')?.value;
     const userDataCookie = request.cookies.get('instagram_user_data')?.value;
     
+    console.log('🍪 [INSTAGRAM SETUP] Récupération des cookies:', {
+      hasAccessToken: !!accessToken,
+      accessTokenLength: accessToken?.length || 0,
+      accessTokenPrefix: accessToken?.substring(0, 20) + '...',
+      accessTokenSuffix: '...' + accessToken?.substring(accessToken?.length - 10),
+      hasUserData: !!userDataCookie
+    });
+    
     if (!accessToken || !userDataCookie) {
+      console.error('❌ [INSTAGRAM SETUP] Données d\'authentification manquantes');
       return NextResponse.json(
         { error: 'Données d\'authentification manquantes' },
         { status: 400 }
@@ -29,6 +40,11 @@ export async function POST(request: NextRequest) {
     }
 
     const userData = JSON.parse(userDataCookie);
+    console.log('👤 [INSTAGRAM SETUP] Données utilisateur récupérées:', {
+      userId: userData.id,
+      username: userData.username,
+      accountType: userData.account_type
+    });
 
     // Récupérer le profil et le shop de l'utilisateur
     const profile = await prisma.profile.findUnique({
@@ -49,8 +65,14 @@ export async function POST(request: NextRequest) {
 
     // Chiffrer le token d'accès
     const encryptedToken = encryptToken(accessToken);
+    console.log('🔐 [INSTAGRAM SETUP] Token chiffré:', {
+      originalTokenLength: accessToken.length,
+      encryptedTokenLength: encryptedToken.length,
+      tokenType: accessToken.length > 200 ? 'LONG-LIVED' : 'SHORT-LIVED'
+    });
 
     // Stocker le canal Instagram dans la base de données
+    console.log('💾 [INSTAGRAM SETUP] Stockage du canal en base de données...');
     const channel = await prisma.channel.upsert({
       where: { 
         shopId_type_externalId: { 
@@ -72,13 +94,15 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    console.log('Instagram channel stored successfully:', {
+    console.log('✅ [INSTAGRAM SETUP] Canal Instagram stocké avec succès:', {
       channelId: channel.id,
       userId: userData.id,
       username: userData.username,
       accountType: userData.account_type,
       mediaCount: userData.media_count,
-      shopId
+      shopId,
+      tokenStoredLength: encryptedToken.length,
+      originalTokenType: accessToken.length > 200 ? 'LONG-LIVED' : 'SHORT-LIVED'
     });
 
     // Créer la réponse de succès
