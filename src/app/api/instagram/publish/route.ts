@@ -124,19 +124,15 @@ export async function POST(request: NextRequest) {
       if (!mediaUrl) {
         throw new Error('Impossible de récupérer l\'URL de la vidéo');
       }
-      // Pour les vidéos, on crée le conteneur et on retourne immédiatement
+      // Pour les vidéos, on crée le conteneur et on attend la publication complète
       const containerId = await createInstagramContainer(instagramAccountId, accessToken, mediaUrl, message, 'VIDEO');
       
-      // Publier en arrière-plan (sans attendre)
-      publishInstagramContainerAsync(instagramAccountId, accessToken, containerId).catch(error => {
-        console.error('[Background Publish] Failed:', error);
-      });
+      // Attendre la publication complète (compatible Vercel)
+      postId = await publishInstagramContainerAsync(instagramAccountId, accessToken, containerId);
       
-      return NextResponse.json({
-        success: true,
-        containerId,
-        message: 'Vidéo en cours de traitement sur Instagram. La publication sera finalisée automatiquement.'
-      });
+      if (!postId) {
+        throw new Error('Échec de la publication vidéo après traitement');
+      }
     }
     
     // --- ÉTAPE 5: RÉPONSE DE SUCCÈS ---
@@ -217,10 +213,10 @@ async function publishInstagramContainer(instagramAccountId: string, accessToken
 }
 
 // Fonction pour publier un conteneur en arrière-plan avec retry
-async function publishInstagramContainerAsync(instagramAccountId: string, accessToken: string, containerId: string) {
+async function publishInstagramContainerAsync(instagramAccountId: string, accessToken: string, containerId: string): Promise<string | null> {
   const logPrefix = '[Background Publish]';
-  const maxRetries = 20;
-  const retryDelay = 5000;
+  const maxRetries = 15; // Réduit pour Vercel
+  const retryDelay = 3000; // Réduit pour Vercel
   
   for (let i = 0; i < maxRetries; i++) {
     try {
@@ -237,7 +233,7 @@ async function publishInstagramContainerAsync(instagramAccountId: string, access
         return postId;
       } else if (statusResponse.ok && statusData.status_code === 'ERROR') {
         console.error(`${logPrefix} Media processing failed for container ${containerId}`);
-        return;
+        return null;
       }
       
       console.log(`${logPrefix} Media not ready (status: ${statusData.status_code || 'unknown'}), waiting...`);
@@ -250,6 +246,9 @@ async function publishInstagramContainerAsync(instagramAccountId: string, access
       }
     }
   }
+  
+  console.error(`${logPrefix} Failed to publish after ${maxRetries} attempts`);
+  return null;
 }
 
 
