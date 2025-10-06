@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
+import prisma from '@/lib/prisma';
+import { encryptToken } from '@/lib/encryption';
+import { ChannelType } from '@/generated/prisma';
 
 export async function POST(request: NextRequest) {
   try {
+    // Récupérer l'utilisateur authentifié depuis Supabase
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Utilisateur non authentifié' },
+        { status: 401 }
+      );
+    }
+
     // Récupérer les données depuis les cookies
     const accessToken = request.cookies.get('instagram_access_token')?.value;
     const userDataCookie = request.cookies.get('instagram_user_data')?.value;
@@ -14,33 +29,56 @@ export async function POST(request: NextRequest) {
     }
 
     const userData = JSON.parse(userDataCookie);
-    
-    // TODO: Ici vous devrez intégrer avec votre base de données
-    // pour sauvegarder le canal Instagram
-    // Exemple de structure:
-    /*
-    const channel = await prisma.channel.create({
-      data: {
-        type: 'INSTAGRAM',
-        name: `Instagram - @${userData.username}`,
-        externalId: userData.id,
-        accessToken: accessToken,
-        metadata: {
-          username: userData.username,
-          accountType: userData.account_type,
-          mediaCount: userData.media_count
-        },
-        userId: // ID de l'utilisateur connecté
+
+    // Récupérer le profil et le shop de l'utilisateur
+    const profile = await prisma.profile.findUnique({
+      where: { id: user.id },
+      include: {
+        shop: true
       }
     });
-    */
 
-    console.log('Instagram channel setup data:', {
+    if (!profile || !profile.shop) {
+      return NextResponse.json(
+        { error: 'Profil ou shop non trouvé pour cet utilisateur' },
+        { status: 404 }
+      );
+    }
+
+    const shopId = profile.shop.id;
+
+    // Chiffrer le token d'accès
+    const encryptedToken = encryptToken(accessToken);
+
+    // Stocker le canal Instagram dans la base de données
+    const channel = await prisma.channel.upsert({
+      where: { 
+        shopId_type_externalId: { 
+          shopId, 
+          type: ChannelType.INSTAGRAM_DM, 
+          externalId: userData.id 
+        } 
+      },
+      update: { 
+        accessToken: encryptedToken, 
+        isActive: true 
+      },
+      create: { 
+        type: ChannelType.INSTAGRAM_DM, 
+        externalId: userData.id, 
+        accessToken: encryptedToken, 
+        isActive: true, 
+        shopId 
+      }
+    });
+
+    console.log('Instagram channel stored successfully:', {
+      channelId: channel.id,
       userId: userData.id,
       username: userData.username,
       accountType: userData.account_type,
       mediaCount: userData.media_count,
-      hasAccessToken: !!accessToken
+      shopId
     });
 
     // Créer la réponse de succès
@@ -48,9 +86,10 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Canal Instagram configuré avec succès',
       channel: {
-        id: userData.id,
+        id: channel.id,
+        externalId: userData.id,
         username: userData.username,
-        type: 'INSTAGRAM'
+        type: 'INSTAGRAM_DM'
       }
     });
 
