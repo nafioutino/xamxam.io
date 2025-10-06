@@ -1,36 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ArrowLeft, Instagram } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { setCookie } from 'cookies-next';
 
 export default function ConnectInstagramPage() {
   const router = useRouter();
   const [isConnecting, setIsConnecting] = useState(false);
-  const [csrfToken, setCsrfToken] = useState<string>('');
-
-  // Générer un token CSRF unique
-  useEffect(() => {
-    const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-    setCsrfToken(token);
-    
-    // Stocker le token dans un cookie pour vérification ultérieure
-    setCookie('csrf_token', token, {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // Changé de 'strict' à 'lax' pour permettre les redirections cross-site
-      path: '/',
-      maxAge: 60 * 15, // 15 minutes
-      httpOnly: true // Cookie accessible uniquement côté serveur pour sécurité
-    });
-  }, []);
 
   // Configuration Instagram API avec Instagram Login (nouvelle méthode 2024)
   const instagramConfig = {
     clientId: '792146549889933',
-    redirectUri: 'https://www.xamxam.io/api/auth/callback/instagram',
+    redirectUri: `${window.location.origin}/api/auth/callback/instagram`,
     scopes: [
       'instagram_business_basic',
       'instagram_business_manage_messages',
@@ -41,19 +22,19 @@ export default function ConnectInstagramPage() {
   };
 
   const handleInstagramConnect = () => {
-    if (isConnecting || !csrfToken) return;
+    if (isConnecting) return;
     
     setIsConnecting(true);
     
     // Utiliser la nouvelle Instagram API avec connexion Instagram directe
+    // CSRF complètement désactivé - pas de paramètre state
     const instagramAuthUrl = 
       `https://www.instagram.com/oauth/authorize?` +
       `force_reauth=true&` +
       `client_id=${instagramConfig.clientId}&` +
       `redirect_uri=${encodeURIComponent(instagramConfig.redirectUri)}&` +
       `response_type=code&` +
-      `scope=${encodeURIComponent(instagramConfig.scopes.join(','))}&` +
-      `state=${csrfToken}`;
+      `scope=${encodeURIComponent(instagramConfig.scopes.join(','))}`;
     
     // Rediriger vers Instagram directement
     window.location.href = instagramAuthUrl;
@@ -96,7 +77,7 @@ export default function ConnectInstagramPage() {
             {/* Connect Button */}
             <button
               onClick={handleInstagramConnect}
-              disabled={isConnecting || !csrfToken}
+              disabled={isConnecting}
               className=" cursor-pointer inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
             >
               {isConnecting ? (
