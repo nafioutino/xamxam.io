@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Étape 1: Échanger le code contre un access token
+    // Étape 1: Échanger le code contre un access token Instagram de base
     const tokenUrl = 'https://api.instagram.com/oauth/access_token';
     const tokenFormData = new FormData();
     tokenFormData.append('client_id', clientId);
@@ -88,13 +88,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const accessToken = tokenData.access_token;
+    const shortLivedToken = tokenData.access_token;
     const userId = tokenData.user_id;
 
-    console.log('Instagram access token obtained:', accessToken);
+    console.log('Instagram short-lived token obtained:', shortLivedToken);
     console.log('Instagram user ID:', userId);
 
-    // Étape 2: Récupérer les informations du profil Instagram
+    // Étape 2: Échanger le token de courte durée contre un token de longue durée
+    const longLivedTokenUrl = `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${shortLivedToken}`;
+    
+    const longLivedResponse = await fetch(longLivedTokenUrl, {
+      method: 'GET',
+    });
+
+    const longLivedData = await longLivedResponse.json();
+
+    if (!longLivedResponse.ok || longLivedData.error) {
+      console.error('Instagram long-lived token exchange failed:', longLivedData);
+      return NextResponse.redirect(
+        new URL('/dashboard/channels?error=long_lived_token_failed', request.url)
+      );
+    }
+
+    const accessToken = longLivedData.access_token;
+    console.log('Instagram long-lived token obtained:', accessToken);
+
+    // Étape 3: Récupérer les informations du profil Instagram
     const userInfoUrl = `https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${accessToken}`;
     
     const userResponse = await fetch(userInfoUrl);
