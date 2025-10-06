@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import prisma from '@/lib/prisma';
 import { ChannelType, ConversationStatus } from '@/generated/prisma';
 import { getInstagramUserInfo, isInstagramUserId } from '@/lib/instagram-utils';
+import { verifyWebhookSignature } from '@/lib/encryption';
 
 // Préfixe pour tous les logs, pour les retrouver facilement.
 const logPrefix = '[Instagram Webhook]';
@@ -66,13 +67,25 @@ export async function POST(request: NextRequest) {
       return new NextResponse('Internal Server Error', { status: 500 });
     }
 
-    // Validation de la signature (même méthode que le webhook Meta qui fonctionne)
+    // Validation de la signature avec logs de débogage détaillés
+    console.log(`${logPrefix} DEBUG - App Secret utilisé: ${appSecret ? appSecret.substring(0, 8) + '...' : 'AUCUN'}`);
+    console.log(`${logPrefix} DEBUG - Signature reçue: ${signature}`);
+    console.log(`${logPrefix} DEBUG - Longueur du body: ${rawBody.length}`);
+    
+    // Test avec la fonction d'encryption.ts (méthode alternative)
+    const isValidWithEncryption = verifyWebhookSignature(rawBody, signature, appSecret);
+    console.log(`${logPrefix} DEBUG - Validation avec encryption.ts: ${isValidWithEncryption}`);
+    
+    // Test avec la méthode directe (comme Meta)
     const expectedSignature = `sha256=${crypto
       .createHmac('sha256', appSecret)
       .update(rawBody)
       .digest('hex')}`;
-
-    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+    
+    console.log(`${logPrefix} DEBUG - Signature calculée directe: ${expectedSignature}`);
+    
+    // Utiliser la fonction d'encryption.ts qui gère mieux les différences d'encodage
+    if (!isValidWithEncryption) {
       console.error(`${logPrefix} Invalid signature.`);
       console.error(`${logPrefix} Reçue: ${signature}`);
       console.error(`${logPrefix} Attendue: ${expectedSignature}`);
