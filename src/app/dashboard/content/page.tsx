@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Send, FileText, Image, Video, Calendar, BarChart3, Facebook, Link, Upload, Eye, Settings, Zap, Clock, TrendingUp, Sparkles, Loader2, Music } from 'lucide-react';
+import { Send, FileText, Image, Video, Calendar, BarChart3, Facebook, Instagram, Link, Upload, Eye, Settings, Zap, Clock, TrendingUp, Sparkles, Loader2, Music } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ConnectedChannel {
@@ -90,7 +90,7 @@ export default function ContentPage() {
                 pageName: channel.pageName || `Instagram ${channel.externalId}`
               });
               if (!channelTypes.find(ct => ct.key === 'instagram-dm')) {
-                channelTypes.push({ key: 'instagram-dm', label: 'Instagram Direct', icon: Facebook });
+                channelTypes.push({ key: 'instagram-dm', label: 'Instagram Direct', icon: Instagram });
               }
             } else if (type === 'tiktok') {
               allChannels.push({
@@ -649,8 +649,8 @@ export default function ContentPage() {
                 <div className="flex justify-between items-center mb-2">
                   <label className="block text-sm font-medium text-gray-700">
                     {selectedChannelType === 'tiktok' ? 'Description' : 
-                     selectedChannelType === 'facebook' ? 'Que voulez-vous dire ?' : 
-                     selectedChannelType === 'instagram' ? 'Légende' : 'Message'}
+                     selectedChannelType === 'facebook-page' ? 'Que voulez-vous dire ?' : 
+                     selectedChannelType === 'instagram-dm' ? 'Légende' : 'Message'}
                   </label>
                   {selectedChannelType !== 'tiktok' && (
                     <button
@@ -677,15 +677,15 @@ export default function ContentPage() {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={
                     selectedChannelType === 'tiktok' ? 'Décrivez votre vidéo TikTok... Ajoutez des hashtags populaires !' :
-                    selectedChannelType === 'facebook' ? 'Que voulez-vous partager avec vos amis ?' :
-                    selectedChannelType === 'instagram' ? 'Rédigez une légende captivante... #hashtags' :
+                    selectedChannelType === 'facebook-page' ? 'Que voulez-vous partager avec vos amis ?' :
+                    selectedChannelType === 'instagram-dm' ? 'Rédigez une légende captivante... #hashtags' :
                     'Écrivez votre message ou cliquez sur \'Générer avec l\'IA\'...'
                   }
                   rows={6}
                   className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-blue-500 resize-none ${
                     selectedChannelType === 'tiktok' ? 'focus:ring-pink-500 focus:border-pink-500' :
-                    selectedChannelType === 'facebook' ? 'focus:ring-blue-500 focus:border-blue-500' :
-                    selectedChannelType === 'instagram' ? 'focus:ring-purple-500 focus:border-purple-500' :
+                    selectedChannelType === 'facebook-page' ? 'focus:ring-blue-500 focus:border-blue-500' :
+                    selectedChannelType === 'instagram-dm' ? 'focus:ring-purple-500 focus:border-purple-500' :
                     'focus:ring-blue-500 focus:border-blue-500'
                   }`}
                 />
@@ -695,10 +695,10 @@ export default function ContentPage() {
                     {selectedChannelType === 'tiktok' && message.length > 150 && (
                       <span className="text-orange-500 ml-1">(Optimal: 100-150 caractères)</span>
                     )}
-                    {selectedChannelType === 'facebook' && message.length > 250 && (
+                    {selectedChannelType === 'facebook-page' && message.length > 250 && (
                       <span className="text-orange-500 ml-1">(Optimal: moins de 250 caractères)</span>
                     )}
-                    {selectedChannelType === 'instagram' && message.length > 125 && (
+                    {selectedChannelType === 'instagram-dm' && message.length > 125 && (
                       <span className="text-orange-500 ml-1">(Optimal: 125 caractères max)</span>
                     )}
                   </p>
@@ -757,8 +757,8 @@ export default function ContentPage() {
                       <div className="bg-white rounded-lg p-4 shadow-sm">
                         <div className="flex items-center mb-3">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            selectedChannelType === 'facebook' ? 'bg-blue-600' :
-                            selectedChannelType === 'instagram' ? 'bg-purple-600' : 'bg-blue-600'
+                            selectedChannelType === 'facebook-page' ? 'bg-blue-600' :
+                            selectedChannelType === 'instagram-dm' ? 'bg-purple-600' : 'bg-blue-600'
                           }`}>
                             <span className="text-white text-sm font-bold">P</span>
                           </div>
@@ -1146,7 +1146,7 @@ export default function ContentPage() {
                   <span className="flex items-center space-x-2">
                     {selectedChannelType === 'tiktok' && <Music className="h-4 w-4 text-pink-600" />}
                     {selectedChannelType === 'facebook-page' && <Facebook className="h-4 w-4 text-blue-600" />}
-                    {selectedChannelType === 'instagram-dm' && <Image className="h-4 w-4 text-purple-600" />}
+                    {selectedChannelType === 'instagram-dm' && <Instagram className="h-4 w-4 text-purple-600" />}
                     <span>
                       ✓ Prêt à publier sur {
                         selectedChannelType === 'tiktok' ? 'TikTok' :
