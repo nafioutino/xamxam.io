@@ -117,7 +117,8 @@ export default function SelectPagePage() {
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => router.push('/dashboard/channels')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer ring-1 ring-inset ring-transparent hover:ring-gray-200"
+            aria-label="Retour aux canaux"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -150,9 +151,10 @@ export default function SelectPagePage() {
             </p>
             <button
               onClick={() => router.push('/dashboard/channels')}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2 cursor-pointer"
+              aria-label="Retourner à la page des canaux"
             >
-              Retour aux canaux
+              <ArrowLeft className="w-4 h-4" /> Retour aux canaux
             </button>
           </div>
         ) : (
@@ -160,11 +162,11 @@ export default function SelectPagePage() {
             {pages.map((page) => (
               <div
                 key={page.id}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
               >
                 {/* Page Header */}
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white ring-1 ring-inset ring-blue-200">
                     <Facebook className="w-6 h-6" />
                   </div>
                   <div>
@@ -182,7 +184,7 @@ export default function SelectPagePage() {
                   {/* Facebook Messenger */}
                   <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white ring-1 ring-inset ring-blue-200">
                         <MessageSquare className="w-5 h-5" />
                       </div>
                       <div>
@@ -193,15 +195,19 @@ export default function SelectPagePage() {
                     <button
                       onClick={() => handleConnectPage(page, 'messenger')}
                       disabled={connecting === `${page.id}-messenger`}
-                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 cursor-pointer"
+                      aria-label="Connecter Facebook Messenger"
                     >
                       {connecting === `${page.id}-messenger` ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2 inline-block"></div>
-                          Connexion...
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Connexion...</span>
                         </>
                       ) : (
-                        'Connecter Messenger'
+                        <>
+                          <MessageSquare className="w-4 h-4" />
+                          <span>Connecter Messenger</span>
+                        </>
                       )}
                     </button>
                   </div>
@@ -209,7 +215,7 @@ export default function SelectPagePage() {
                   {/* Instagram Direct */}
                   <div className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white">
+                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white ring-1 ring-inset ring-purple-200">
                         <Instagram className="w-5 h-5" />
                       </div>
                       <div>
@@ -225,15 +231,19 @@ export default function SelectPagePage() {
                       <button
                         onClick={() => handleConnectPage(page, 'instagram')}
                         disabled={connecting === `${page.id}-instagram`}
-                        className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 cursor-pointer"
+                        aria-label="Connecter Instagram"
                       >
                         {connecting === `${page.id}-instagram` ? (
                           <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2 inline-block"></div>
-                            Connexion...
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Connexion...</span>
                           </>
                         ) : (
-                          'Connecter Instagram'
+                          <>
+                            <Instagram className="w-4 h-4" />
+                            <span>Connecter Instagram</span>
+                          </>
                         )}
                       </button>
                     ) : (

@@ -2,8 +2,27 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { ChatBubbleLeftRightIcon, PhoneIcon, VideoCameraIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
-import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { 
+  Phone, 
+  Video, 
+  Send, 
+  ArrowLeft, 
+  Link as LinkIcon, 
+  Smile, 
+  Image, 
+  Mic, 
+  Play, 
+  CheckCircle, 
+  MessagesSquare 
+} from 'lucide-react';
+import { 
+  WhatsAppIcon, 
+  MessengerIcon, 
+  InstagramIcon, 
+  TelegramIcon, 
+  TikTokIcon, 
+  EmailIcon 
+} from '@/components/dashboard/ChannelIcons';
 import { useAuth } from '@/hooks/useAuth';
 import { useShop } from '@/hooks/useShop';
 import { createClient } from '@/utils/supabase/client';
@@ -228,20 +247,40 @@ export default function InboxPage() {
     switch (platform) {
       case 'whatsapp':
         return (
-          <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
-            <ChatBubbleLeftRightIcon className="w-2 h-2 text-white" />
-          </div>
+          <span className="w-5 h-5 rounded-full bg-white ring-1 ring-green-200 ring-offset-1 shadow-sm flex items-center justify-center">
+            <WhatsAppIcon className="w-3.5 h-3.5 text-green-500" />
+          </span>
         );
       case 'facebook':
-        return <div className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">f</div>;
+        return (
+          <span className="w-5 h-5 rounded-full bg-white ring-1 ring-blue-200 ring-offset-1 shadow-sm flex items-center justify-center">
+            <MessengerIcon className="w-3.5 h-3.5 text-blue-600" />
+          </span>
+        );
       case 'instagram':
-        return <div className="w-4 h-4 rounded-full bg-pink-500 flex items-center justify-center text-white text-xs font-bold">i</div>;
+        return (
+          <span className="w-5 h-5 rounded-full bg-white ring-1 ring-pink-200 ring-offset-1 shadow-sm flex items-center justify-center">
+            <InstagramIcon className="w-3.5 h-3.5 text-pink-500" />
+          </span>
+        );
       case 'telegram':
-        return <div className="w-4 h-4 rounded-full bg-blue-400 flex items-center justify-center text-white text-xs font-bold">t</div>;
+        return (
+          <span className="w-5 h-5 rounded-full bg-white ring-1 ring-blue-200 ring-offset-1 shadow-sm flex items-center justify-center">
+            <TelegramIcon className="w-3.5 h-3.5 text-blue-400" />
+          </span>
+        );
       case 'tiktok':
-        return <div className="w-4 h-4 rounded-full bg-black flex items-center justify-center text-white text-xs font-bold">tt</div>;
+        return (
+          <span className="w-5 h-5 rounded-full bg-white ring-1 ring-gray-200 ring-offset-1 shadow-sm flex items-center justify-center">
+            <TikTokIcon className="w-3.5 h-3.5 text-black" />
+          </span>
+        );
       case 'email':
-        return <div className="w-4 h-4 rounded-full bg-gray-500 flex items-center justify-center text-white text-xs font-bold">@</div>;
+        return (
+          <span className="w-5 h-5 rounded-full bg-white ring-1 ring-gray-200 ring-offset-1 shadow-sm flex items-center justify-center">
+            <EmailIcon className="w-3.5 h-3.5 text-gray-600" />
+          </span>
+        );
       default:
         return null;
     }
@@ -333,13 +372,13 @@ export default function InboxPage() {
               <div
                 key={contact.id}
                 onClick={() => setSelectedContact(contact)}
-                className={`p-4 border-b border-gray-200 flex items-center space-x-3 hover:bg-gray-100 cursor-pointer ${selectedContact?.id === contact.id ? 'bg-blue-50' : ''}`}
+                className={`p-4 border-b border-gray-200 flex items-center space-x-3 hover:bg-gray-100 transition-colors duration-200 cursor-pointer rounded-md ${selectedContact?.id === contact.id ? 'bg-blue-50' : ''}`}
               >
                 <div className="relative">
                   <img
                     src={contact.avatar}
                     alt={contact.name}
-                    className="h-12 w-12 rounded-full object-cover"
+                    className="h-12 w-12 rounded-full object-cover ring-2 ring-white shadow-sm"
                   />
                   {contact.online && (
                     <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white bg-green-400"></span>
@@ -352,10 +391,10 @@ export default function InboxPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-500 truncate">{contact.lastMessage}</p>
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-2">
                       {getPlatformIcon(contact.platform)}
                       {contact.unread > 0 && (
-                        <span className="ml-2 inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-600 text-xs font-medium text-white">
+                        <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-600 text-xs font-medium text-white shadow-sm">
                           {contact.unread}
                         </span>
                       )}
@@ -372,12 +411,12 @@ export default function InboxPage() {
       <div className="hidden sm:flex flex-1 flex-col">
         {selectedContact && conversationDetails ? (
           <>
-            <div className="h-16 border-b border-gray-200 flex items-center justify-between px-4">
+            <div className="h-16 border-b border-gray-200 flex items-center justify-between px-4 bg-gradient-to-r from-indigo-50 to-blue-50">
               <div className="flex items-center space-x-3">
                 <img
                   src={conversationDetails.customer?.avatar || `https://placehold.co/100x100?text=C`}
                   alt={conversationDetails.customer?.name || 'Client inconnu'}
-                  className="h-10 w-10 rounded-full object-cover"
+                  className="h-10 w-10 rounded-full object-cover ring-2 ring-white shadow-sm"
                 />
                 <div>
                   <h3 className="text-sm font-medium text-gray-900">{conversationDetails.customer?.name || 'Client inconnu'}</h3>
@@ -387,7 +426,7 @@ export default function InboxPage() {
                       {conversationDetails.channel?.name || selectedContact.platform}
                     </span>
                     {selectedContact.online && (
-                      <span className="ml-2 text-xs text-green-500 flex items-center">
+                      <span className="ml-2 text-xs text-green-600 flex items-center">
                         <span className="h-1.5 w-1.5 rounded-full bg-green-500 mr-1"></span>
                         En ligne
                       </span>
@@ -396,11 +435,11 @@ export default function InboxPage() {
                 </div>
               </div>
               <div className="flex space-x-2">
-                <button className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100">
-                  <PhoneIcon className="h-5 w-5" />
+                <button className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors" aria-label="Appel audio">
+                  <Phone className="h-5 w-5" />
                 </button>
-                <button className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100">
-                  <VideoCameraIcon className="h-5 w-5" />
+                <button className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors" aria-label="Appel vidéo">
+                  <Video className="h-5 w-5" />
                 </button>
               </div>
             </div>
@@ -413,7 +452,7 @@ export default function InboxPage() {
                 >
                   {message.type === 'text' ? (
                     <div
-                      className={`rounded-lg p-3 max-w-xs lg:max-w-md ${message.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`}
+                      className={`rounded-lg p-3 max-w-xs lg:max-w-md shadow-sm hover:shadow-md transition-shadow duration-200 ${message.sender === 'user' ? 'bg-blue-600 text-white ring-1 ring-blue-200' : 'bg-gray-100 text-gray-800 ring-1 ring-gray-200'}`}
                     >
                       <p>{message.content}</p>
                       <div
@@ -421,17 +460,17 @@ export default function InboxPage() {
                       >
                         {message.timestamp}
                         {message.sender === 'user' && message.read && (
-                          <CheckCircleIcon className="ml-1 h-3 w-3" />
+                          <CheckCircle className="ml-1 h-3 w-3" />
                         )}
                       </div>
                     </div>
                   ) : message.type === 'image' ? (
                     <div
-                      className={`rounded-lg p-1 max-w-xs lg:max-w-md ${message.sender === 'user' ? 'bg-blue-600' : 'bg-gray-200'}`}
+                      className={`rounded-lg p-1 max-w-xs lg:max-w-md shadow-sm hover:shadow-md transition-shadow duration-200 ${message.sender === 'user' ? 'bg-blue-600 ring-1 ring-blue-200' : 'bg-gray-100 ring-1 ring-gray-200'}`}
                     >
                       <img
                         src={message.mediaUrl}
-                        alt="Shared image"
+                        alt="Image partagée"
                         className="rounded-md max-w-full h-auto"
                       />
                       <div
@@ -442,32 +481,13 @@ export default function InboxPage() {
                     </div>
                   ) : message.type === 'audio' ? (
                     <div
-                      className={`rounded-lg p-3 ${message.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`}
+                      className={`rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-200 ${message.sender === 'user' ? 'bg-blue-600 text-white ring-1 ring-blue-200' : 'bg-gray-100 text-gray-800 ring-1 ring-gray-200'}`}
                     >
                       <div className="flex items-center space-x-2">
                         <button className="p-1 rounded-full bg-gray-100 text-gray-800">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
+                          <Play className="h-4 w-4" />
                         </button>
-                        <div className="w-32 h-2 bg-gray-300 rounded-full">
+                        <div className="w-24 h-2 bg-gray-300 rounded-full">
                           <div className="w-1/3 h-2 bg-blue-500 rounded-full"></div>
                         </div>
                         <span className="text-xs">0:12</span>
@@ -502,81 +522,23 @@ export default function InboxPage() {
                   {sendingMessage ? (
                     <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
                   ) : (
-                    <PaperAirplaneIcon className="h-5 w-5" />
+                    <Send className="h-5 w-5" />
                   )}
                 </button>
               </div>
               <div className="mt-2 flex justify-between">
                 <div className="flex space-x-2">
-                  <button className="text-gray-500 hover:text-gray-700" disabled={sendingMessage}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-                      />
-                    </svg>
+                  <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Joindre un lien">
+                    <LinkIcon className="h-5 w-5" />
                   </button>
-                  <button className="text-gray-500 hover:text-gray-700" disabled={sendingMessage}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                  <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Insérer un emoji">
+                    <Smile className="h-5 w-5" />
                   </button>
-                  <button className="text-gray-500 hover:text-gray-700" disabled={sendingMessage}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
+                  <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Envoyer une image">
+                    <Image className="h-5 w-5" />
                   </button>
-                  <button className="text-gray-500 hover:text-gray-700" disabled={sendingMessage}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 00-3 3z"
-                      />
-                    </svg>
+                  <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Envoyer un audio">
+                    <Mic className="h-5 w-5" />
                   </button>
                 </div>
                 <button
@@ -591,7 +553,7 @@ export default function InboxPage() {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <ChatBubbleLeftRightIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <MessagesSquare className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">Aucune conversation sélectionnée</h3>
               <p className="mt-1 text-sm text-gray-500">
                 Sélectionnez une conversation pour commencer à discuter.
@@ -605,25 +567,13 @@ export default function InboxPage() {
       <div className="flex sm:hidden flex-1 flex-col">
         {selectedContact ? (
           <>
-            <div className="h-16 border-b border-gray-200 flex items-center justify-between px-4">
+            <div className="h-16 border-b border-gray-200 flex items-center justify-between px-4 bg-gradient-to-r from-indigo-50 to-blue-50">
               <button
                 onClick={() => setSelectedContact(null)}
                 className="mr-2 text-gray-500 hover:text-gray-700"
+                aria-label="Retour"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
+                <ArrowLeft className="h-5 w-5" />
               </button>
               <div className="flex items-center space-x-3">
                 <img
@@ -643,7 +593,7 @@ export default function InboxPage() {
               </div>
               <div className="flex space-x-2">
                 <button className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100">
-                  <PhoneIcon className="h-5 w-5" />
+                  <Phone className="h-5 w-5" />
                 </button>
               </div>
             </div>
@@ -664,7 +614,7 @@ export default function InboxPage() {
                       >
                         {message.timestamp}
                         {message.sender === 'user' && message.read && (
-                          <CheckCircleIcon className="ml-1 h-3 w-3" />
+                          <CheckCircle className="ml-1 h-3 w-3" />
                         )}
                       </div>
                     </div>
@@ -689,26 +639,7 @@ export default function InboxPage() {
                     >
                       <div className="flex items-center space-x-2">
                         <button className="p-1 rounded-full bg-gray-100 text-gray-800">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
+                          <Play className="h-4 w-4" />
                         </button>
                         <div className="w-24 h-2 bg-gray-300 rounded-full">
                           <div className="w-1/3 h-2 bg-blue-500 rounded-full"></div>
@@ -738,10 +669,37 @@ export default function InboxPage() {
                 ></textarea>
                 <button
                   onClick={handleSendMessage}
-                  disabled={!newMessage.trim()}
-                  className="bg-blue-600 text-white rounded-r-md px-4 py-2 font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                  disabled={!newMessage.trim() || sendingMessage}
+                  className="bg-blue-600 text-white rounded-r-md px-4 py-2 font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Envoyer le message"
                 >
-                  <PaperAirplaneIcon className="h-5 w-5" />
+                  {sendingMessage ? (
+                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                  ) : (
+                    <Send className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              <div className="mt-2 flex justify-between">
+                <div className="flex space-x-2">
+                  <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Joindre un lien">
+                    <LinkIcon className="h-5 w-5" />
+                  </button>
+                  <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Insérer un emoji">
+                    <Smile className="h-5 w-5" />
+                  </button>
+                  <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Envoyer une image">
+                    <Image className="h-5 w-5" />
+                  </button>
+                  <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Envoyer un audio">
+                    <Mic className="h-5 w-5" />
+                  </button>
+                </div>
+                <button
+                  onClick={() => toast.success('Fonctionnalité IA à implémenter')}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  Répondre avec IA
                 </button>
               </div>
             </div>
