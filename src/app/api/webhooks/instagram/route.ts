@@ -60,12 +60,14 @@ export async function POST(request: NextRequest) {
 
     rawBody = await request.text();
     
-    // Validation de la signature avec le secret Instagram/Facebook
-    const appSecret = process.env.INSTAGRAM_APP_SECRET || process.env.FACEBOOK_APP_SECRET;
+    // Test: Utiliser UNIQUEMENT FACEBOOK_APP_SECRET (Instagram utilise le même)
+    const appSecret = process.env.FACEBOOK_APP_SECRET;
     if (!appSecret) {
-      console.error(`${logPrefix} Instagram/Facebook App Secret not configured.`);
-      return new NextResponse('Internal Server Error', { status: 500 });
+      console.error(`${logPrefix} FACEBOOK_APP_SECRET manquant.`);
+      return new NextResponse('Server configuration error', { status: 500 });
     }
+    
+    console.log(`${logPrefix} DEBUG - Utilisation forcée de FACEBOOK_APP_SECRET`);
 
     // Validation de la signature avec logs de débogage détaillés
     console.log(`${logPrefix} DEBUG - App Secret utilisé: ${appSecret ? appSecret.substring(0, 8) + '...' : 'AUCUN'}`);
