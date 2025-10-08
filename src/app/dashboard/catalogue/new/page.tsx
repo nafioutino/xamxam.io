@@ -1,12 +1,12 @@
 'use client';
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { XMarkIcon, PhotoIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { X, Image as ImageIcon, Plus } from 'lucide-react';
+import { useShop } from '@/hooks/useShop';
 
 const productSchema = z.object({
   name: z.string().min(3, { message: 'Le nom doit contenir au moins 3 caractères' }),
@@ -18,29 +18,17 @@ const productSchema = z.object({
     .number()
     .int({ message: 'Le stock doit être un nombre entier' })
     .min(0, { message: 'Le stock ne peut pas être négatif' }),
-  categories: z.string().array().min(1, { message: 'Sélectionnez au moins une catégorie' }),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
 
-const AVAILABLE_CATEGORIES = [
-  'Vêtements',
-  'Chaussures',
-  'Accessoires',
-  'Électronique',
-  'Maison',
-  'Beauté',
-  'Sport',
-  'Homme',
-  'Femme',
-  'Enfant',
-];
-
 export default function NewProductPage() {
   const router = useRouter();
+  const { shop, isLoading: shopLoading } = useShop();
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   const {
     register,
@@ -53,7 +41,6 @@ export default function NewProductPage() {
       description: '',
       price: 0,
       stock: 0,
-      categories: [],
     },
   });
 
@@ -74,28 +61,42 @@ export default function NewProductPage() {
     setImages(newImages);
   };
 
-  const toggleCategory = (category: string) => {
-    if (selectedCategories.includes(category)) {
-      setSelectedCategories(selectedCategories.filter((c) => c !== category));
-    } else {
-      setSelectedCategories([...selectedCategories, category]);
-    }
+  const toggleCategory = (categoryId: string) => {
+    setSelectedCategory((prev) => (prev === categoryId ? '' : categoryId));
   };
 
   const onSubmit = async (data: ProductFormValues) => {
     try {
-      // Include images in the data
+      if (!shop || shopLoading) {
+        toast.error('Boutique introuvable');
+        return;
+      }
+      if (!selectedCategory) {
+        toast.error('Veuillez sélectionner une catégorie');
+        return;
+      }
+      if (images.length === 0) {
+        toast.error('Ajoutez au moins une image');
+        return;
+      }
+
       const productData = {
         ...data,
         images,
-        categories: selectedCategories,
+        shopId: shop.id,
+        categoryId: selectedCategory,
+        isActive: true,
       };
 
-      // In a real app, send to API
-      console.log('Product data:', productData);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const res = await fetch('/api/product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData),
+      });
+      const json = await res.json();
+      if (!json?.success) {
+        throw new Error(json?.message || 'Erreur lors de l\'ajout du produit');
+      }
 
       toast.success('Produit ajouté avec succès');
       router.push('/dashboard/catalogue');
@@ -104,6 +105,26 @@ export default function NewProductPage() {
       toast.error('Erreur lors de l\'ajout du produit');
     }
   };
+
+  // Charger les catégories actives de la boutique
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (!shop || shopLoading) return;
+      try {
+        const res = await fetch(`/api/category?shopId=${shop.id}&isActive=true`);
+        const json = await res.json();
+        if (json?.success) {
+          setCategories((json.data || []).map((c: any) => ({ id: c.id, name: c.name })));
+        } else {
+          toast.error(json?.message || 'Erreur de chargement des catégories');
+        }
+      } catch (e) {
+        console.error(e);
+        toast.error('Impossible de charger les catégories');
+      }
+    };
+    loadCategories();
+  }, [shop, shopLoading]);
 
   return (
     <div>
@@ -139,7 +160,7 @@ export default function NewProductPage() {
                       onClick={() => removeImage(index)}
                       className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-md hover:bg-gray-100"
                     >
-                      <XMarkIcon className="h-4 w-4 text-gray-500" />
+                      <X className="h-4 w-4 text-gray-500" />
                     </button>
                   </div>
                 ))}
@@ -156,7 +177,7 @@ export default function NewProductPage() {
                     </div>
                   ) : (
                     <>
-                      <PhotoIcon className="h-10 w-10 text-gray-400" />
+                      <ImageIcon className="h-10 w-10 text-gray-400" />
                       <span className="mt-2 block text-sm font-medium text-gray-700">
                         Ajouter une image
                       </span>
@@ -248,26 +269,23 @@ export default function NewProductPage() {
                 Catégories *
               </label>
               <div className="flex flex-wrap gap-2">
-                {AVAILABLE_CATEGORIES.map((category) => (
+                {categories.map((category) => (
                   <button
-                    key={category}
+                    key={category.id}
                     type="button"
-                    onClick={() => toggleCategory(category)}
-                    className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${selectedCategories.includes(category) ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200'} border`}
+                    onClick={() => toggleCategory(category.id)}
+                    className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${selectedCategory === category.id ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200'} border`}
                   >
-                    {category}
-                    {selectedCategories.includes(category) ? (
-                      <XMarkIcon className="ml-1.5 h-4 w-4" />
+                    {category.name}
+                    {selectedCategory === category.id ? (
+                      <X className="ml-1.5 h-4 w-4" />
                     ) : (
-                      <PlusIcon className="ml-1.5 h-4 w-4" />
+                      <Plus className="ml-1.5 h-4 w-4" />
                     )}
                   </button>
                 ))}
               </div>
-              {errors.categories && (
-                <p className="mt-1 text-sm text-red-600">{errors.categories.message}</p>
-              )}
-              {selectedCategories.length === 0 && (
+              {!selectedCategory && (
                 <p className="mt-1 text-sm text-gray-500">
                   Sélectionnez au moins une catégorie pour votre produit.
                 </p>
@@ -285,7 +303,7 @@ export default function NewProductPage() {
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || selectedCategories.length === 0 || images.length === 0}
+              disabled={isSubmitting || !selectedCategory || images.length === 0}
               className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Enregistrement...' : 'Enregistrer le produit'}
