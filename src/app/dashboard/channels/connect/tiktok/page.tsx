@@ -35,15 +35,15 @@ export default function ConnectTikTokPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-slate-50 to-zinc-50 p-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="group p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:shadow-sm"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 group-hover:text-black transition-colors" />
           </button>
           <h1 className="text-2xl font-bold text-gray-900">
             Connecter TikTok
@@ -51,10 +51,10 @@ export default function ConnectTikTokPage() {
         </div>
 
         {/* TikTok Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 mb-8">
           <div className="text-center">
             {/* TikTok Icon */}
-            <div className="w-20 h-20 mx-auto mb-6 bg-black rounded-2xl flex items-center justify-center">
+            <div className="w-20 h-20 mx-auto mb-6 bg-black rounded-2xl flex items-center justify-center shadow-lg ring-4 ring-gray-200">
               <TikTokIcon className="w-12 h-12 text-white" />
             </div>
 
@@ -82,7 +82,7 @@ export default function ConnectTikTokPage() {
             <button
               onClick={handleConnect}
               disabled={isConnecting}
-              className="w-full bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-3"
+              className="w-full bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl hover:scale-105"
             >
               {isConnecting ? (
                 <>
@@ -101,7 +101,7 @@ export default function ConnectTikTokPage() {
 
         {/* Info Cards */}
         <div className="grid gap-4 mb-8">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-start gap-4">
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <CheckCircle className="w-5 h-5 text-green-600" />
@@ -118,7 +118,7 @@ export default function ConnectTikTokPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-start gap-4">
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <TikTokIcon className="w-5 h-5 text-black" />
@@ -135,7 +135,7 @@ export default function ConnectTikTokPage() {
             </div>
           </div>
 
-          <div className="bg-amber-50 rounded-lg border border-amber-200 p-6">
+          <div className="bg-amber-50 rounded-xl border border-amber-200 p-6">
             <div className="flex items-start gap-4">
               <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 <AlertCircle className="w-5 h-5 text-amber-600" />
@@ -154,7 +154,7 @@ export default function ConnectTikTokPage() {
         </div>
 
         {/* Security Notice */}
-        <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+        <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
           <h3 className="font-semibold text-gray-900 mb-2">
             🔒 Sécurité et confidentialité
           </h3>

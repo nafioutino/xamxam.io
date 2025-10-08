@@ -49,9 +49,9 @@ export default function ConnectMessengerPage() {
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="group p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:shadow-sm"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 group-hover:text-blue-600 transition-colors" />
           </button>
           <h1 className="text-2xl font-bold text-gray-900">
             Connecter Facebook Messenger
@@ -59,13 +59,11 @@ export default function ConnectMessengerPage() {
         </div>
 
         {/* Messenger Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 mb-8">
           <div className="text-center">
             {/* Messenger Icon */}
-            <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 0C5.374 0 0 4.975 0 11.111c0 3.498 1.744 6.614 4.469 8.654V24l4.088-2.242c1.092.301 2.246.464 3.443.464 6.626 0 12-4.974 12-11.111C24 4.975 18.626 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26L10.732 8.1l3.13 3.26L19.752 8.1l-6.561 6.863z" />
-              </svg>
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-sky-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg ring-4 ring-blue-100">
+              <MessageCircle className="w-10 h-10 text-white" />
             </div>
 
             {/* Title and Description */}
@@ -80,7 +78,7 @@ export default function ConnectMessengerPage() {
             <button
               onClick={handleMessengerConnect}
               disabled={isConnecting}
-              className="inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              className="group inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-105"
             >
               {isConnecting ? (
                 <>
@@ -89,7 +87,7 @@ export default function ConnectMessengerPage() {
                 </>
               ) : (
                 <>
-                  <MessageCircle className="w-5 h-5 mr-3" />
+                  <MessageCircle className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
                   Connecter Facebook Messenger
                 </>
               )}
@@ -103,7 +101,7 @@ export default function ConnectMessengerPage() {
         </div>
 
         {/* Info Section */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
           <h4 className="font-medium text-blue-900 mb-3">
             Fonctionnalités Facebook Messenger
           </h4>

@@ -285,7 +285,7 @@ export default function ChannelsPage() {
       )}
 
       {/* En-tête */}
-      <div className="bg-white shadow-sm rounded-lg p-6">
+      <div className="bg-gradient-to-r from-white to-blue-50 shadow-sm rounded-lg p-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Gestion des Canaux</h1>
@@ -355,17 +355,17 @@ export default function ChannelsPage() {
               {connectedChannels.map((channel) => {
                 const IconComponent = channel.icon;
                 return (
-                  <div key={channel.id} className={`${channel.bgColor} rounded-lg border ${channel.borderColor} p-4 ${channel.hoverColor} transition-all duration-200 hover:shadow-md`}>
+                  <div key={channel.id} className={`${channel.bgColor} rounded-lg border ${channel.borderColor} p-4 ${channel.hoverColor} transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5`}>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center">
-                        <div className="p-2 rounded-lg bg-white shadow-sm">
+                        <div className="p-2 rounded-lg bg-white shadow-sm ring-1 ring-inset ring-gray-100">
                           <IconComponent className={`h-6 w-6 ${channel.color}`} />
                         </div>
                         <div className="ml-3">
                           <h3 className="text-sm font-medium text-gray-900">{channel.name}</h3>
                           {channel.pageName && (
-                            <p className="text-xs text-gray-600 mt-0.5">
-                              {channel.pageName}
+                            <p className="text-xs text-gray-600 mt-0.5 flex items-center gap-1">
+                              <CheckCircle className="h-3 w-3 text-green-500" /> {channel.pageName}
                             </p>
                           )}
                           <div className="flex items-center mt-1">
@@ -378,30 +378,28 @@ export default function ChannelsPage() {
                       </div>
                       <button
                         onClick={() => setSelectedChannel(channel)}
-                        className="p-1 text-gray-400 hover:text-gray-600 cursor-pointer"
+                        className="p-1 text-gray-400 hover:text-gray-600 cursor-pointer rounded-md hover:bg-gray-100"
+                        aria-label="Configurer le canal"
                       >
                         <Settings className="h-4 w-4" />
                       </button>
                     </div>
-                    
                     {channel.lastActivity && (
                       <div className="mt-3 text-xs text-gray-500">
                         Dernière activité: {channel.lastActivity}
                       </div>
                     )}
-                    
                     {channel.messageCount !== undefined && (
                       <div className="mt-2 text-xs text-gray-600">
                         {channel.messageCount} message{channel.messageCount !== 1 ? 's' : ''} aujourd'hui
                       </div>
                     )}
-                    
                     <div className="mt-3 flex space-x-2">
                       <button
                         onClick={() => handleDisconnectChannel(channel.id)}
-                        className="text-xs px-3 py-1 bg-red-50 text-red-700 rounded-md hover:bg-red-100 transition-colors shadow-sm cursor-pointer"
+                        className="text-xs px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors shadow-sm cursor-pointer inline-flex items-center gap-1"
                       >
-                        Déconnecter
+                        <XCircle className="h-4 w-4" /> Déconnecter
                       </button>
                     </div>
                   </div>
@@ -430,10 +428,10 @@ export default function ChannelsPage() {
               {disconnectedChannels.map((channel) => {
                 const IconComponent = channel.icon;
                 return (
-                  <div key={channel.id} className={`${channel.bgColor} rounded-lg border ${channel.borderColor} p-4 ${channel.hoverColor} transition-all duration-200 hover:shadow-md`}>
+                  <div key={channel.id} className={`${channel.bgColor} rounded-lg border ${channel.borderColor} p-4 ${channel.hoverColor} transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5`}>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center">
-                        <div className="p-2 rounded-lg bg-white shadow-sm">
+                        <div className="p-2 rounded-lg bg-white shadow-sm ring-1 ring-inset ring-gray-100">
                           <IconComponent className={`h-6 w-6 ${channel.color}`} />
                         </div>
                         <div className="ml-3">
@@ -447,20 +445,24 @@ export default function ChannelsPage() {
                         </div>
                       </div>
                     </div>
-                    
                     <p className="text-xs text-gray-600 mt-3">{channel.description}</p>
-                    
                     <div className="mt-4">
                       <button
                         onClick={() => handleConnectChannel(channel.id)}
                         disabled={channel.status === 'pending'}
-                        className={`w-full text-xs px-3 py-2 rounded-md transition-colors shadow-sm ${
+                        className={`w-full text-xs px-3 py-2 rounded-md transition-colors shadow-sm flex items-center justify-center gap-2 ${
                           channel.status === 'pending'
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer'
+                            : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
                         }`}
                       >
-                        {channel.status === 'pending' ? 'Connexion en cours...' : 'Connecter'}
+                        {channel.status === 'pending' ? (
+                          'Connexion en cours...'
+                        ) : (
+                          <>
+                            <Plus className="h-4 w-4" /> Connecter
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>

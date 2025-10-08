@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, Instagram } from 'lucide-react';
+import { ArrowLeft, Instagram, Shield, MessageSquare, BarChart3, Camera, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function ConnectInstagramPage() {
@@ -41,36 +41,40 @@ export default function ConnectInstagramPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-8 animate-fade-in">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+            className="group p-2 hover:bg-white/60 rounded-lg transition-all duration-200 backdrop-blur-sm cursor-pointer hover:shadow-sm"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 group-hover:text-purple-600 transition-colors" />
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 rounded-lg">
+              <Instagram className="w-6 h-6 text-white" />
+            </div>
             Connecter Instagram
           </h1>
         </div>
 
         {/* Instagram Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 mb-8 animate-slide-up hover:shadow-2xl transition-all duration-300">
           <div className="text-center">
-            {/* Instagram Icon */}
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-              </svg>
+            {/* Instagram Icon avec animation */}
+            <div className="relative w-24 h-24 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-soft shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 rounded-2xl animate-spin-slow opacity-20"></div>
+              {/* Icône Instagram lucide-react */}
+              <Instagram className="w-12 h-12 text-white relative z-10" />
+              <Sparkles className="w-5 h-5 text-white/80 absolute -top-1 -right-1 animate-bounce" />
             </div>
             
             {/* Title and Description */}
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
               Instagram Business
             </h2>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+            <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
               Connectez votre compte Instagram Business pour gérer vos messages directs et interactions avec vos clients depuis XAMXAM.
             </p>
             
@@ -78,61 +82,133 @@ export default function ConnectInstagramPage() {
             <button
               onClick={handleInstagramConnect}
               disabled={isConnecting}
-              className=" cursor-pointer inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              className="group cursor-pointer inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-105 transform"
             >
               {isConnecting ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
-                  Connexion en cours...
+                  <span className="animate-pulse">Connexion en cours...</span>
                 </>
               ) : (
                 <>
-                  <Instagram className="w-5 h-5 mr-3" />
-                  Connecter Instagram
+                  <Instagram className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
+                  <span>Connecter Instagram</span>
                 </>
               )}
             </button>
             
             {/* Security Note */}
-            <p className="text-sm text-gray-500 mt-6">
-              🔒 Vos données sont sécurisées. Nous ne stockons que les informations nécessaires au fonctionnement du service.
-            </p>
+            <div className="flex items-center justify-center gap-2 mt-6 text-sm text-gray-500">
+              <Shield className="w-4 h-4 text-green-500" />
+              <span>Vos données sont sécurisées et chiffrées</span>
+            </div>
           </div>
         </div>
 
         {/* Info Section */}
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
-          <h4 className="font-medium text-purple-900 mb-3">
-            Fonctionnalités Instagram Business
-          </h4>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <h5 className="font-medium text-purple-800 mb-2">Gestion des messages :</h5>
-              <ul className="text-sm text-purple-700 space-y-1">
-                <li>• Messages directs Instagram</li>
-                <li>• Réponses depuis l'interface XAMXAM</li>
-                <li>• Historique des conversations</li>
-                <li>• Notifications en temps réel</li>
-              </ul>
+        <div className="bg-gradient-to-r from-purple-50/80 to-pink-50/80 backdrop-blur-sm border border-purple-200/50 rounded-xl p-6 animate-slide-up-delay">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg">
+              <Camera className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h5 className="font-medium text-purple-800 mb-2">Fonctionnalités avancées :</h5>
-              <ul className="text-sm text-purple-700 space-y-1">
-                <li>• Gestion des commentaires</li>
-                <li>• Réponses automatiques</li>
-                <li>• Statistiques d'engagement</li>
-                <li>• Support client intégré</li>
-              </ul>
+            <h4 className="font-semibold text-purple-900">
+              Fonctionnalités Instagram Business
+            </h4>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg mt-0.5">
+                  <MessageSquare className="w-4 h-4 text-purple-600" />
+                </div>
+                <div>
+                  <h5 className="font-medium text-purple-800 mb-1">Gestion des messages</h5>
+                  <ul className="text-sm text-purple-700 space-y-1">
+                    <li>• Messages directs Instagram</li>
+                    <li>• Réponses depuis XAMXAM</li>
+                    <li>• Historique des conversations</li>
+                    <li>• Notifications temps réel</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-pink-100 rounded-lg mt-0.5">
+                  <BarChart3 className="w-4 h-4 text-pink-600" />
+                </div>
+                <div>
+                  <h5 className="font-medium text-pink-800 mb-1">Fonctionnalités avancées</h5>
+                  <ul className="text-sm text-pink-700 space-y-1">
+                    <li>• Gestion des commentaires</li>
+                    <li>• Réponses automatiques</li>
+                    <li>• Statistiques d'engagement</li>
+                    <li>• Support client intégré</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
           
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-sm text-yellow-800">
-              <strong>Note :</strong> Vous devez avoir un compte Instagram Business pour utiliser cette fonctionnalité.
-            </p>
+          <div className="mt-6 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+              <p className="text-sm text-yellow-800">
+                <strong>Prérequis :</strong> Vous devez avoir un compte Instagram Business pour utiliser cette fonctionnalité.
+              </p>
+            </div>
           </div>
         </div>
       </div>
+      
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slide-up-delay {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse-soft {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+        }
+        
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        
+        .animate-slide-up {
+          animation: slide-up 0.8s ease-out;
+        }
+        
+        .animate-slide-up-delay {
+          animation: slide-up-delay 1s ease-out;
+        }
+        
+        .animate-pulse-soft {
+          animation: pulse-soft 3s ease-in-out infinite;
+        }
+        
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
+        }
+      `}</style>
     </div>
   );
 }
