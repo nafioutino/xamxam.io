@@ -63,7 +63,9 @@ export default function ConnectMessengerPage() {
           <div className="text-center">
             {/* Messenger Icon */}
             <div className="w-20 h-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-sky-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg ring-4 ring-blue-100">
-              <MessageCircle className="w-10 h-10 text-white" />
+              <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.374 0 0 4.975 0 11.111c0 3.498 1.744 6.614 4.469 8.654V24l4.088-2.242c1.092.301 2.246.464 3.443.464 6.626 0 12-4.974 12-11.111C24 4.975 18.626 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26L10.732 8.1l3.13 3.26L19.752 8.1l-6.561 6.863z" />
+              </svg>
             </div>
 
             {/* Title and Description */}
