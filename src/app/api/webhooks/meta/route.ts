@@ -57,29 +57,14 @@ export async function POST(request: NextRequest) {
 
     rawBody = await request.text();
     
-    // === CORRECTION CRITIQUE ===
-    // On utilise TOUJOURS le FACEBOOK_APP_SECRET, même pour les événements Instagram.
-    // C'est la clé secrète de l'application Meta parente qui signe tous les webhooks.
-    const appSecret = process.env.FACEBOOK_APP_SECRET;
-    if (!appSecret) {
-      console.error(`${logPrefix} FACEBOOK_APP_SECRET is not configured.`);
-      return new NextResponse('Internal Server Error: App Secret not configured', { status: 500 });
-    }
-    
+    // Validation de la signature (utilise la même logique que l'ancien code qui fonctionnait)
     const expectedSignature = `sha256=${crypto
-      .createHmac('sha256', appSecret)
+      .createHmac('sha256', process.env.FACEBOOK_APP_SECRET!)
       .update(rawBody)
       .digest('hex')}`;
 
-    // DEBUG: Logs détaillés pour diagnostiquer les problèmes de signature
-    console.log(`${logPrefix} DEBUG - Received signature: ${signature}`);
-    console.log(`${logPrefix} DEBUG - Expected signature: ${expectedSignature}`);
-    console.log(`${logPrefix} DEBUG - Raw body length: ${rawBody.length}`);
-    console.log(`${logPrefix} DEBUG - Raw body preview: ${rawBody.substring(0, 200)}...`);
-
     if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
       console.error(`${logPrefix} Invalid signature.`);
-      console.error(`${logPrefix} SIGNATURE MISMATCH - Received: ${signature}, Expected: ${expectedSignature}`);
       return new NextResponse('Forbidden', { status: 403 });
     }
     console.log(`${logPrefix} Signature validated successfully.`);
