@@ -71,8 +71,15 @@ export async function POST(request: NextRequest) {
       .update(rawBody)
       .digest('hex')}`;
 
+    // DEBUG: Logs détaillés pour diagnostiquer les problèmes de signature
+    console.log(`${logPrefix} DEBUG - Received signature: ${signature}`);
+    console.log(`${logPrefix} DEBUG - Expected signature: ${expectedSignature}`);
+    console.log(`${logPrefix} DEBUG - Raw body length: ${rawBody.length}`);
+    console.log(`${logPrefix} DEBUG - Raw body preview: ${rawBody.substring(0, 200)}...`);
+
     if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
       console.error(`${logPrefix} Invalid signature.`);
+      console.error(`${logPrefix} SIGNATURE MISMATCH - Received: ${signature}, Expected: ${expectedSignature}`);
       return new NextResponse('Forbidden', { status: 403 });
     }
     console.log(`${logPrefix} Signature validated successfully.`);
