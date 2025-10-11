@@ -60,21 +60,23 @@ export async function POST(request: NextRequest) {
 
     rawBody = await request.text();
     
-    // Si le corps est vide, on ne peut pas valider la signature.
-    // C'est souvent le cas lors des tests de webhook depuis l'interface Meta.
-    if (!rawBody) {
-      console.log(`${logPrefix} Received a POST request with an empty body. Likely a test from Meta. Responding 200 OK.`);
-      return new NextResponse('OK', { status: 200 });
-    }
-
+    // Debug: Log des informations sur la requête
+    console.log(`${logPrefix} Debug: header length=${signature.length}, payload bytes=${rawBody.length}`);
+    
     // Validation de la signature
     const expectedSignature = `sha256=${crypto
       .createHmac('sha256', process.env.FACEBOOK_APP_SECRET!)
       .update(rawBody)
       .digest('hex')}`;
 
+    // Debug: Log des signatures pour comparaison
+    console.log(`${logPrefix} Debug: received signature=${signature}`);
+    console.log(`${logPrefix} Debug: expected signature=${expectedSignature}`);
+
     if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
       console.error(`${logPrefix} Invalid signature.`);
+      console.error(`${logPrefix} Debug: rawBody content=${rawBody}`);
+      console.error(`${logPrefix} Debug: FACEBOOK_APP_SECRET exists=${!!process.env.FACEBOOK_APP_SECRET}`);
       return new NextResponse('Forbidden', { status: 403 });
     }
     console.log(`${logPrefix} Signature validated successfully.`);
