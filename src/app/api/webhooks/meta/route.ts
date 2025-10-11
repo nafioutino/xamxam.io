@@ -132,6 +132,12 @@ export async function POST(request: NextRequest) {
       }
 
       for (const event of entry.messaging) {
+        // Ignorer les messages echo (messages envoyés par notre bot)
+        if (event.message && event.message.is_echo) {
+          console.log(`${logPrefix} Ignoring echo message from ${event.sender?.id}`);
+          continue;
+        }
+
         if (event.message && event.message.text) {
           try {
             console.log(`${logPrefix} Processing message event...`);
