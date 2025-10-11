@@ -5,12 +5,11 @@
 // ==================================================================
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import prisma from '@/lib/prisma'; // Assurez-vous que ce chemin est correct
-import { ChannelType } from '@/generated/prisma';
+import prisma from '@/lib/prisma';
+import { ChannelType } from '@/generated/prisma'; // Importer depuis le client Prisma généré
 import { getFacebookUserInfo } from '@/lib/facebook-utils';
-import { getInstagramUserInfo, isInstagramUserId } from '@/lib/instagram-utils';
+import { getInstagramUserInfo } from '@/lib/instagram-utils';
 
-// Préfixe pour tous les logs, pour les retrouver facilement.
 const logPrefix = '[Meta Webhook]';
 
 // ==================================================================
@@ -18,7 +17,7 @@ const logPrefix = '[Meta Webhook]';
 // ==================================================================
 /**
  * Gère la requête de vérification envoyée par Meta lors de la configuration du webhook.
- * C'est une poignée de main pour prouver que nous sommes bien le propriétaire de l'URL.
+ * Doit utiliser un token de vérification unique pour toute l'application.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -26,6 +25,7 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
 
+  // On utilise une seule et unique variable d'environnement pour le token de vérification.
   const verifyToken = process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN;
 
   if (mode === 'subscribe' && token === verifyToken) {
@@ -41,15 +41,12 @@ export async function GET(request: NextRequest) {
 // ===      MÉTHODE POST : RÉCEPTION DES ÉVÉNEMENTS (MESSAGES)    ===
 // ==================================================================
 /**
- * Reçoit les événements en temps réel de Meta.
- * Version améliorée avec gestion robuste des erreurs et récupération des informations client.
+ * Reçoit tous les événements en temps réel de Meta (Facebook, Instagram).
  */
 export async function POST(request: NextRequest) {
   console.log(`${logPrefix} Received a POST request.`);
-  
   let rawBody: string = '';
-  let body: any;
-  
+
   try {
     // --- ÉTAPE 1: SÉCURITÉ - VALIDER LA SIGNATURE DE LA REQUÊTE ---
     const signature = request.headers.get('x-hub-signature-256');
@@ -60,125 +57,47 @@ export async function POST(request: NextRequest) {
 
     rawBody = await request.text();
     
-    // Debug: Log des informations sur la requête
-    console.log(`${logPrefix} Debug: header length=${signature.length}, payload bytes=${rawBody.length}`);
-    
-    // Déterminer quel App Secret utiliser selon le type d'objet
-    let appSecret = process.env.FACEBOOK_APP_SECRET!;
-    
-    // Parse temporaire pour déterminer le type d'objet
-    let tempBody;
-    try {
-      tempBody = JSON.parse(rawBody);
-      if (tempBody.object === 'instagram') {
-        // Utiliser INSTAGRAM_APP_SECRET si disponible, sinon FACEBOOK_APP_SECRET
-        appSecret = process.env.INSTAGRAM_APP_SECRET || process.env.FACEBOOK_APP_SECRET!;
-        console.log(`${logPrefix} Debug: Using Instagram App Secret for validation`);
-      } else {
-        console.log(`${logPrefix} Debug: Using Facebook App Secret for validation`);
-      }
-    } catch (e) {
-      console.log(`${logPrefix} Debug: Could not parse body for secret selection, using Facebook App Secret`);
+    // === CORRECTION CRITIQUE ===
+    // On utilise TOUJOURS le FACEBOOK_APP_SECRET, même pour les événements Instagram.
+    // C'est la clé secrète de l'application Meta parente qui signe tous les webhooks.
+    const appSecret = process.env.FACEBOOK_APP_SECRET;
+    if (!appSecret) {
+      console.error(`${logPrefix} FACEBOOK_APP_SECRET is not configured.`);
+      return new NextResponse('Internal Server Error: App Secret not configured', { status: 500 });
     }
-
-    // Validation de la signature
+    
     const expectedSignature = `sha256=${crypto
       .createHmac('sha256', appSecret)
       .update(rawBody)
       .digest('hex')}`;
 
-    // Debug: Log des signatures pour comparaison
-    console.log(`${logPrefix} Debug: received signature=${signature}`);
-    console.log(`${logPrefix} Debug: expected signature=${expectedSignature}`);
-    console.log(`${logPrefix} Debug: using app secret type=${tempBody?.object || 'unknown'}`);
-
     if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
       console.error(`${logPrefix} Invalid signature.`);
-      console.error(`${logPrefix} Debug: rawBody content=${rawBody}`);
-      console.error(`${logPrefix} Debug: FACEBOOK_APP_SECRET exists=${!!process.env.FACEBOOK_APP_SECRET}`);
       return new NextResponse('Forbidden', { status: 403 });
     }
     console.log(`${logPrefix} Signature validated successfully.`);
 
-    // --- ÉTAPE 2: PARSING ET VALIDATION DU BODY ---
-    try {
-      body = JSON.parse(rawBody);
-    } catch (parseError) {
-      console.error(`${logPrefix} Failed to parse JSON body:`, parseError);
-      return new NextResponse('Bad Request - Invalid JSON', { status: 400 });
-    }
-    
-    console.log(`${logPrefix} Parsed body:`, JSON.stringify(body, null, 2));
+    // --- ÉTAPE 2: TRAITEMENT DES MESSAGES ---
+    // (Nous gardons la logique synchrone pour un débogage clair pour l'instant)
+    const body = JSON.parse(rawBody);
 
-    // Validation de la structure du body
-    if (!body.object || (body.object !== 'page' && body.object !== 'instagram')) {
-      console.warn(`${logPrefix} Received webhook for object type: ${body.object}, ignoring.`);
-      return NextResponse.json({ status: 'ignored' }, { status: 200 });
-    }
-
-    if (!body.entry || !Array.isArray(body.entry)) {
-      console.warn(`${logPrefix} No entries found in webhook body.`);
-      return NextResponse.json({ status: 'no_entries' }, { status: 200 });
-    }
-
-    // --- ÉTAPE 3: TRAITEMENT SYNCHRONE DES MESSAGES ---
-    let processedMessages = 0;
-    let errors = 0;
-
-    for (const entry of body.entry) {
-      if (!entry.messaging || !Array.isArray(entry.messaging)) {
-        console.log(`${logPrefix} Entry ${entry.id} has no messaging events, skipping.`);
-        continue;
-      }
-
-      for (const event of entry.messaging) {
-        // Ignorer les messages echo (messages envoyés par notre bot)
-        if (event.message && event.message.is_echo) {
-          console.log(`${logPrefix} Ignoring echo message from ${event.sender?.id}`);
-          continue;
-        }
-
-        if (event.message && event.message.text) {
-          try {
-            console.log(`${logPrefix} Processing message event...`);
-            await processMessage(event);
-            processedMessages++;
-          } catch (messageError) {
-            console.error(`${logPrefix} Error processing individual message:`, messageError);
-            errors++;
-            // Continue processing other messages even if one fails
+    if (body.object === 'page' || body.object === 'instagram') {
+      for (const entry of body.entry) {
+        if (entry.messaging && Array.isArray(entry.messaging)) {
+          for (const event of entry.messaging) {
+            if (event.message && event.message.text && !event.message.is_echo) {
+              await processMessage(event);
+            }
           }
-        } else if (event.message) {
-          console.log(`${logPrefix} Received non-text message (attachments, etc.), skipping for now.`);
-        } else {
-          console.log(`${logPrefix} Received non-message event (delivery, read, etc.), skipping.`);
         }
       }
     }
 
-    // --- ÉTAPE 4: RÉPONSE AVEC STATISTIQUES ---
-    const responseData = {
-      status: 'success',
-      processed: processedMessages,
-      errors: errors,
-      timestamp: new Date().toISOString()
-    };
-
-    console.log(`${logPrefix} Processing completed:`, responseData);
-    return NextResponse.json(responseData, { status: 200 });
+    // --- ÉTAPE 3: RÉPONDRE AVEC SUCCÈS ---
+    return NextResponse.json({ status: 'success' }, { status: 200 });
 
   } catch (error) {
     console.error(`${logPrefix} CRITICAL ERROR in POST handler:`, error);
-    
-    // Log détaillé pour le débogage
-    console.error(`${logPrefix} Request details:`, {
-      headers: Object.fromEntries(request.headers.entries()),
-      url: request.url,
-      method: request.method,
-      bodyLength: rawBody?.length || 0
-    });
-    
-    // En cas d'erreur critique, on renvoie une erreur 500 pour que Meta sache que ça a échoué
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
@@ -187,178 +106,66 @@ export async function POST(request: NextRequest) {
 // ===               FONCTION DE TRAITEMENT DU MESSAGE            ===
 // ==================================================================
 /**
- * Traite un message individuel reçu de Meta.
- * Version améliorée avec récupération des informations client Facebook.
+ * Traite un message individuel, l'identifie et le stocke dans la base de données.
  */
 async function processMessage(event: any) {
   const messageId = event.message?.mid;
   const senderId = event.sender?.id;
-  const pageId = event.recipient?.id;
+  const recipientId = event.recipient?.id; // L'ID de notre Page FB ou Compte IG
   const messageText = event.message?.text;
-  const timestamp = event.timestamp;
 
-  console.log(`${logPrefix} Processing message:`, {
-    messageId,
-    senderId,
-    pageId,
-    messageText: messageText?.substring(0, 100) + (messageText?.length > 100 ? '...' : ''),
-    timestamp
-  });
-
-  // Validation des données requises
-  if (!senderId) {
-    console.error(`${logPrefix} Missing sender ID in message event`);
-    throw new Error('Missing sender ID');
-  }
-
-  if (!pageId) {
-    console.error(`${logPrefix} Missing page ID in message event`);
-    throw new Error('Missing page ID');
-  }
-
-  if (!messageText) {
-    console.error(`${logPrefix} Missing message text for sender ${senderId}`);
-    throw new Error('Missing message text');
-  }
-
-  if (!messageId) {
-    console.error(`${logPrefix} Missing message ID for sender ${senderId}`);
-    throw new Error('Missing message ID');
+  if (!senderId || !recipientId || !messageText || !messageId) {
+    console.warn(`${logPrefix} Incomplete message event received, skipping.`);
+    return;
   }
 
   try {
     // --- ÉTAPE 1: IDENTIFIER LE CANAL ET LA BOUTIQUE ---
-    // Rechercher un canal actif selon le type d'événement
-    // Pour Instagram : pageId = Instagram Business Account ID
-    // Pour Facebook : pageId = Facebook Page ID
-    console.log(`${logPrefix} Looking for channel with externalId: ${pageId}`);
-    let channel = await prisma.channel.findFirst({
-      where: {
-        externalId: pageId,
-        type: ChannelType.INSTAGRAM_DM,
-        isActive: true
-      }
+    const channel = await prisma.channel.findFirst({
+      where: { externalId: recipientId, isActive: true }
     });
 
-    // Si pas trouvé en tant qu'Instagram, chercher en tant que Facebook Page
     if (!channel) {
-      channel = await prisma.channel.findFirst({
-        where: {
-          externalId: pageId,
-          type: ChannelType.FACEBOOK_PAGE,
-          isActive: true
-        }
-      });
+      throw new Error(`No active channel found for recipientId: ${recipientId}`);
     }
-
-    if (!channel) {
-      console.error(`${logPrefix} No active channel found for pageId: ${pageId}`);
-      throw new Error(`No active channel found for pageId: ${pageId}`);
-    }
-
-    if (!channel.accessToken) {
-      console.error(`${logPrefix} Channel ${channel.id} has no access token`);
-      throw new Error('Channel missing access token');
-    }
-
-    console.log(`${logPrefix} Found channel: ${channel.type} with ID ${channel.externalId}`);
 
     const shopId = channel.shopId;
-    console.log(`${logPrefix} Found channel ${channel.id} for shop ${shopId}`);
+    console.log(`${logPrefix} Found channel ${channel.id} (${channel.type}) for shop ${shopId}`);
 
-    // --- ÉTAPE 2: RÉCUPÉRER LES INFORMATIONS DU CLIENT (FACEBOOK OU INSTAGRAM) ---
+    // --- ÉTAPE 2: RÉCUPÉRER LES INFORMATIONS DU CLIENT ---
     let userInfo: { name: string; avatarUrl?: string } = { name: `Client ${senderId.slice(-4)}`, avatarUrl: undefined };
     
     try {
-      // Déterminer si c'est un utilisateur Instagram ou Facebook basé sur le type de canal trouvé
-      const isInstagram = channel.type === ChannelType.INSTAGRAM_DM;
-      
-      if (isInstagram) {
-        console.log(`${logPrefix} Fetching Instagram user info for senderId: ${senderId}`);
-        const instagramUserInfo = await getInstagramUserInfo(senderId, channel.accessToken);
-        
-        if (instagramUserInfo) {
-          userInfo = instagramUserInfo;
-          console.log(`${logPrefix} Successfully fetched Instagram user info:`, { name: userInfo.name, hasAvatar: !!userInfo.avatarUrl });
-        } else {
-          console.warn(`${logPrefix} Could not retrieve Instagram user info for ${senderId}, using fallback name`);
-        }
+      if (channel.type === ChannelType.INSTAGRAM_DM) {
+        const instagramUserInfo = await getInstagramUserInfo(senderId, channel.accessToken!);
+        if (instagramUserInfo) userInfo = instagramUserInfo;
       } else {
-        console.log(`${logPrefix} Fetching Facebook user info for senderId: ${senderId}`);
-        const facebookUserInfo = await getFacebookUserInfo(senderId, channel.accessToken);
-        
-        if (facebookUserInfo) {
-          userInfo = facebookUserInfo;
-          console.log(`${logPrefix} Successfully fetched Facebook user info:`, { name: userInfo.name, hasAvatar: !!userInfo.avatarUrl });
-        } else {
-          console.warn(`${logPrefix} Could not retrieve Facebook user info for ${senderId}, using fallback name`);
-        }
+        const facebookUserInfo = await getFacebookUserInfo(senderId, channel.accessToken!);
+        if (facebookUserInfo) userInfo = facebookUserInfo;
       }
     } catch (userInfoError) {
       console.warn(`${logPrefix} Error fetching user info for ${senderId}:`, userInfoError);
-      console.log(`${logPrefix} Continuing with fallback client name: ${userInfo.name}`);
     }
 
     // --- ÉTAPE 3: TROUVER OU CRÉER LE CLIENT ---
-    console.log(`${logPrefix} Looking for customer with phone: ${senderId}`);
-    let customer = await prisma.customer.findFirst({
-      where: { shopId, phone: senderId }
+    let customer = await prisma.customer.upsert({
+      where: { shopId_phone: { shopId, phone: senderId } },
+      update: { name: userInfo.name, avatarUrl: userInfo.avatarUrl },
+      create: { shopId, phone: senderId, name: userInfo.name, avatarUrl: userInfo.avatarUrl }
     });
-    
-    if (customer) {
-      console.log(`${logPrefix} Found existing customer: ${customer.id}`);
-      
-      // Mettre à jour les informations du client si elles ont changé
-      const needsUpdate = customer.name !== userInfo.name || customer.avatarUrl !== userInfo.avatarUrl;
-      if (needsUpdate) {
-        console.log(`${logPrefix} Updating customer info:`, {
-          oldName: customer.name,
-          newName: userInfo.name,
-          oldAvatar: customer.avatarUrl,
-          newAvatar: userInfo.avatarUrl
-        });
-        
-        customer = await prisma.customer.update({
-          where: { id: customer.id },
-          data: { 
-            name: userInfo.name,
-            avatarUrl: userInfo.avatarUrl
-          }
-        });
-        console.log(`${logPrefix} Customer updated successfully`);
-      }
-    } else {
-      console.log(`${logPrefix} Creating new customer with name: ${userInfo.name}`);
-      customer = await prisma.customer.create({
-        data: { 
-          shopId, 
-          phone: senderId, 
-          name: userInfo.name,
-          avatarUrl: userInfo.avatarUrl
-        }
-      });
-      console.log(`${logPrefix} Created new customer: ${customer.id}`);
-    }
 
     // --- ÉTAPE 4: TROUVER OU CRÉER LA CONVERSATION ---
-    console.log(`${logPrefix} Looking for conversation for customer: ${customer.id}`);
     let conversation = await prisma.conversation.findFirst({
       where: { shopId, customerId: customer.id, platform: channel.type }
     });
-    
-    if (conversation) {
-      console.log(`${logPrefix} Found existing conversation: ${conversation.id}`);
-    } else {
-      console.log(`${logPrefix} Creating new conversation for customer: ${customer.id}`);
+    if (!conversation) {
       conversation = await prisma.conversation.create({
         data: { shopId, customerId: customer.id, platform: channel.type, externalId: senderId, status: 'OPEN' }
       });
-      console.log(`${logPrefix} Created new conversation: ${conversation.id}`);
     }
 
     // --- ÉTAPE 5: SAUVEGARDER LE MESSAGE ---
-    console.log(`${logPrefix} Saving message to conversation: ${conversation.id}`);
-    const message = await prisma.message.create({
+    await prisma.message.create({
       data: {
         conversationId: conversation.id,
         content: messageText,
@@ -368,28 +175,10 @@ async function processMessage(event: any) {
       }
     });
 
-    console.log(`${logPrefix} Message saved successfully:`, {
-      messageId: message.id,
-      conversationId: conversation.id,
-      customerId: customer.id,
-      customerName: customer.name
-    });
-
-    console.log(`${logPrefix} Message processing completed successfully`);
+    console.log(`${logPrefix} Message from ${senderId} for shop ${shopId} stored successfully.`);
 
   } catch (error) {
     console.error(`${logPrefix} Error in processMessage:`, error);
-    
-    // Log détaillé pour le débogage
-    console.error(`${logPrefix} Message processing context:`, {
-      senderId,
-      pageId,
-      messageId,
-      messageLength: messageText?.length,
-      timestamp,
-      error: error instanceof Error ? error.message : String(error)
-    });
-    
-    throw error; // Re-throw pour que l'appelant puisse gérer l'erreur
+    throw error; // Re-lancer l'erreur pour que le handler POST principal puisse la logguer.
   }
 }
