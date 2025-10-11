@@ -13,9 +13,6 @@ import { getInstagramUserInfo, isInstagramUserId } from '@/lib/instagram-utils';
 // Préfixe pour tous les logs, pour les retrouver facilement.
 const logPrefix = '[Meta Webhook]';
 
-// Assure l'utilisation du runtime Node.js pour accéder à `crypto` natif
-export const runtime = 'nodejs';
-
 // ==================================================================
 // ===      MÉTHODE GET : VÉRIFICATION DU WEBHOOK (UNE SEULE FOIS) ===
 // ==================================================================
@@ -61,32 +58,26 @@ export async function POST(request: NextRequest) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
-    const appSecret = process.env.FACEBOOK_APP_SECRET;
-    if (!appSecret) {
-      console.error(`${logPrefix} FACEBOOK_APP_SECRET is not configured.`);
-      return new NextResponse('Internal Server Error', { status: 500 });
+    rawBody = await request.text();
+    
+    // Si le corps est vide, on ne peut pas valider la signature.
+    // C'est souvent le cas lors des tests de webhook depuis l'interface Meta.
+    if (!rawBody) {
+      console.log(`${logPrefix} Received a POST request with an empty body. Likely a test from Meta. Responding 200 OK.`);
+      return new NextResponse('OK', { status: 200 });
     }
 
-    // Lire le corps en bytes pour éviter toute transformation de chaîne
-    const arrayBuffer = await request.arrayBuffer();
-    const payloadBuffer = Buffer.from(arrayBuffer);
+    // Validation de la signature
+    const expectedSignature = `sha256=${crypto
+      .createHmac('sha256', process.env.FACEBOOK_APP_SECRET!)
+      .update(rawBody)
+      .digest('hex')}`;
 
-    // Validation de la signature via HMAC des bytes bruts
-    const hmacHex = crypto.createHmac('sha256', appSecret).update(payloadBuffer).digest('hex');
-    const receivedHex = signature.replace('sha256=', '');
-
-    // Logs de débogage légers (sans exposer le secret)
-    console.log(`${logPrefix} Debug: header length=${signature.length}, payload bytes=${payloadBuffer.length}`);
-
-    const isValid = crypto.timingSafeEqual(Buffer.from(hmacHex, 'hex'), Buffer.from(receivedHex, 'hex'));
-    if (!isValid) {
+    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
       console.error(`${logPrefix} Invalid signature.`);
       return new NextResponse('Forbidden', { status: 403 });
     }
     console.log(`${logPrefix} Signature validated successfully.`);
-
-    // Convertir en texte UTF-8 pour le parsing JSON après validation
-    rawBody = payloadBuffer.toString('utf8');
 
     // --- ÉTAPE 2: PARSING ET VALIDATION DU BODY ---
     try {
