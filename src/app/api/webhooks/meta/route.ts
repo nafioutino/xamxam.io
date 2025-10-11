@@ -63,15 +63,34 @@ export async function POST(request: NextRequest) {
     // Debug: Log des informations sur la requête
     console.log(`${logPrefix} Debug: header length=${signature.length}, payload bytes=${rawBody.length}`);
     
+    // Déterminer quel App Secret utiliser selon le type d'objet
+    let appSecret = process.env.FACEBOOK_APP_SECRET!;
+    
+    // Parse temporaire pour déterminer le type d'objet
+    let tempBody;
+    try {
+      tempBody = JSON.parse(rawBody);
+      if (tempBody.object === 'instagram') {
+        // Utiliser INSTAGRAM_APP_SECRET si disponible, sinon FACEBOOK_APP_SECRET
+        appSecret = process.env.INSTAGRAM_APP_SECRET || process.env.FACEBOOK_APP_SECRET!;
+        console.log(`${logPrefix} Debug: Using Instagram App Secret for validation`);
+      } else {
+        console.log(`${logPrefix} Debug: Using Facebook App Secret for validation`);
+      }
+    } catch (e) {
+      console.log(`${logPrefix} Debug: Could not parse body for secret selection, using Facebook App Secret`);
+    }
+
     // Validation de la signature
     const expectedSignature = `sha256=${crypto
-      .createHmac('sha256', process.env.FACEBOOK_APP_SECRET!)
+      .createHmac('sha256', appSecret)
       .update(rawBody)
       .digest('hex')}`;
 
     // Debug: Log des signatures pour comparaison
     console.log(`${logPrefix} Debug: received signature=${signature}`);
     console.log(`${logPrefix} Debug: expected signature=${expectedSignature}`);
+    console.log(`${logPrefix} Debug: using app secret type=${tempBody?.object || 'unknown'}`);
 
     if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
       console.error(`${logPrefix} Invalid signature.`);
