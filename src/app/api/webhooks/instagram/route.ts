@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
     console.log(`${logPrefix} DEBUG - Raw body length:`, rawBody.length);
     console.log(`${logPrefix} DEBUG - Raw body (first 200 chars):`, rawBody.substring(0, 200));
     
-    // Utiliser FACEBOOK_APP_SECRET pour Instagram (même App Secret)
-    const appSecret = process.env.FACEBOOK_APP_SECRET;
-    console.log(`${logPrefix} DEBUG - Using FACEBOOK_APP_SECRET for Instagram`);
+    // Utiliser INSTAGRAM_APP_SECRET ou fallback sur FACEBOOK_APP_SECRET
+    const appSecret = process.env.INSTAGRAM_APP_SECRET || process.env.FACEBOOK_APP_SECRET;
+    console.log(`${logPrefix} DEBUG - Using`, process.env.INSTAGRAM_APP_SECRET ? 'INSTAGRAM_APP_SECRET' : 'FACEBOOK_APP_SECRET', 'for Instagram');
     console.log(`${logPrefix} DEBUG - App Secret exists:`, !!appSecret);
     console.log(`${logPrefix} DEBUG - App Secret length:`, appSecret?.length);
     
