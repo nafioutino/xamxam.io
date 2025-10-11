@@ -57,14 +57,26 @@ export async function POST(request: NextRequest) {
 
     rawBody = await request.text();
     
+    // DEBUG: Logs détaillés pour diagnostiquer le problème de signature
+    console.log(`${logPrefix} DEBUG - Signature reçue:`, signature);
+    console.log(`${logPrefix} DEBUG - Raw body length:`, rawBody.length);
+    console.log(`${logPrefix} DEBUG - Raw body (first 200 chars):`, rawBody.substring(0, 200));
+    console.log(`${logPrefix} DEBUG - FACEBOOK_APP_SECRET exists:`, !!process.env.FACEBOOK_APP_SECRET);
+    console.log(`${logPrefix} DEBUG - FACEBOOK_APP_SECRET length:`, process.env.FACEBOOK_APP_SECRET?.length);
+    
     // Validation de la signature (utilise la même logique que l'ancien code qui fonctionnait)
     const expectedSignature = `sha256=${crypto
       .createHmac('sha256', process.env.FACEBOOK_APP_SECRET!)
       .update(rawBody)
       .digest('hex')}`;
 
+    console.log(`${logPrefix} DEBUG - Signature attendue:`, expectedSignature);
+    console.log(`${logPrefix} DEBUG - Signatures match:`, signature === expectedSignature);
+
     if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
       console.error(`${logPrefix} Invalid signature.`);
+      console.error(`${logPrefix} Received: ${signature}`);
+      console.error(`${logPrefix} Expected: ${expectedSignature}`);
       return new NextResponse('Forbidden', { status: 403 });
     }
     console.log(`${logPrefix} Signature validated successfully.`);
