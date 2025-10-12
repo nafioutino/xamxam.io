@@ -270,6 +270,7 @@ async function processInstagramMessage(event: any) {
         where: { id: customer.id },
         data: {
           name: customerInfo.name || (customerInfo as any).username || 'Utilisateur Instagram',
+          avatarUrl: customerInfo.avatarUrl || null,
           updatedAt: new Date()
         }
       });
@@ -278,6 +279,7 @@ async function processInstagramMessage(event: any) {
         data: {
           phone: senderId,
           name: customerInfo.name || (customerInfo as any).username || 'Utilisateur Instagram',
+          avatarUrl: customerInfo.avatarUrl || null,
           shopId: channel.shopId
         }
       });
