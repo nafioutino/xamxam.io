@@ -23,7 +23,7 @@ Ajoutez ces variables à votre fichier `.env` :
 
 ```env
 # Instagram Webhook Configuration
-INSTAGRAM_APP_SECRET="votre_app_secret_instagram"  # Peut être le même que FACEBOOK_APP_SECRET
+INSTAGRAM_CLIENT_SECRET="d4f889dad537fc4c8e20d64708a44dad"  # Client Secret spécifique à Instagram
 INSTAGRAM_WEBHOOK_VERIFY_TOKEN="XamXam_IG_W3bH0oK_S3cr3T_2025"  # Token unique pour Instagram
 ```
 
@@ -48,7 +48,7 @@ Assurez-vous que votre app Instagram a les permissions suivantes :
 ## Fonctionnalités du webhook Instagram
 
 ### Vérification de signature
-- Utilise HMAC SHA256 avec `INSTAGRAM_APP_SECRET`
+- Utilise HMAC SHA256 avec `INSTAGRAM_CLIENT_SECRET`
 - Vérifie l'en-tête `x-hub-signature-256`
 - Protection contre les requêtes non autorisées
 
@@ -137,8 +137,8 @@ Surveillez les logs Vercel pour :
 ## Dépannage
 
 ### Erreur "Invalid signature"
-- Vérifiez que `INSTAGRAM_APP_SECRET` est correctement configuré
-- Assurez-vous que l'App Secret correspond à celui de votre app Instagram
+- Vérifiez que `INSTAGRAM_CLIENT_SECRET` est correctement configuré
+- Assurez-vous que le Client Secret correspond à celui de votre app Instagram
 
 ### Erreur "Webhook verification failed"
 - Vérifiez que `INSTAGRAM_WEBHOOK_VERIFY_TOKEN` correspond au token configuré dans Meta Developer Console

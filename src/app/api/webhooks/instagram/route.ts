@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
-    const appSecret = process.env.INSTAGRAM_APP_SECRET || process.env.FACEBOOK_APP_SECRET;
+    const appSecret = process.env.INSTAGRAM_CLIENT_SECRET;
     if (!appSecret) {
       console.error(`${logPrefix} App secret not found in environment variables.`);
       return new NextResponse('Internal Server Error', { status: 500 });

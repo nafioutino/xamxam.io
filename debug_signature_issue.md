@@ -19,7 +19,7 @@ La signature Instagram webhook est toujours incorrecte malgré l'utilisation de 
 
 ### 3. Configuration Vercel
 - Variables d'environnement mal configurées
-- `INSTAGRAM_APP_SECRET` vs `FACEBOOK_APP_SECRET`
+- `INSTAGRAM_CLIENT_SECRET` vs `FACEBOOK_APP_SECRET`
 
 ### 4. Webhook URL différente
 - Meta pourrait utiliser une signature différente selon l'URL du webhook
