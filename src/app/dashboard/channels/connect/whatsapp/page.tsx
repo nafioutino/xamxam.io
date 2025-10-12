@@ -168,12 +168,26 @@
 import { useEffect, useState, useRef, useCallback } from 'react'; // Importer useRef et useCallback
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '@/hooks/useAuth';
-import Image from 'next/image';
+import { ArrowLeft, MessageSquare, QrCode } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { shopService } from '@/services/shopService';
 
 const WHATSAPP_ENGINE_URL = process.env.NEXT_PUBLIC_WHATSAPP_ENGINE_URL || 'https://xamxam-whatsapp-engine.onrender.com:8000';
+
+// Sanitize QR code source (supports data URLs and http/https)
+const sanitizeQrSrc = (src?: string): string => {
+  if (!src) return '';
+  const s = String(src).trim();
+  if (!s) return '';
+  if (s.startsWith('data:image')) return s;
+  try {
+    const u = new URL(s);
+    return u.protocol.startsWith('http') ? s : '';
+  } catch {
+    return '';
+  }
+};
 
 export default function ConnectWhatsAppPage() {
   const { user } = useAuth();
@@ -287,12 +301,35 @@ export default function ConnectWhatsAppPage() {
   }, [shopId, finalizeConnection]);
 
   return (
-    <div>
-        <h1>Connecter votre compte WhatsApp</h1>
-        <p>{status}</p>
-        {qrCode && (
-            <Image src={qrCode} alt="QR Code WhatsApp" width={300} height={300} />
-        )}
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-xl mx-auto">
+        <div className="flex items-center gap-3 mb-6">
+          <button onClick={() => router.back()} className="p-2 rounded-lg hover:bg-gray-100">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <QrCode className="w-6 h-6 text-green-600" />
+            Connecter votre compte WhatsApp
+          </h1>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <p className="text-gray-700 mb-4">{status}</p>
+          {(() => {
+            const safe = sanitizeQrSrc(qrCode);
+            return safe ? (
+              <div className="flex flex-col items-center">
+                <img src={safe} alt="QR Code WhatsApp" width={300} height={300} className="rounded-lg border border-gray-200" loading="lazy" />
+                <p className="text-sm text-gray-500 mt-2">Scannez ce QR code avec WhatsApp sur votre téléphone.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center text-gray-500">
+                <QrCode className="w-16 h-16 text-gray-400" />
+                <p className="text-sm mt-2">En attente du QR code...</p>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
     </div>
   );
 }

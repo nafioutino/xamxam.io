@@ -4,9 +4,6 @@ import prisma from '@/lib/prisma';
 import { ChannelType } from '@/generated/prisma';
 import { FacebookPublishService } from '@/services/facebook/publishService';
 
-// Configuration pour les uploads de vidéos
-export const maxDuration = 300; // 5 minutes
-
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -38,27 +35,48 @@ export async function POST(request: NextRequest) {
 
     // Récupérer la boutique et le canal
     const shop = await prisma.shop.findUnique({
-      where: { ownerId: user.id },
-      include: {
-        channels: {
-          where: {
-            type: ChannelType.FACEBOOK_PAGE,
-            externalId: pageId,
-            isActive: true
-          }
-        }
-      }
+      where: { ownerId: user.id }
     });
 
-    if (!shop || shop.channels.length === 0) {
+    if (!shop) {
       return NextResponse.json(
-        { error: 'Canal Facebook non trouvé ou inactif' },
+        { error: 'Boutique non trouvée' },
         { status: 404 }
       );
     }
-
-    const channel = shop.channels[0];
     
+    // Récupérer le canal Facebook
+    const channel = await prisma.channel.findFirst({
+      where: {
+        shopId: shop.id,
+        type: ChannelType.FACEBOOK_PAGE
+      }
+    });
+    
+    // Si aucun canal n'est trouvé, retourner une erreur
+    if (!channel) {
+      return NextResponse.json(
+        { error: 'Aucun canal Facebook trouvé pour cette boutique. Veuillez d\'abord configurer un canal Facebook.' },
+        { status: 404 }
+      );
+    }
+    
+    // Vérifier si l'ID de page correspond
+    if (channel.externalId !== pageId) {
+      return NextResponse.json(
+        { error: `L'ID de page fourni (${pageId}) ne correspond pas à l'ID du canal Facebook configuré (${channel.externalId})` },
+        { status: 400 }
+      );
+    }
+    
+    // Vérifier si le canal est actif
+    if (!channel.isActive) {
+      return NextResponse.json(
+        { error: 'Le canal Facebook existe mais est inactif. Veuillez l\'activer dans les paramètres.' },
+        { status: 400 }
+      );
+    }
+
     // Préparer le token d'accès
     const pageAccessToken = FacebookPublishService.prepareAccessToken(channel.accessToken!);
 

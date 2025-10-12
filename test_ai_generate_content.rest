@@ -1,0 +1,60 @@
+### Test de génération de contenu IA - Basique
+POST http://localhost:3000/api/ai/generate-content
+Content-Type: application/json
+
+{
+  "productId": "07a9df90-8286-4161-9071-721bbc2f8934",
+  "tone": "professionnel",
+  "contentType": "description"
+}
+
+###
+
+### Test avec plus de paramètres
+POST http://localhost:3000/api/ai/generate-content
+Content-Type: application/json
+
+{
+  "productId": "07a9df90-8286-4161-9071-721bbc2f8934",
+  "tone": "décontracté",
+  "contentType": "post-social",
+  "platform": "facebook",
+  "length": "court"
+}
+
+###
+
+### Test génération de contenu marketing
+POST http://localhost:3000/api/ai/generate-content
+Content-Type: application/json
+
+{
+  "prompt": "Créer un post Facebook pour promouvoir des chaussures de sport",
+  "tone": "énergique",
+  "targetAudience": "jeunes adultes",
+  "includeHashtags": true
+}
+
+###
+
+### Test avec authentification (remplacer YOUR_TOKEN par un vrai token)
+POST http://localhost:3000/api/ai/generate-content
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN
+
+{
+  "productName": "Smartphone XYZ",
+  "features": ["écran OLED", "batterie longue durée", "appareil photo 108MP"],
+  "contentType": "description-produit",
+  "tone": "technique"
+}
+
+###
+
+### Test erreur - sans authentification
+POST http://localhost:3000/api/ai/generate-content
+Content-Type: application/json
+
+{
+  "test": "should fail without auth"
+}

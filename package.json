@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && next build",
+    "build": "next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "next lint"
   },
@@ -36,7 +37,6 @@
     "react-hook-form": "^7.62.0",
     "react-hot-toast": "^2.5.2",
     "socket.io-client": "^4.8.1",
-
     "zod": "^3.25.76"
   },
   "devDependencies": {

@@ -6,35 +6,28 @@ import Link from 'next/link';
 import { Toaster } from 'react-hot-toast';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { profileImages } from './profile-data';
-import {
-  HomeIcon,
-  ShoppingBagIcon,
-  ChatBubbleLeftRightIcon,
-  SparklesIcon,
-  DocumentTextIcon,
-  ChartBarIcon,
-  Cog6ToothIcon,
-  RadioIcon,
-} from '@heroicons/react/24/outline';
+// Icônes Heroicons pour la navigation remplacées par des icônes Lucide modernes
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/auth/AuthGuard';
+
+import { Home, Package, Share2, MessagesSquare, Bot, Wand2, ShoppingCart, BarChart3, Settings } from 'lucide-react';
 
 interface NavItem {
   name: string;
   href: string;
-  icon: React.ForwardRefExoticComponent<React.SVGProps<SVGSVGElement>>;
+  icon: React.ElementType;
 }
 
 const navigation: NavItem[] = [
-  { name: 'Tableau de bord', href: '/dashboard', icon: HomeIcon },
-  { name: 'Catalogue', href: '/dashboard/catalogue', icon: ShoppingBagIcon },
-  { name: 'Canaux', href: '/dashboard/channels', icon: RadioIcon },
-  { name: 'Boîte de réception', href: '/dashboard/inbox', icon: ChatBubbleLeftRightIcon },
-  { name: 'Agent IA', href: '/dashboard/ai-agent', icon: SparklesIcon },
-  { name: 'Création de contenu', href: '/dashboard/content', icon: DocumentTextIcon },
-  { name: 'Commandes', href: '/dashboard/orders', icon: ShoppingBagIcon },
-  { name: 'Statistiques', href: '/dashboard/analytics', icon: ChartBarIcon },
-  { name: 'Paramètres', href: '/dashboard/settings', icon: Cog6ToothIcon },
+  { name: 'Tableau de bord', href: '/dashboard', icon: Home },
+  { name: 'Catalogue', href: '/dashboard/catalogue', icon: Package },
+  { name: 'Canaux', href: '/dashboard/channels', icon: Share2 },
+  { name: 'Boîte de réception', href: '/dashboard/inbox', icon: MessagesSquare },
+  { name: 'Agent IA', href: '/dashboard/ai-agent', icon: Bot },
+  { name: 'Création de contenu', href: '/dashboard/content', icon: Wand2 },
+  { name: 'Commandes', href: '/dashboard/orders', icon: ShoppingCart },
+  { name: 'Statistiques', href: '/dashboard/analytics', icon: BarChart3 },
+  { name: 'Paramètres', href: '/dashboard/settings', icon: Settings },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -83,7 +76,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
               type="button"
-              className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white cursor-pointer"
               onClick={() => setSidebarOpen(false)}
             >
               <span className="sr-only">Fermer le menu</span>
@@ -130,12 +123,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {navigation.map((item) => {
                 const isActive = item.href === '/dashboard' 
                   ? pathname === '/dashboard'
-                  : pathname.startsWith(`${item.href}/`);
+                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`group flex items-center px-3 py-3 text-base font-medium rounded-md ${isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                    className={`group flex items-center px-3 py-3 text-base font-medium rounded-md cursor-pointer transition-colors ${isActive ? 'bg-blue-100 text-blue-600 border-r-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                   >
                     <item.icon
                       className={`mr-4 flex-shrink-0 h-6 w-6 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'}`}
@@ -236,15 +229,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {navigation.map((item) => {
                   const isActive = item.href === '/dashboard' 
                     ? pathname === '/dashboard'
-                    : pathname.startsWith(`${item.href}/`);
+                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
                   return (
                     <Link
                       key={item.name}
                       href={item.href}
-                      className={`group flex items-center px-3 py-3 text-base font-medium rounded-md ${isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                      className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer transition-colors ${isActive ? 'bg-blue-100 text-blue-600 border-r-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                       <item.icon
-                        className={`mr-3 flex-shrink-0 h-6 w-6 ${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-600'}`}
+                        className={`mr-3 flex-shrink-0 h-5 w-5 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'}`}
                         aria-hidden="true"
                       />
                       {item.name}
@@ -295,7 +288,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3">
           <button
             type="button"
-            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 cursor-pointer"
             onClick={() => setSidebarOpen(true)}
           >
             <span className="sr-only">Ouvrir le menu</span>

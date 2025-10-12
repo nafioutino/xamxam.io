@@ -4,15 +4,9 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useShop } from '@/hooks/useShop';
 import Link from 'next/link';
-import {
-  ShoppingBagIcon,
-  ChatBubbleLeftRightIcon,
-  SparklesIcon,
-  ChartBarIcon,
-  CurrencyDollarIcon,
-  UserGroupIcon,
-} from '@heroicons/react/24/outline';
+
 import ShopGuard from '@/components/auth/ShopGuard';
+import { ShoppingBag, MessagesSquare, Wand2, BarChart3, DollarSign, Users } from 'lucide-react';
 
 interface StatsCardProps {
   title: string;
@@ -20,10 +14,11 @@ interface StatsCardProps {
   icon: React.ReactNode;
   change?: string;
   positive?: boolean;
+  animationDelayClass?: string;
 }
 
-const StatsCard = ({ title, value, icon, change, positive }: StatsCardProps) => (
-  <div className="bg-white overflow-hidden shadow-lg rounded-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+const StatsCard = ({ title, value, icon, change, positive, animationDelayClass }: StatsCardProps) => (
+  <div className={`bg-white overflow-hidden shadow-lg rounded-lg border border-gray-100 hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 ${animationDelayClass ?? ''}`}>
     <div className="p-6">
       <div className="flex items-center">
         <div className="flex-shrink-0 bg-blue-50 rounded-md p-4 shadow-md">{icon}</div>
@@ -58,14 +53,15 @@ interface QuickActionProps {
   icon: React.ReactNode;
   href: string;
   color: string;
+  animationDelayClass?: string;
 }
 
-const QuickAction = ({ title, description, icon, href, color }: QuickActionProps) => (
+const QuickAction = ({ title, description, icon, href, color, animationDelayClass }: QuickActionProps) => (
   <Link
     href={href}
-    className={`relative rounded-lg border border-gray-300 bg-white px-6 py-6 shadow-md flex items-center space-x-4 hover:border-${color}-300 hover:shadow-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-${color}-500`}
+    className={`group relative rounded-lg border border-gray-300 bg-white px-6 py-6 shadow-md flex items-center space-x-4 hover:border-${color}-300 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-${color}-500 animate-in fade-in slide-in-from-bottom-2 ${animationDelayClass ?? ''}`}
   >
-    <div className={`flex-shrink-0 h-12 w-12 rounded-full bg-${color}-50 flex items-center justify-center shadow-sm`}>
+    <div className={`flex-shrink-0 h-12 w-12 rounded-full bg-${color}-50 flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-105`}>
       {icon}
     </div>
     <div className="flex-1 min-w-0">
@@ -133,30 +129,34 @@ function DashboardContent() {
             <StatsCard
               title="Chiffre d'affaires"
               value={stats.revenue}
-              icon={<CurrencyDollarIcon className="h-6 w-6 text-blue-600" />}
+              icon={<DollarSign className="h-6 w-6 text-blue-600" />}
               change="12%"
               positive={true}
+              animationDelayClass="animation-delay-100"
             />
             <StatsCard
               title="Commandes"
               value={stats.orders}
-              icon={<ShoppingBagIcon className="h-6 w-6 text-blue-600" />}
+              icon={<ShoppingBag className="h-6 w-6 text-blue-600" />}
               change="8%"
               positive={true}
+              animationDelayClass="animation-delay-200"
             />
             <StatsCard
               title="Clients"
               value={stats.customers}
-              icon={<UserGroupIcon className="h-6 w-6 text-blue-600" />}
+              icon={<Users className="h-6 w-6 text-blue-600" />}
               change="5%"
               positive={true}
+              animationDelayClass="animation-delay-300"
             />
             <StatsCard
               title="Taux de conversion"
               value={stats.conversionRate}
-              icon={<ChartBarIcon className="h-6 w-6 text-blue-600" />}
+              icon={<BarChart3 className="h-6 w-6 text-blue-600" />}
               change="2%"
               positive={false}
+              animationDelayClass="animation-delay-400"
             />
           </div>
 
@@ -165,23 +165,26 @@ function DashboardContent() {
             <QuickAction
               title="Ajouter un produit"
               description="Créez un nouveau produit dans votre catalogue"
-              icon={<ShoppingBagIcon className="h-6 w-6 text-blue-600" />}
+              icon={<ShoppingBag className="h-6 w-6 text-blue-600" />}
               href="/dashboard/catalogue/new"
               color="blue"
+              animationDelayClass="animation-delay-100"
             />
             <QuickAction
               title="Voir les messages"
               description="Consultez vos conversations récentes"
-              icon={<ChatBubbleLeftRightIcon className="h-6 w-6 text-indigo-600" />}
+              icon={<MessagesSquare className="h-6 w-6 text-indigo-600" />}
               href="/dashboard/inbox"
               color="indigo"
+              animationDelayClass="animation-delay-200"
             />
             <QuickAction
               title="Générer du contenu"
               description="Créez du contenu marketing avec l'IA"
-              icon={<SparklesIcon className="h-6 w-6 text-purple-600" />}
+              icon={<Wand2 className="h-6 w-6 text-purple-600" />}
               href="/dashboard/content"
               color="purple"
+              animationDelayClass="animation-delay-300"
             />
           </div>
 

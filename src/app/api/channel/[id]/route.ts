@@ -194,7 +194,7 @@ export async function DELETE(
       return NextResponse.json(
         { 
           error: 'Cannot delete channel with linked conversations',
-          linkedConversations: linkedConversations.map(conv => ({
+          linkedConversations: linkedConversations.map((conv: { id: string; platform: string }) => ({
             conversationId: conv.id,
             platform: conv.platform
           }))

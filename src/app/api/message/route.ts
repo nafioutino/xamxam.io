@@ -318,7 +318,7 @@ export async function PATCH(request: NextRequest) {
     });
     
     if (existingMessages.length !== ids.length) {
-      const foundIds = existingMessages.map(m => m.id);
+      const foundIds = existingMessages.map((m: { id: string; conversationId: string }) => m.id);
       const missingIds = ids.filter(id => !foundIds.includes(id));
       return NextResponse.json(
         { error: 'Some messages not found', missingIds },
@@ -454,12 +454,12 @@ export async function DELETE(request: NextRequest) {
     }
     
     // Check if any messages have replies
-    const messagesWithReplies = existingMessages.filter(m => m.replies.length > 0);
+    const messagesWithReplies = existingMessages.filter((m: { id: string; replies: { id: string }[] }) => m.replies.length > 0);
     if (messagesWithReplies.length > 0) {
       return NextResponse.json(
         { 
           error: 'Cannot delete messages that have replies',
-          messagesWithReplies: messagesWithReplies.map(m => m.id)
+          messagesWithReplies: messagesWithReplies.map((m: { id: string; replies: { id: string }[] }) => m.id)
         },
         { status: 400 }
       );
