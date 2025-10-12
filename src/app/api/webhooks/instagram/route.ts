@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
 
-  const verifyToken = process.env.INSTAGRAM_WEBHOOK_VERIFY_TOKEN || process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN;
+  const verifyToken = process.env.INSTAGRAM_WEBHOOK_VERIFY_TOKEN;
 
   if (mode === 'subscribe' && token === verifyToken) {
     console.log(`${logPrefix} Webhook verified successfully!`);
@@ -61,9 +61,9 @@ export async function POST(request: NextRequest) {
     rawBody = await request.text();
     
     // Test: Utiliser UNIQUEMENT FACEBOOK_APP_SECRET (Instagram utilise le même)
-    const appSecret = process.env.FACEBOOK_APP_SECRET;
+    const appSecret = process.env.INSTAGRAM_CLIENT_SECRET;
     if (!appSecret) {
-      console.error(`${logPrefix} FACEBOOK_APP_SECRET manquant.`);
+      console.error(`${logPrefix} INSTAGRAM_CLIENT_SECRET manquant.`);
       return new NextResponse('Server configuration error', { status: 500 });
     }
     
