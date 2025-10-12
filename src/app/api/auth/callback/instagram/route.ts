@@ -8,6 +8,7 @@ interface InstagramTokenResponse {
 
 interface InstagramUserResponse {
   id: string;
+  user_id?: string; // L'ID qui correspond au recipient_id dans les webhooks
   username: string;
   account_type: string;
   media_count: number;
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
     // Configuration Instagram
     const clientId = '792146549889933';
     const clientSecret = process.env.INSTAGRAM_CLIENT_SECRET;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://xamxam.io';
     const redirectUri = `${baseUrl}/api/auth/callback/instagram`;
 
     if (!clientSecret) {
@@ -128,7 +129,8 @@ export async function GET(request: NextRequest) {
     console.log('🔒 [INSTAGRAM AUTH] Ce token sera stocké et utilisé pour les publications');
 
     // Étape 3: Récupérer les informations du profil Instagram
-    const userInfoUrl = `https://graph.instagram.com/me?fields=id,username,account_type,media_count&access_token=${accessToken}`;
+    // IMPORTANT: Nous devons récupérer le user_id qui correspond au recipient_id dans les webhooks
+    const userInfoUrl = `https://graph.instagram.com/me?fields=id,user_id,username,account_type,media_count&access_token=${accessToken}`;
     
     const userResponse = await fetch(userInfoUrl);
     const userData: InstagramUserResponse | InstagramError = await userResponse.json();
@@ -165,8 +167,17 @@ export async function GET(request: NextRequest) {
     console.log('✅ [INSTAGRAM AUTH] Token stocké dans cookie: instagram_access_token');
 
     // Stocker les données utilisateur temporairement
-    response.cookies.set('instagram_user_data', JSON.stringify({
+    // IMPORTANT: Utiliser user_id (qui correspond au recipient_id des webhooks) au lieu de id
+    const webhookCompatibleId = userData.user_id || userData.id;
+    console.log('🔍 [INSTAGRAM AUTH] IDs récupérés:', {
       id: userData.id,
+      user_id: userData.user_id,
+      webhookCompatibleId,
+      username: userData.username
+    });
+    
+    response.cookies.set('instagram_user_data', JSON.stringify({
+      id: webhookCompatibleId, // Utiliser l'ID compatible avec les webhooks
       username: userData.username,
       account_type: userData.account_type,
       media_count: userData.media_count
