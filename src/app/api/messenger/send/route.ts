@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       hasToken: !!channel?.accessToken
     });
     
-    // --- PRÉPARER LE PAYLOAD POUR L'API META ---
+    // --- PRÉPARER LE PAYLOAD ET L'URL SELON LA PLATEFORME ---
     const recipientId = conversation.externalId;
     if (!recipientId) {
       return NextResponse.json({
@@ -97,61 +97,102 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const messagePayload: any = {
-      recipient: { id: recipientId },
-      messaging_type: "RESPONSE",
-      message: {}
-    };
+    const isInstagram = conversation.platform.toLowerCase() === 'instagram' || conversation.platform === ChannelType.INSTAGRAM_DM;
 
-    // Construire le message selon le type
-    switch (messageType) {
-      case 'TEXT':
-        messagePayload.message.text = message;
-        break;
-      case 'IMAGE':
-        if (!mediaUrl) {
-          return NextResponse.json({
-            success: false,
-            error: 'mediaUrl requis pour les images'
-          }, { status: 400 });
-        }
-        messagePayload.message.attachment = {
-          type: 'image',
-          payload: { 
-            url: mediaUrl,
-            is_reusable: true
+    let apiUrl: string;
+    let messagePayload: any;
+
+    if (isInstagram) {
+      // Utiliser Instagram Graph API: https://graph.instagram.com/v24.0/<IG_ID>/messages
+      apiUrl = `https://graph.instagram.com/v24.0/${channel.externalId}/messages`;
+
+      // Construire le payload selon la doc Instagram
+      messagePayload = {
+        recipient: { id: recipientId },
+        message: {}
+      };
+
+      switch (messageType) {
+        case 'TEXT':
+          messagePayload.message.text = message;
+          break;
+        case 'IMAGE':
+          if (!mediaUrl) {
+            return NextResponse.json({
+              success: false,
+              error: 'mediaUrl requis pour les images'
+            }, { status: 400 });
           }
-        };
-        break;
-      case 'FILE':
-        if (!mediaUrl) {
-          return NextResponse.json({
-            success: false,
-            error: 'mediaUrl requis pour les fichiers'
-          }, { status: 400 });
-        }
-        messagePayload.message.attachment = {
-          type: 'file',
-          payload: { 
-            url: mediaUrl,
-            is_reusable: true
+          messagePayload.message.attachment = {
+            type: 'image',
+            payload: { url: mediaUrl }
+          };
+          break;
+        case 'FILE':
+          if (!mediaUrl) {
+            return NextResponse.json({
+              success: false,
+              error: 'mediaUrl requis pour les fichiers'
+            }, { status: 400 });
           }
-        };
-        break;
-      default:
-        messagePayload.message.text = message;
+          // Support basique pour audio/vidéo via Instagram
+          const urlLower = mediaUrl.toLowerCase();
+          const isVideo = urlLower.endsWith('.mp4') || urlLower.includes('video');
+          const isAudio = urlLower.endsWith('.mp3') || urlLower.endsWith('.m4a') || urlLower.includes('audio');
+          if (!isVideo && !isAudio) {
+            return NextResponse.json({
+              success: false,
+              error: 'Instagram ne supporte que audio/vidéo pour FILE. Utilisez une image ou fournissez une URL audio/vidéo.'
+            }, { status: 400 });
+          }
+          messagePayload.message.attachment = {
+            type: isVideo ? 'video' : 'audio',
+            payload: { url: mediaUrl }
+          };
+          break;
+        default:
+          messagePayload.message.text = message;
+      }
+    } else {
+      // Facebook Messenger API
+      apiUrl = `https://graph.facebook.com/v23.0/me/messages`;
+      messagePayload = {
+        recipient: { id: recipientId },
+        messaging_type: 'RESPONSE',
+        message: {}
+      };
+      switch (messageType) {
+        case 'TEXT':
+          messagePayload.message.text = message;
+          break;
+        case 'IMAGE':
+          if (!mediaUrl) {
+            return NextResponse.json({
+              success: false,
+              error: 'mediaUrl requis pour les images'
+            }, { status: 400 });
+          }
+          messagePayload.message.attachment = {
+            type: 'image',
+            payload: { url: mediaUrl, is_reusable: true }
+          };
+          break;
+        case 'FILE':
+          if (!mediaUrl) {
+            return NextResponse.json({
+              success: false,
+              error: 'mediaUrl requis pour les fichiers'
+            }, { status: 400 });
+          }
+          messagePayload.message.attachment = {
+            type: 'file',
+            payload: { url: mediaUrl, is_reusable: true }
+          };
+          break;
+        default:
+          messagePayload.message.text = message;
+      }
     }
-
-    // Pour Instagram, ajouter des paramètres spécifiques si nécessaire
-    const platformLowerForCheck = conversation.platform.toLowerCase();
-    if (platformLowerForCheck === 'instagram' || conversation.platform === ChannelType.INSTAGRAM_DM) {
-      // Instagram Direct Messages peuvent nécessiter des paramètres supplémentaires
-      messagePayload.messaging_type = "RESPONSE";
-    }
-
-    // --- ENVOYER LE MESSAGE VIA L'API META ---
-    // Facebook Messenger et Instagram Direct Messages utilisent le même endpoint
-    const apiUrl = `https://graph.facebook.com/v23.0/me/messages`;
 
     // Déchiffrer le token d'accès avant utilisation
     let decryptedToken;
@@ -175,7 +216,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(messagePayload)
     });
 
-    const responseData = await response.json();
+    const responseData = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       console.error(`${logPrefix} Erreur API Meta:`, responseData);
@@ -212,7 +253,7 @@ export async function POST(request: NextRequest) {
         messageType: messageType as any,
         mediaUrl: mediaUrl,
         isFromCustomer: false,
-        externalId: responseData.message_id,
+        externalId: responseData.message_id || responseData.id || undefined,
         isRead: true // Les messages envoyés sont considérés comme lus
       }
     });
@@ -226,7 +267,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    console.log(`${logPrefix} Message envoyé avec succès. ID: ${responseData.message_id}`);
+    console.log(`${logPrefix} Message envoyé avec succès. ID: ${responseData.message_id || responseData.id || 'unknown'}`);
 
     return NextResponse.json({
       success: true,
