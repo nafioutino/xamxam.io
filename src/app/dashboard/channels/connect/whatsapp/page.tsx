@@ -56,11 +56,14 @@ export default function ConnectWhatsAppPage() {
         body: JSON.stringify({ shopId, action: 'create_instance' }),
       });
       
-      if (!createResponse.ok) {
-        throw new Error('Failed to create instance');
+      const createData = await createResponse.json();
+      
+      if (!createResponse.ok || !createData.success) {
+        const errorMsg = createData.error || 'Failed to create instance';
+        console.error('Instance creation failed:', createData);
+        throw new Error(errorMsg);
       }
       
-      const createData = await createResponse.json();
       const instanceId = createData.instanceName;
       setInstanceName(instanceId);
       
@@ -69,10 +72,19 @@ export default function ConnectWhatsAppPage() {
       // Étape 2: Obtenir le QR code
       await fetchQRCode(instanceId);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error starting connection:', error);
-      setStatus('Erreur lors de la création de l\'instance.');
-      toast.error('Erreur lors de la connexion WhatsApp.');
+      const errorMessage = error.message || 'Erreur inconnue';
+      setStatus(`Erreur: ${errorMessage}`);
+      
+      if (errorMessage.includes('timeout')) {
+        toast.error('Le serveur Evolution API ne répond pas. Vérifiez votre configuration.');
+      } else if (errorMessage.includes('not configured')) {
+        toast.error('Evolution API non configuré. Contactez l\'administrateur.');
+      } else {
+        toast.error(`Erreur: ${errorMessage}`);
+      }
+      
       setIsLoading(false);
     }
   };

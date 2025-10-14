@@ -353,5 +353,5 @@ npm uninstall socket.io-client
 ---
 
 **Version**: 1.0.0  
-**Date**: Janvier 2025  
+**Date**: Octobre 2025  
 **Auteur**: XAMXAM Team

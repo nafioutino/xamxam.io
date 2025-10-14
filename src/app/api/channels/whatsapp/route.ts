@@ -39,7 +39,43 @@ export async function POST(request: Request) {
       const instanceName = `shop_${shopId}`;
       const webhookUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/evolution`;
 
+      console.log('Creating Evolution instance:', {
+        instanceName,
+        webhookUrl,
+        evolutionApiUrl: process.env.EVOLUTION_API_URL,
+        evolutionApiKeySet: !!process.env.EVOLUTION_API_KEY,
+      });
+
+      // Vérifier les variables d'environnement
+      if (!process.env.EVOLUTION_API_URL || !process.env.EVOLUTION_API_KEY) {
+        console.error('Evolution API not configured:', {
+          urlSet: !!process.env.EVOLUTION_API_URL,
+          keySet: !!process.env.EVOLUTION_API_KEY,
+        });
+        return NextResponse.json(
+          { success: false, error: 'Evolution API not configured. Check environment variables.' },
+          { status: 500 }
+        );
+      }
+
       try {
+        // Vérifier si l'instance existe déjà
+        try {
+          const existingStatus = await evolutionApiService.getInstanceStatus(instanceName);
+          console.log('Instance already exists:', existingStatus);
+          
+          // L'instance existe déjà, retourner le nom
+          return NextResponse.json({
+            success: true,
+            instanceName,
+            message: 'Instance already exists',
+            existing: true,
+          });
+        } catch (statusError: any) {
+          // L'instance n'existe pas, on peut la créer
+          console.log('Instance does not exist, creating new one...');
+        }
+
         const instance = await evolutionApiService.createInstance({
           instanceName,
           integration: 'WHATSAPP-BAILEYS',

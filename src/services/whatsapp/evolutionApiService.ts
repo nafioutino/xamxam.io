@@ -17,6 +17,11 @@ class EvolutionApiService {
     this.apiUrl = process.env.EVOLUTION_API_URL || '';
     this.apiKey = process.env.EVOLUTION_API_KEY || '';
 
+    console.log('Evolution API Service initialized:', {
+      apiUrl: this.apiUrl ? `${this.apiUrl.substring(0, 30)}...` : 'NOT SET',
+      apiKeySet: !!this.apiKey,
+    });
+
     if (!this.apiUrl || !this.apiKey) {
       throw new Error('Evolution API URL and KEY must be configured in environment variables');
     }
@@ -27,12 +32,18 @@ class EvolutionApiService {
         'Content-Type': 'application/json',
         'apikey': this.apiKey,
       },
-      timeout: 30000,
+      timeout: 60000, // 60 secondes au lieu de 30
     });
   }
 
   async createInstance(data: CreateInstanceRequest): Promise<CreateInstanceResponse> {
     try {
+      console.log('Creating Evolution instance:', {
+        instanceName: data.instanceName,
+        integration: data.integration,
+        webhook: data.webhook,
+      });
+
       const response = await this.apiClient.post<CreateInstanceResponse>('/instance/create', {
         instanceName: data.instanceName,
         token: data.token,
@@ -55,9 +66,24 @@ class EvolutionApiService {
         read_status: data.read_status ?? false,
       });
 
+      console.log('Evolution instance created successfully:', response.data);
       return response.data;
-    } catch (error) {
-      console.error('Error creating Evolution API instance:', error);
+    } catch (error: any) {
+      console.error('Error creating Evolution API instance:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        url: error.config?.url,
+      });
+      
+      if (error.code === 'ECONNABORTED') {
+        throw new Error('Evolution API timeout - Le serveur met trop de temps à répondre');
+      }
+      
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      
       throw error;
     }
   }
