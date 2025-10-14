@@ -1,0 +1,63 @@
+// Script de test rapide pour Evolution API
+// Exécutez avec: node test-evolution.js
+
+const axios = require('axios');
+
+const EVOLUTION_API_URL = 'https://evolution-api-latest-k396.onrender.com';
+const EVOLUTION_API_KEY = 'bd7711f6500e08ef7b0a6c6b077493ca';
+
+async function testEvolutionAPI() {
+  console.log('🔍 Test de connexion à Evolution API...\n');
+
+  // Test 1: Vérifier que l'API répond
+  try {
+    console.log('1️⃣ Test de connexion basique...');
+    const response = await axios.get(`${EVOLUTION_API_URL}/`, {
+      headers: {
+        'apikey': EVOLUTION_API_KEY,
+      },
+      timeout: 10000,
+    });
+    console.log('✅ API accessible, statut:', response.status);
+    console.log('📦 Réponse:', response.data);
+  } catch (error) {
+    console.error('❌ Erreur de connexion:', error.message);
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      console.error('Data:', error.response.data);
+    }
+    return;
+  }
+
+  // Test 2: Créer une instance test
+  try {
+    console.log('\n2️⃣ Création d\'une instance test...');
+    const createResponse = await axios.post(
+      `${EVOLUTION_API_URL}/instance/create`,
+      {
+        instanceName: 'test_instance_' + Date.now(),
+        integration: 'WHATSAPP-BAILEYS',
+        qrcode: true,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': EVOLUTION_API_KEY,
+        },
+        timeout: 60000,
+      }
+    );
+    console.log('✅ Instance créée avec succès!');
+    console.log('📦 Réponse:', JSON.stringify(createResponse.data, null, 2));
+  } catch (error) {
+    console.error('❌ Erreur lors de la création:', error.message);
+    if (error.response) {
+      console.error('Status:', error.response.status);
+      console.error('Status Text:', error.response.statusText);
+      console.error('Data:', JSON.stringify(error.response.data, null, 2));
+      console.error('Headers:', error.response.headers);
+    }
+  }
+}
+
+testEvolutionAPI();

@@ -76,24 +76,16 @@ export async function POST(request: Request) {
           console.log('Instance does not exist, creating new one...');
         }
 
-        const instance = await evolutionApiService.createInstance({
+        // Configuration minimale pour éviter les erreurs 400
+        const instanceConfig = {
           instanceName,
-          integration: 'WHATSAPP-BAILEYS',
+          integration: 'WHATSAPP-BAILEYS' as const,
           qrcode: true,
-          webhook: webhookUrl,
-          webhook_by_events: false,
-          events: [
-            'QRCODE_UPDATED',
-            'MESSAGES_UPSERT',
-            'MESSAGES_UPDATE',
-            'CONNECTION_UPDATE',
-            'SEND_MESSAGE',
-          ],
-          groups_ignore: true,
-          always_online: false,
-          read_messages: false,
-          read_status: false,
-        });
+        };
+        
+        console.log('Instance config to send:', instanceConfig);
+
+        const instance = await evolutionApiService.createInstance(instanceConfig);
 
         console.log('Evolution instance created:', instance);
 

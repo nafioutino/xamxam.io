@@ -69,19 +69,33 @@ class EvolutionApiService {
       console.log('Evolution instance created successfully:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('Error creating Evolution API instance:', {
+      // Log détaillé de l'erreur
+      console.error('Error creating Evolution API instance:', error);
+      console.error('Error details:', {
         message: error.message,
-        response: error.response?.data,
         status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers,
         url: error.config?.url,
+        method: error.config?.method,
+        requestData: error.config?.data,
       });
       
       if (error.code === 'ECONNABORTED') {
         throw new Error('Evolution API timeout - Le serveur met trop de temps à répondre');
       }
       
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
+      // Extraire le message d'erreur d'Evolution API
+      const evolutionError = error.response?.data?.message || 
+                            error.response?.data?.error || 
+                            error.response?.data;
+      
+      if (evolutionError) {
+        const errorMsg = typeof evolutionError === 'string' 
+          ? evolutionError 
+          : JSON.stringify(evolutionError);
+        throw new Error(`Evolution API Error: ${errorMsg}`);
       }
       
       throw error;
