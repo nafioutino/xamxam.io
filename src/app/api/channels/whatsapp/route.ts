@@ -64,19 +64,26 @@ export async function POST(request: Request) {
         // Vérifier si l'instance existe déjà
         try {
           const existingStatus = await evolutionApiService.getInstanceStatus(instanceName);
-          console.log('✅ Instance already exists:', existingStatus);
+          console.log('⚠️  Instance already exists:', existingStatus);
           
-          // L'instance existe déjà, retourner le nom
-          return NextResponse.json({
-            success: true,
-            instanceName,
-            message: 'Instance already exists',
-            existing: true,
-          });
+          // Si l'instance existe mais n'est pas connectée, la supprimer pour en créer une nouvelle
+          if (existingStatus.instance.state !== 'open') {
+            console.log('🗑️  Deleting existing disconnected instance...');
+            await evolutionApiService.deleteInstance(instanceName);
+            console.log('✅ Old instance deleted');
+          } else {
+            // L'instance est déjà connectée
+            console.log('✅ Instance already connected');
+            return NextResponse.json({
+              success: true,
+              instanceName,
+              message: 'Instance already connected',
+              existing: true,
+            });
+          }
         } catch (statusError: any) {
-          // L'instance n'existe pas, on doit la créer
+          // L'instance n'existe pas, on peut la créer
           console.log('❌ Instance does not exist (404), creating new one...');
-          console.log('Status error:', statusError.response?.status);
         }
 
         // Configuration minimale pour éviter les erreurs 400
