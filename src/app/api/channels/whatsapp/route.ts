@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         // Vérifier si l'instance existe déjà
         try {
           const existingStatus = await evolutionApiService.getInstanceStatus(instanceName);
-          console.log('Instance already exists:', existingStatus);
+          console.log('✅ Instance already exists:', existingStatus);
           
           // L'instance existe déjà, retourner le nom
           return NextResponse.json({
@@ -74,8 +74,9 @@ export async function POST(request: Request) {
             existing: true,
           });
         } catch (statusError: any) {
-          // L'instance n'existe pas, on peut la créer
-          console.log('Instance does not exist, creating new one...');
+          // L'instance n'existe pas, on doit la créer
+          console.log('❌ Instance does not exist (404), creating new one...');
+          console.log('Status error:', statusError.response?.status);
         }
 
         // Configuration minimale pour éviter les erreurs 400
@@ -85,11 +86,11 @@ export async function POST(request: Request) {
           qrcode: true,
         };
         
-        console.log('Instance config to send:', instanceConfig);
+        console.log('📤 Creating instance with config:', instanceConfig);
 
         const instance = await evolutionApiService.createInstance(instanceConfig);
 
-        console.log('Evolution instance created:', instance);
+        console.log('✅ Evolution instance created successfully:', instance);
 
         // Créer ou mettre à jour le canal dans la DB
         const existingChannel = await prisma.channel.findFirst({
@@ -142,9 +143,20 @@ export async function POST(request: Request) {
       
       try {
         const qrData = await evolutionApiService.connectInstance(instanceName);
+        
+        console.log('QR Data from Evolution API:', qrData);
+        
+        // Evolution API retourne { code, pairingCode, base64 }
+        // On utilise base64 si disponible, sinon code
+        const qrCodeValue = qrData.base64 || qrData.code;
+        
+        if (!qrCodeValue) {
+          throw new Error('No QR code available from Evolution API');
+        }
+        
         return NextResponse.json({
           success: true,
-          qrcode: qrData.code,
+          qrcode: qrCodeValue,
           pairingCode: qrData.pairingCode,
         });
       } catch (error: any) {

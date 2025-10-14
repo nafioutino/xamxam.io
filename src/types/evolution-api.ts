@@ -45,9 +45,10 @@ export interface CreateInstanceResponse {
 }
 
 export interface ConnectInstanceResponse {
-  pairingCode?: string;
-  code: string; // QR code en base64
-  count: number;
+  pairingCode?: string | null;
+  code: string; // QR code text
+  base64?: string; // QR code en base64 (data:image/png;base64,...)
+  count?: number;
 }
 
 export interface SendTextMessageRequest {

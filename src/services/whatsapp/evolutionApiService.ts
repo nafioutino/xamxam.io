@@ -32,7 +32,8 @@ class EvolutionApiService {
         'Content-Type': 'application/json',
         'apikey': this.apiKey,
       },
-      timeout: 60000, // 60 secondes au lieu de 30
+      timeout: 60000, // 60 secondes
+      validateStatus: (status) => status < 500, // Ne pas throw sur 4xx pour mieux gérer les erreurs
     });
   }
 
@@ -42,6 +43,8 @@ class EvolutionApiService {
         instanceName: data.instanceName,
         integration: data.integration,
         webhook: data.webhook,
+        apiUrl: this.apiUrl,
+        apiKeyLength: this.apiKey?.length,
       });
 
       const response = await this.apiClient.post<CreateInstanceResponse>('/instance/create', {
@@ -65,6 +68,14 @@ class EvolutionApiService {
         read_messages: data.read_messages ?? false,
         read_status: data.read_status ?? false,
       });
+
+      // Vérifier si la réponse est une erreur 401
+      if (response.status === 401) {
+        console.error('❌ Evolution API Authentication Failed!');
+        console.error('API Key used (first 10 chars):', this.apiKey?.substring(0, 10) + '...');
+        console.error('Response:', response.data);
+        throw new Error('Evolution API Authentication Failed - Vérifiez votre EVOLUTION_API_KEY');
+      }
 
       console.log('Evolution instance created successfully:', response.data);
       return response.data;
@@ -107,6 +118,12 @@ class EvolutionApiService {
       const response = await this.apiClient.get<ConnectInstanceResponse>(
         `/instance/connect/${instanceName}`
       );
+      
+      // Vérifier si c'est une erreur 404
+      if (response.status === 404) {
+        throw new Error('Instance not found - Please create the instance first');
+      }
+      
       return response.data;
     } catch (error) {
       console.error('Error connecting to instance:', error);
@@ -119,6 +136,12 @@ class EvolutionApiService {
       const response = await this.apiClient.get<InstanceStatusResponse>(
         `/instance/connectionState/${instanceName}`
       );
+      
+      // Vérifier si c'est une erreur 404
+      if (response.status === 404) {
+        throw new Error('Instance not found');
+      }
+      
       return response.data;
     } catch (error) {
       console.error('Error fetching instance status:', error);

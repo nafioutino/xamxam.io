@@ -3,8 +3,8 @@
 
 const axios = require('axios');
 
-const EVOLUTION_API_URL = 'https://evolution-api-latest-k396.onrender.com';
-const EVOLUTION_API_KEY = 'bd7711f6500e08ef7b0a6c6b077493ca';
+const EVOLUTION_API_URL = 'http://xamxam-evolution-evolution-api.usjniw.easypanel.host';
+const EVOLUTION_API_KEY = '429683C4C977415CAAFCCE10F7D57E11';
 
 async function testEvolutionAPI() {
   console.log('🔍 Test de connexion à Evolution API...\n');

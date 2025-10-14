@@ -108,6 +108,13 @@ export default function ConnectWhatsAppPage() {
       
       const qrData = await qrResponse.json();
       
+      console.log('QR Data received:', qrData);
+      
+      // Vérifier que le QR code existe
+      if (!qrData.success || !qrData.qrcode) {
+        throw new Error('QR code not available in response');
+      }
+      
       // Le QR code est en base64 avec le préfixe data:image/png;base64,
       const qrCodeBase64 = qrData.qrcode.startsWith('data:') 
         ? qrData.qrcode 
