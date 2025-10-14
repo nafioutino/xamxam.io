@@ -10,8 +10,10 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return new NextResponse('Unauthorized', { status: 401 });
 
-    const { shopId, action } = await request.json();
-    console.log('WhatsApp API - Request data:', { shopId, action, userId: user.id });
+    // Lire TOUS les paramètres en une seule fois (le body ne peut être lu qu'une fois)
+    const body = await request.json();
+    const { shopId, action, instanceName } = body;
+    console.log('WhatsApp API - Request data:', { shopId, action, instanceName, userId: user.id });
 
     // Vérifier que l'utilisateur est bien le propriétaire du shopId
     const shop = await prisma.shop.findUnique({
@@ -131,7 +133,12 @@ export async function POST(request: Request) {
     }
 
     if (action === 'get_qrcode') {
-      const { instanceName } = await request.json();
+      if (!instanceName) {
+        return NextResponse.json(
+          { success: false, error: 'instanceName is required' },
+          { status: 400 }
+        );
+      }
       
       try {
         const qrData = await evolutionApiService.connectInstance(instanceName);
@@ -150,7 +157,12 @@ export async function POST(request: Request) {
     }
 
     if (action === 'check_status') {
-      const { instanceName } = await request.json();
+      if (!instanceName) {
+        return NextResponse.json(
+          { success: false, error: 'instanceName is required' },
+          { status: 400 }
+        );
+      }
       
       try {
         const status = await evolutionApiService.getInstanceStatus(instanceName);
