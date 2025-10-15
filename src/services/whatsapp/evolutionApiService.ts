@@ -165,23 +165,32 @@ class EvolutionApiService {
     }
   }
 
-  async sendImageMessage(
+  async sendMediaMessage(
     instanceName: string,
-    data: { number: string; image: string; caption?: string }
+    data: {
+      number: string;
+      mediaType: 'image' | 'video' | 'audio' | 'document';
+      media: string; // URL ou base64
+      caption?: string;
+      fileName?: string;
+    }
   ): Promise<SendMessageResponse> {
     try {
       const response = await this.apiClient.post<SendMessageResponse>(
         `/message/sendMedia/${instanceName}`,
         {
           number: data.number,
-          mediatype: 'image',
-          media: data.image,
-          caption: data.caption,
+          mediaMessage: {
+            mediaType: data.mediaType,
+            media: data.media,
+            caption: data.caption,
+            fileName: data.fileName,
+          },
         }
       );
       return response.data;
     } catch (error) {
-      console.error('Error sending image message:', error);
+      console.error('Error sending media message:', error);
       throw error;
     }
   }
