@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
     // Lire TOUS les paramètres en une seule fois (le body ne peut être lu qu'une fois)
     const body = await request.json();
-    const { shopId, action, instanceName, message } = body;
+    const { shopId, action, instanceName } = body;
     console.log('WhatsApp API - Request data:', { shopId, action, instanceName, userId: user.id });
 
     // Vérifier que l'utilisateur est bien le propriétaire du shopId
@@ -36,10 +36,8 @@ export async function POST(request: Request) {
 
     console.log('WhatsApp API - Ownership verified successfully');
 
-    // ============================================
-    // ACTION: create_instance
-    // ============================================
     if (action === 'create_instance') {
+      // Créer une instance Evolution API
       const instanceName = `shop_${shopId}`;
       const webhookUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/evolution`;
 
@@ -88,19 +86,11 @@ export async function POST(request: Request) {
           console.log('❌ Instance does not exist (404), creating new one...');
         }
 
-        // Configuration avec webhook
+        // Configuration minimale pour éviter les erreurs 400
         const instanceConfig = {
           instanceName,
           integration: 'WHATSAPP-BAILEYS' as const,
           qrcode: true,
-          webhook: webhookUrl,
-          webhook_by_events: true,
-          events: [
-            'MESSAGES_UPSERT',
-            'MESSAGES_UPDATE',
-            'CONNECTION_UPDATE',
-            'QRCODE_UPDATED'
-          ] as const,
         };
         
         console.log('📤 Creating instance with config:', instanceConfig);
@@ -150,9 +140,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // ============================================
-    // ACTION: get_qrcode
-    // ============================================
     if (action === 'get_qrcode') {
       if (!instanceName) {
         return NextResponse.json(
@@ -188,9 +175,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // ============================================
-    // ACTION: check_status
-    // ============================================
     if (action === 'check_status') {
       if (!instanceName) {
         return NextResponse.json(
@@ -208,46 +192,6 @@ export async function POST(request: Request) {
         });
       } catch (error: any) {
         console.error('Error checking status:', error);
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 500 }
-        );
-      }
-    }
-
-    // ============================================
-    // ACTION: send_message
-    // ============================================
-    if (action === 'send_message') {
-      if (!instanceName) {
-        return NextResponse.json(
-          { success: false, error: 'instanceName is required' },
-          { status: 400 }
-        );
-      }
-
-      if (!message || !message.to || !message.text) {
-        return NextResponse.json(
-          { success: false, error: 'message.to and message.text are required' },
-          { status: 400 }
-        );
-      }
-
-      try {
-        const result = await evolutionApiService.sendTextMessage(instanceName, {
-          number: message.to,
-          text: message.text,
-        });
-
-        console.log('✅ Message sent successfully:', result);
-
-        return NextResponse.json({
-          success: true,
-          messageId: result.key.id,
-          status: result.status,
-        });
-      } catch (error: any) {
-        console.error('Error sending message:', error);
         return NextResponse.json(
           { success: false, error: error.message },
           { status: 500 }
