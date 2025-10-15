@@ -11,9 +11,8 @@ declare global {
 const prisma =
   global.prisma ||
   new PrismaClient({
-    // === AJOUT CRUCIAL POUR LE DÉBOGAGE ===
-    // On demande à Prisma de logger toutes ses opérations dans la console.
-    log: ['query', 'info', 'warn', 'error'],
+    // Garder uniquement les logs d'erreur pour éviter de polluer la console
+    log: ['error'],
     // === OPTIMISATION DU POOL DE CONNEXIONS ===
     datasources: {
       db: {
