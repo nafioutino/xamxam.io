@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     if (isWhatsApp) {
       console.info('📤 Envoi de message WhatsApp via Evolution API');
       
-      const phoneNumber = conversation.customer.phone;
+      const phoneNumber = conversation.customer?.phone;
       if (!phoneNumber) {
         return NextResponse.json({
           success: false,
