@@ -63,10 +63,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Afficher le loader si en transition ou en chargement
   if (isTransitioning || isLoading) {
-    return <LoadingTransition message="Chargement du dashboard" />;
+    // Si l'utilisateur n'est plus authentifié, c'est une déconnexion
+    const message = !isAuthenticated ? "Déconnexion en cours" : "Chargement du dashboard";
+    return <LoadingTransition message={message} />;
   }
 
   const handleLogout = async () => {
+    // La transition sera gérée automatiquement par useAuth
     await logout();
   };
 

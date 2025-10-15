@@ -57,10 +57,13 @@ export function useAuth() {
         
         // Gestion automatique de la redirection après déconnexion
         if (event === 'SIGNED_OUT') {
+          // Activer l'état de transition
+          setIsTransitioning(true);
           // Attendre que l'état soit mis à jour avant de rediriger
           setTimeout(() => {
             router.push('/auth/login');
             router.refresh();
+            // isTransitioning sera désactivé par UnauthGuard quand la page login sera prête
           }, 100);
         }
       }
@@ -269,6 +272,8 @@ export function useAuth() {
       if (error) throw error;
       
       toast.success('Déconnexion réussie');
+      // Activer l'état de transition pour la déconnexion
+      setIsTransitioning(true);
       // La redirection sera gérée automatiquement par onAuthStateChange
       return true;
     } catch (error: unknown) {
