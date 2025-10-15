@@ -6,8 +6,12 @@ export async function POST(request: Request) {
   try {
     const payload: any = await request.json();
     
-    // Log de réception du webhook (console.info visible sur Vercel)
-    console.info(`🔔 Webhook Evolution reçu: ${payload.event}`);
+    // Log de réception du webhook avec payload complet pour debug
+    console.info('🔔 Webhook Evolution reçu:', JSON.stringify({
+      event: payload.event,
+      instance: payload.instance,
+      data: payload.data
+    }, null, 2));
 
     switch (payload.event) {
       case 'qrcode.updated':
@@ -85,13 +89,13 @@ async function handleMessageUpsert(payload: any) {
   const { instance, data } = payload;
 
   // Log du message entrant (console.info pour visibilité sur Vercel)
-  console.info('📩 Message WhatsApp reçu:', {
-    de: data.key.remoteJid,
+  console.info('📩 MESSAGE WHATSAPP REÇU:', JSON.stringify({
+    de: data.key?.remoteJid,
     type: data.messageType,
-    texte: data.message.conversation || data.message.extendedTextMessage?.text || `[${data.messageType}]`,
+    texte: data.message?.conversation || data.message?.extendedTextMessage?.text || `[${data.messageType}]`,
     timestamp: new Date(data.messageTimestamp * 1000).toLocaleString('fr-FR'),
     instance,
-  });
+  }, null, 2));
 
   // Trouver le canal WhatsApp
   const channel = await prisma.channel.findFirst({

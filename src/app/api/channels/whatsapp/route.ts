@@ -79,7 +79,7 @@ export async function POST(request: Request) {
           qrcode: true,
           webhook: {
             url: webhookUrl,
-            byEvents: true,
+            byEvents: false, // Tous les événements vont à la même URL
             base64: true,
             events: [
               'MESSAGES_UPSERT',
