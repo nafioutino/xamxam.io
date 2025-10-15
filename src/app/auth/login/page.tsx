@@ -125,7 +125,7 @@ const Button = ({
 
   return (
     <button
-      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className} cursor-pointer disabled:cursor-not-allowed`}
       disabled={loading}
       {...props}
     >
@@ -183,14 +183,11 @@ const AuthMethodToggle = ({ authMethod, setAuthMethod, loading, setStep }: any) 
           if (method === 'phone') setStep('phone');
         }}
         disabled={loading}
-        className={`
-          flex-1 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-300
-          flex items-center justify-center
-          ${authMethod === method 
-            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-md transform scale-[1.02]' 
-            : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50/50 dark:hover:bg-gray-750/50'
-          }
-        `}
+        className={`flex-1 flex items-center justify-center py-3 px-4 text-sm font-medium rounded-lg transition-all duration-300 transform cursor-pointer ${
+          authMethod === method
+            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-lg scale-105 border border-blue-200 dark:border-blue-800'
+            : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/50 dark:hover:bg-gray-700/50'
+        } ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
       >
         {method === 'phone' ? (
           <Smartphone className="w-4 h-4 mr-2" />
@@ -297,7 +294,7 @@ export default function LoginPage() {
 
   return (
     <UnauthGuard>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-4 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Fond avec gradient et formes */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-indigo-950/20 dark:to-purple-950/10 z-0 overflow-hidden">
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -305,27 +302,27 @@ export default function LoginPage() {
         </div>
         
         {/* Container principal responsive */}
-        <div className={`w-full max-w-6xl transition-all duration-700 transform ${isPageLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <div className="flex flex-col lg:flex-row rounded-3xl shadow-2xl overflow-hidden">
+        <div className={`w-full max-w-5xl h-full max-h-[95vh] transition-all duration-700 transform ${isPageLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+          <div className="flex flex-col lg:flex-row rounded-3xl shadow-2xl overflow-hidden h-full">
             {/* Colonne de gauche (image/branding) - visible uniquement sur desktop */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 p-12 flex-col justify-between relative overflow-hidden">
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 p-8 flex-col justify-between relative overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full filter blur-3xl animate-blob"></div>
                 <div className="absolute bottom-10 right-10 w-64 h-64 bg-white rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
               </div>
               
               <div className="relative z-10">
-                <div className="text-white text-4xl font-bold mb-6">XAMXAM</div>
-                <h2 className="text-white text-3xl font-bold mb-6">Gérez votre commerce en toute simplicité</h2>
-                <p className="text-blue-100 text-xl mb-8">La plateforme tout-en-un pour développer votre business via WhatsApp et autres canaux de messagerie.</p>
+                <div className="text-white text-3xl font-bold mb-4">XAMXAM</div>
+                <h2 className="text-white text-2xl font-bold mb-4">Gérez votre commerce en toute simplicité</h2>
+                <p className="text-blue-100 text-lg mb-6">La plateforme tout-en-un pour développer votre business via WhatsApp et autres canaux de messagerie.</p>
                 
                 {/* Image SVG sécurisée */}
-                <div className="flex justify-center items-center my-8">
+                <div className="flex justify-center items-center my-6">
                   <Image 
                     src="/auth/secure-login.svg" 
                     alt="Connexion sécurisée" 
-                    width={300} 
-                    height={300} 
+                    width={240} 
+                    height={240} 
                     className="max-w-full h-auto animate-float"
                     priority
                   />
@@ -333,7 +330,7 @@ export default function LoginPage() {
               </div>
               
               <div className="relative z-10 mt-auto">
-                <div className="flex items-center space-x-4 mb-8">
+                <div className="flex items-center space-x-4 mb-4">
                   <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -360,11 +357,11 @@ export default function LoginPage() {
             </div>
             
             {/* Colonne de droite (formulaire) */}
-            <div className="w-full lg:w-1/2 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl p-8 lg:p-12">
+            <div className="w-full lg:w-1/2 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl p-6 lg:p-8 overflow-y-auto">
               {/* Carte principale avec animation */}
               <div className={`transition-all duration-500 transform ${isPageLoaded ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'}`}>
             {/* En-tête */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <div className="relative mx-auto w-20 h-20 mb-4 group">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl blur-lg opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-lg">
@@ -376,7 +373,7 @@ export default function LoginPage() {
               <h1 className="mt-4 text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 XAMXAM
               </h1>
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-4 mb-1">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-3 mb-1">
                 Bienvenue
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -535,7 +532,7 @@ export default function LoginPage() {
                   </label>
                   <Link 
                     href="/auth/forgot-password"
-                    className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 group transition-all duration-200 hover:translate-x-1"
+                    className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 group transition-all duration-200 hover:translate-x-1 cursor-pointer"
                   >
                     <KeyRound className="w-4 h-4 group-hover:animate-pulse" />
                     Mot de passe oublié ?
@@ -556,101 +553,53 @@ export default function LoginPage() {
                 </div>
 
                 <div className="text-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Pas encore de compte ?
-                  </p>
-                  <div className="relative inline-block overflow-hidden group">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Pas encore de compte ?{' '}
                     <Link 
                       href="/auth/register"
-                      className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all duration-300 group-hover:scale-105 group"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors hover:underline cursor-pointer"
                     >
-                      <UserPlus className="w-4 h-4 mr-2 group-hover:animate-pulse" />
-                      Créer un compte
+                      Inscrivez-vous
                     </Link>
-                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none" />
-                  </div>
+                  </p>
                 </div>
               </form>
             )}
 
-            {/* Connexion sociale */}
-            <div className="mt-8">
-              <div className="relative flex items-center justify-center mb-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200 dark:border-gray-700" />
-                </div>
-                <span className="px-4 text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900">
-                  Ou continuer avec
-                </span>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="relative overflow-hidden group">
-                  <SocialButton
-                    provider="google"
-                    onClick={handleSocialLogin}
-                    loading={loading}
-                    icon={
-                      <svg className="w-5 h-5" viewBox="0 0 24 24">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                      </svg>
-                    }
-                    className="transform transition-all duration-300 group-hover:scale-[1.02]"
-                  />
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none" />
-                </div>
-                
-                <div className="relative overflow-hidden group">
-                  <SocialButton
-                    provider="facebook"
-                    onClick={handleSocialLogin}
-                    loading={loading}
-                    icon={
-                      <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                      </svg>
-                    }
-                    className="transform transition-all duration-300 group-hover:scale-[1.02]"
-                  />
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none" />
-                </div>
+            {/* Connexion avec d'autres comptes */}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Ou connectez-vous avec
+              </p>
+              <div className="flex justify-center space-x-4">
+                <button 
+                  onClick={() => handleSocialLogin('google')}
+                  disabled={loading}
+                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:border-gray-400 hover:shadow-sm"
+                >
+                  <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                </button>
+                <button 
+                  onClick={() => handleSocialLogin('facebook')}
+                  disabled={loading}
+                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:border-gray-400 hover:shadow-sm"
+                >
+                  <Facebook className="w-5 h-5 text-[#1877F2]" />
+                </button>
               </div>
             </div>
 
-            {/* Info démo avec animation */}
-            <div className={`mt-8 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-yellow-200 dark:border-yellow-800/30 rounded-xl text-center shadow-inner transform hover:scale-105 transition-all duration-500 ${isPageLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-              <div className="text-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-400/5 via-yellow-400/10 to-amber-400/5 animate-pulse opacity-70 pointer-events-none"></div>
-                <div className="flex items-center justify-center mb-2">
-                  <KeyRound className="w-5 h-5 mr-2 text-amber-600 dark:text-amber-400 animate-float" />
-                  <span className="text-sm font-semibold text-amber-800 dark:text-amber-200 bg-clip-text text-transparent bg-gradient-to-r from-amber-700 to-yellow-600 dark:from-amber-400 dark:to-yellow-300">
-                    Mode Démo
-                  </span>
-                </div>
-                <p className="text-xs text-amber-700 dark:text-amber-300 mb-3">
-                  Utilisez ces identifiants pour tester l'application :
-                </p>
-                <div className="mt-2 text-xs space-y-2">
-                  <div className="bg-amber-100/50 dark:bg-amber-900/30 p-2 rounded-lg border border-amber-200/50 dark:border-amber-700/30 shadow-sm">
-                    <span className="font-medium text-amber-800 dark:text-amber-200">Email:</span>{' '}
-                    <code className="bg-white/70 dark:bg-black/30 px-2 py-1 rounded-md ml-1 font-mono">demo@xamxam.com</code>
-                  </div>
-                  <div className="bg-amber-100/50 dark:bg-amber-900/30 p-2 rounded-lg border border-amber-200/50 dark:border-amber-700/30 shadow-sm">
-                    <span className="font-medium text-amber-800 dark:text-amber-200">Mot de passe:</span>{' '}
-                    <code className="bg-white/70 dark:bg-black/30 px-2 py-1 rounded-md ml-1 font-mono">password123</code>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Lien vers la page d'inscription - visible uniquement sur mobile */}
-            <div className="mt-6 text-center lg:hidden">
+            {/* Lien vers la page d'inscription */}
+            <div className="mt-6 text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Vous n'avez pas de compte ?{' '}
-                <Link href="/auth/register" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors">
+                <Link href="/auth/register" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors cursor-pointer">
                   Inscrivez-vous
                 </Link>
               </p>
