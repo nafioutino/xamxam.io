@@ -14,6 +14,12 @@ const prisma =
     // === AJOUT CRUCIAL POUR LE DÉBOGAGE ===
     // On demande à Prisma de logger toutes ses opérations dans la console.
     log: ['query', 'info', 'warn', 'error'],
+    // === OPTIMISATION DU POOL DE CONNEXIONS ===
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
   });
 
 if (process.env.NODE_ENV !== 'production') {

@@ -49,18 +49,21 @@ export function useAuth() {
             setTimeout(() => {
               router.push('/dashboard');
               router.refresh();
-              // Désactiver l'état de transition après la redirection
-              setTimeout(() => setIsTransitioning(false), 1000);
+              // Ne pas désactiver isTransitioning ici
+              // Il sera désactivé par le dashboard quand il sera prêt
             }, 100);
           }
         }
         
         // Gestion automatique de la redirection après déconnexion
         if (event === 'SIGNED_OUT') {
+          // Activer l'état de transition
+          setIsTransitioning(true);
           // Attendre que l'état soit mis à jour avant de rediriger
           setTimeout(() => {
             router.push('/auth/login');
             router.refresh();
+            // isTransitioning sera désactivé par UnauthGuard quand la page login sera prête
           }, 100);
         }
       }
@@ -130,6 +133,9 @@ export function useAuth() {
         toast.success('Connexion réussie!');
       }
       
+      // Activer l'état de transition
+      setIsTransitioning(true);
+      
       // Rediriger vers le dashboard
       setTimeout(() => {
         router.push('/dashboard');
@@ -164,6 +170,7 @@ export function useAuth() {
         // Activer l'état de transition pour la connexion par email/password
         setIsTransitioning(true);
         // Ne pas rediriger ici, laisser l'onAuthStateChange gérer
+        // isTransitioning sera désactivé par le dashboard quand il sera prêt
         return true;
       } else if (credentials.phone && credentials.otp) {
         // Utiliser la nouvelle méthode verifyOTP
@@ -265,6 +272,8 @@ export function useAuth() {
       if (error) throw error;
       
       toast.success('Déconnexion réussie');
+      // Activer l'état de transition pour la déconnexion
+      setIsTransitioning(true);
       // La redirection sera gérée automatiquement par onAuthStateChange
       return true;
     } catch (error: unknown) {
@@ -275,6 +284,10 @@ export function useAuth() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const clearTransition = () => {
+    setIsTransitioning(false);
   };
 
   return {
@@ -289,5 +302,6 @@ export function useAuth() {
     logout,
     sendOTP,
     verifyOTP,
+    clearTransition,
   };
 }

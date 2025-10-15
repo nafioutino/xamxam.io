@@ -43,10 +43,13 @@ export async function POST(request: NextRequest) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
+    rawBody = await request.text();
+    
+    // Test: Utiliser UNIQUEMENT FACEBOOK_APP_SECRET (Instagram utilise le même)
     const appSecret = process.env.INSTAGRAM_CLIENT_SECRET;
     if (!appSecret) {
-      console.error(`${logPrefix} App secret not found in environment variables.`);
-      return new NextResponse('Internal Server Error', { status: 500 });
+      console.error(`${logPrefix} INSTAGRAM_CLIENT_SECRET manquant.`);
+      return new NextResponse('Server configuration error', { status: 500 });
     }
 
     // Lire le corps brut du webhook (sans parsing)
@@ -157,14 +160,37 @@ async function processInstagramMessage(event: any) {
       instagramProfile = { name: 'Utilisateur Instagram', avatarUrl: null };
     }
 
-    // --- ÉTAPE 3: TROUVER OU CRÉER LE CLIENT ---
-    const customer = await prisma.customer.upsert({
-      where: { shopId_phone: { shopId: channel.shopId, phone: senderId } },
-      update: { name: instagramProfile.name, avatarUrl: instagramProfile.avatarUrl },
-      create: { shopId: channel.shopId, phone: senderId, name: instagramProfile.name, avatarUrl: instagramProfile.avatarUrl }
+    // --- ÉTAPE 3: CRÉER OU METTRE À JOUR LE CLIENT ---
+    let customer = await prisma.customer.findFirst({
+      where: {
+        phone: senderId,
+        shopId: channel.shopId
+      }
     });
 
-    // --- ÉTAPE 4: TROUVER OU CRÉER LA CONVERSATION ---
+    if (customer) {
+      customer = await prisma.customer.update({
+        where: { id: customer.id },
+        data: {
+          name: customerInfo.name || (customerInfo as any).username || 'Utilisateur Instagram',
+          avatarUrl: customerInfo.avatarUrl || null,
+          updatedAt: new Date()
+        }
+      });
+    } else {
+      customer = await prisma.customer.create({
+        data: {
+          phone: senderId,
+          name: customerInfo.name || (customerInfo as any).username || 'Utilisateur Instagram',
+          avatarUrl: customerInfo.avatarUrl || null,
+          shopId: channel.shopId
+        }
+      });
+    }
+
+    console.log(`${logPrefix} Customer processed: ${customer.name} (${customer.id})`);
+
+    // --- ÉTAPE 4: CRÉER OU RÉCUPÉRER LA CONVERSATION ---
     let conversation = await prisma.conversation.findFirst({
       where: { shopId: channel.shopId, customerId: customer.id, platform: channel.type }
     });

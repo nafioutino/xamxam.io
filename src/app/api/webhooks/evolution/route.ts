@@ -1,0 +1,253 @@
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import type { EvolutionWebhookPayload } from '@/types/evolution-api';
+
+export async function POST(request: Request) {
+  try {
+    const payload: any = await request.json();
+    
+    console.log('Evolution webhook received:', {
+      event: payload.event,
+      instance: payload.instance,
+    });
+
+    switch (payload.event) {
+      case 'qrcode.updated':
+        await handleQRCodeUpdate(payload);
+        break;
+      
+      case 'connection.update':
+        await handleConnectionUpdate(payload);
+        break;
+      
+      case 'messages.upsert':
+        await handleMessageUpsert(payload);
+        break;
+      
+      case 'messages.update':
+        await handleMessageUpdate(payload);
+        break;
+      
+      default:
+        console.log('Unhandled webhook event:', payload.event);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error processing Evolution webhook:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+}
+
+async function handleQRCodeUpdate(payload: any) {
+  console.log('QR Code updated for instance:', payload.instance);
+  // Le QR code sera géré côté client via polling ou websocket
+}
+
+async function handleConnectionUpdate(payload: any) {
+  const { instance, data } = payload;
+  console.log('Connection update:', { instance, state: data.state });
+
+  if (data.state === 'open') {
+    // Connexion réussie - mettre à jour le canal dans la DB
+    const channel = await prisma.channel.findFirst({
+      where: {
+        type: 'WHATSAPP',
+        externalId: instance,
+      },
+    });
+
+    if (channel) {
+      await prisma.channel.update({
+        where: { id: channel.id },
+        data: { isActive: true },
+      });
+    }
+  } else if (data.state === 'close') {
+    // Connexion fermée
+    const channel = await prisma.channel.findFirst({
+      where: {
+        type: 'WHATSAPP',
+        externalId: instance,
+      },
+    });
+
+    if (channel) {
+      await prisma.channel.update({
+        where: { id: channel.id },
+        data: { isActive: false },
+      });
+    }
+  }
+}
+
+async function handleMessageUpsert(payload: any) {
+  const { instance, data } = payload;
+  
+  console.log('New message received:', {
+    instance,
+    from: data.key.remoteJid,
+    messageType: data.messageType,
+  });
+
+  // Trouver le canal WhatsApp
+  const channel = await prisma.channel.findFirst({
+    where: {
+      type: 'WHATSAPP',
+      externalId: instance,
+    },
+    include: {
+      shop: true,
+    },
+  });
+
+  if (!channel) {
+    console.error('Channel not found for instance:', instance);
+    return;
+  }
+
+  // Extraire le numéro de téléphone du remoteJid (format: 5585988888888@s.whatsapp.net)
+  const phoneNumber = data.key.remoteJid.split('@')[0];
+  
+  // Trouver ou créer le client
+  let customer = await prisma.customer.findFirst({
+    where: {
+      shopId: channel.shopId,
+      phone: phoneNumber,
+    },
+  });
+
+  if (!customer) {
+    customer = await prisma.customer.create({
+      data: {
+        shopId: channel.shopId,
+        name: data.pushName || phoneNumber,
+        phone: phoneNumber,
+      },
+    });
+  }
+
+  // Trouver ou créer la conversation
+  let conversation = await prisma.conversation.findFirst({
+    where: {
+      shopId: channel.shopId,
+      platform: 'WHATSAPP',
+      externalId: data.key.remoteJid,
+    },
+  });
+
+  if (!conversation) {
+    conversation = await prisma.conversation.create({
+      data: {
+        shopId: channel.shopId,
+        customerId: customer.id,
+        platform: 'WHATSAPP',
+        externalId: data.key.remoteJid,
+        title: customer.name,
+        isActive: true,
+        lastMessageAt: new Date(data.messageTimestamp * 1000),
+      },
+    });
+  } else {
+    // Mettre à jour la conversation
+    await prisma.conversation.update({
+      where: { id: conversation.id },
+      data: {
+        lastMessageAt: new Date(data.messageTimestamp * 1000),
+        unreadCount: data.key.fromMe ? 0 : { increment: 1 },
+      },
+    });
+  }
+
+  // Extraire le contenu du message
+  let messageContent = '';
+  let messageType: 'TEXT' | 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT' | 'STICKER' | 'LOCATION' | 'CONTACT' = 'TEXT';
+  let mediaUrl: string | null = null;
+
+  if (data.message.conversation) {
+    messageContent = data.message.conversation;
+    messageType = 'TEXT';
+  } else if (data.message.extendedTextMessage) {
+    messageContent = data.message.extendedTextMessage.text;
+    messageType = 'TEXT';
+  } else if (data.message.imageMessage) {
+    messageContent = data.message.imageMessage.caption || '[Image]';
+    messageType = 'IMAGE';
+    mediaUrl = data.message.imageMessage.url;
+  } else if (data.message.videoMessage) {
+    messageContent = data.message.videoMessage.caption || '[Video]';
+    messageType = 'VIDEO';
+    mediaUrl = data.message.videoMessage.url;
+  } else if (data.message.audioMessage) {
+    messageContent = '[Audio]';
+    messageType = 'AUDIO';
+    mediaUrl = data.message.audioMessage.url;
+  } else if (data.message.documentMessage) {
+    messageContent = data.message.documentMessage.fileName || '[Document]';
+    messageType = 'DOCUMENT';
+    mediaUrl = data.message.documentMessage.url;
+  } else if (data.message.stickerMessage) {
+    messageContent = '[Sticker]';
+    messageType = 'STICKER';
+    mediaUrl = data.message.stickerMessage.url;
+  } else if (data.message.locationMessage) {
+    const loc = data.message.locationMessage;
+    messageContent = `Location: ${loc.degreesLatitude}, ${loc.degreesLongitude}`;
+    messageType = 'LOCATION';
+  } else if (data.message.contactMessage) {
+    messageContent = `Contact: ${data.message.contactMessage.displayName}`;
+    messageType = 'CONTACT';
+  }
+
+  // Créer le message dans la DB
+  await prisma.message.create({
+    data: {
+      conversationId: conversation.id,
+      content: messageContent,
+      messageType,
+      mediaUrl,
+      isFromCustomer: !data.key.fromMe,
+      isRead: data.key.fromMe,
+      externalId: data.key.id,
+      metadata: data,
+      createdAt: new Date(data.messageTimestamp * 1000),
+    },
+  });
+
+  console.log('Message saved to database:', {
+    conversationId: conversation.id,
+    messageType,
+    isFromCustomer: !data.key.fromMe,
+  });
+}
+
+async function handleMessageUpdate(payload: any) {
+  const { data } = payload;
+  
+  console.log('Message status updated:', {
+    messageId: data.key.id,
+    status: data.status,
+  });
+
+  // Mettre à jour le statut du message dans la DB
+  const message = await prisma.message.findFirst({
+    where: {
+      externalId: data.key.id,
+    },
+  });
+
+  if (message) {
+    const isRead = data.status === 'READ' || data.status === 'PLAYED';
+    
+    await prisma.message.update({
+      where: { id: message.id },
+      data: {
+        isRead,
+        metadata: {
+          ...(message.metadata as any),
+          status: data.status,
+        },
+      },
+    });
+  }
+}

@@ -41,7 +41,7 @@ export default function LoadingTransition({
           <div className="animate-bounce">
             <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-2xl">
               <Image
-                src="/logo/XAMXAM-logo-blanc.png"
+                src="/logo/logo_xamxam.jpg"
                 alt="XAMXAM"
                 width={48}
                 height={48}
