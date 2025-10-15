@@ -5,6 +5,9 @@ import type { EvolutionWebhookPayload } from '@/types/evolution-api';
 export async function POST(request: Request) {
   try {
     const payload: any = await request.json();
+    
+    // Log de réception du webhook (console.info visible sur Vercel)
+    console.info(`🔔 Webhook Evolution reçu: ${payload.event}`);
 
     switch (payload.event) {
       case 'qrcode.updated':
@@ -55,6 +58,7 @@ async function handleConnectionUpdate(payload: any) {
         where: { id: channel.id },
         data: { isActive: true },
       });
+      console.info(`✅ WhatsApp connecté et canal activé pour instance: ${instance}`);
     } else {
       console.error('❌ Channel not found for instance:', instance);
     }
@@ -72,6 +76,7 @@ async function handleConnectionUpdate(payload: any) {
         where: { id: channel.id },
         data: { isActive: false },
       });
+      console.info(`❌ WhatsApp déconnecté et canal désactivé pour instance: ${instance}`);
     }
   }
 }
@@ -79,12 +84,13 @@ async function handleConnectionUpdate(payload: any) {
 async function handleMessageUpsert(payload: any) {
   const { instance, data } = payload;
 
-  // Log du message entrant
-  console.log('📩 Message WhatsApp reçu:', {
+  // Log du message entrant (console.info pour visibilité sur Vercel)
+  console.info('📩 Message WhatsApp reçu:', {
     de: data.key.remoteJid,
     type: data.messageType,
     texte: data.message.conversation || data.message.extendedTextMessage?.text || `[${data.messageType}]`,
     timestamp: new Date(data.messageTimestamp * 1000).toLocaleString('fr-FR'),
+    instance,
   });
 
   // Trouver le canal WhatsApp
