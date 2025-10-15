@@ -201,8 +201,8 @@ export default function InboxPage() {
       setNewMessage('');
       toast.success('Message envoyé avec succès');
 
-      // Refresh conversations to update last message
-      fetchConversations();
+      // Les hooks Realtime mettent à jour automatiquement les conversations
+      // Pas besoin de refetch manuel !
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors de l\'envoi du message';
@@ -213,18 +213,20 @@ export default function InboxPage() {
   };
 
   // Load conversations on component mount
+  // On utilise les IDs au lieu des objets complets pour éviter les re-renders inutiles
   useEffect(() => {
     if (user && shop && session) {
       fetchConversations();
     }
-  }, [user, shop, session]);
+  }, [user?.id, shop?.id, session?.access_token]);
 
   // Load messages when a contact is selected
+  // On utilise l'ID au lieu de l'objet complet pour éviter les re-renders inutiles
   useEffect(() => {
-    if (selectedContact) {
+    if (selectedContact?.id) {
       fetchMessages(selectedContact.id);
     }
-  }, [selectedContact]);
+  }, [selectedContact?.id]);
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !selectedContact || sendingMessage) return;
