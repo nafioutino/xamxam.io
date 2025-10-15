@@ -5,11 +5,6 @@ import type { EvolutionWebhookPayload } from '@/types/evolution-api';
 export async function POST(request: Request) {
   try {
     const payload: any = await request.json();
-    
-    console.log('Evolution webhook received:', {
-      event: payload.event,
-      instance: payload.instance,
-    });
 
     switch (payload.event) {
       case 'qrcode.updated':
@@ -29,7 +24,7 @@ export async function POST(request: Request) {
         break;
       
       default:
-        console.log('Unhandled webhook event:', payload.event);
+        break;
     }
 
     return NextResponse.json({ success: true });
@@ -40,13 +35,11 @@ export async function POST(request: Request) {
 }
 
 async function handleQRCodeUpdate(payload: any) {
-  console.log('QR Code updated for instance:', payload.instance);
   // Le QR code sera géré côté client via polling ou websocket
 }
 
 async function handleConnectionUpdate(payload: any) {
   const { instance, data } = payload;
-  console.log('Connection update:', { instance, state: data.state });
 
   if (data.state === 'open') {
     // Connexion réussie - mettre à jour le canal dans la DB
@@ -62,6 +55,8 @@ async function handleConnectionUpdate(payload: any) {
         where: { id: channel.id },
         data: { isActive: true },
       });
+    } else {
+      console.error('❌ Channel not found for instance:', instance);
     }
   } else if (data.state === 'close') {
     // Connexion fermée
@@ -83,12 +78,6 @@ async function handleConnectionUpdate(payload: any) {
 
 async function handleMessageUpsert(payload: any) {
   const { instance, data } = payload;
-  
-  console.log('New message received:', {
-    instance,
-    from: data.key.remoteJid,
-    messageType: data.messageType,
-  });
 
   // Trouver le canal WhatsApp
   const channel = await prisma.channel.findFirst({
@@ -213,21 +202,10 @@ async function handleMessageUpsert(payload: any) {
       createdAt: new Date(data.messageTimestamp * 1000),
     },
   });
-
-  console.log('Message saved to database:', {
-    conversationId: conversation.id,
-    messageType,
-    isFromCustomer: !data.key.fromMe,
-  });
 }
 
 async function handleMessageUpdate(payload: any) {
   const { data } = payload;
-  
-  console.log('Message status updated:', {
-    messageId: data.key.id,
-    status: data.status,
-  });
 
   // Mettre à jour le statut du message dans la DB
   const message = await prisma.message.findFirst({

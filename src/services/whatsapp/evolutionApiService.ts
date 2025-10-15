@@ -17,11 +17,6 @@ class EvolutionApiService {
     this.apiUrl = process.env.EVOLUTION_API_URL || '';
     this.apiKey = process.env.EVOLUTION_API_KEY || '';
 
-    console.log('Evolution API Service initialized:', {
-      apiUrl: this.apiUrl ? `${this.apiUrl.substring(0, 30)}...` : 'NOT SET',
-      apiKeySet: !!this.apiKey,
-    });
-
     if (!this.apiUrl || !this.apiKey) {
       throw new Error('Evolution API URL and KEY must be configured in environment variables');
     }
@@ -39,14 +34,6 @@ class EvolutionApiService {
 
   async createInstance(data: CreateInstanceRequest): Promise<CreateInstanceResponse> {
     try {
-      console.log('Creating Evolution instance:', {
-        instanceName: data.instanceName,
-        integration: data.integration,
-        webhook: data.webhook,
-        apiUrl: this.apiUrl,
-        apiKeyLength: this.apiKey?.length,
-      });
-
       const response = await this.apiClient.post<CreateInstanceResponse>('/instance/create', {
         instanceName: data.instanceName,
         token: data.token,
@@ -63,27 +50,13 @@ class EvolutionApiService {
 
       // Vérifier si la réponse est une erreur 401
       if (response.status === 401) {
-        console.error('❌ Evolution API Authentication Failed!');
-        console.error('API Key used (first 10 chars):', this.apiKey?.substring(0, 10) + '...');
-        console.error('Response:', response.data);
+        console.error('Evolution API Authentication Failed');
         throw new Error('Evolution API Authentication Failed - Vérifiez votre EVOLUTION_API_KEY');
       }
 
-      console.log('Evolution instance created successfully:', response.data);
       return response.data;
     } catch (error: any) {
-      // Log détaillé de l'erreur
-      console.error('Error creating Evolution API instance:', error);
-      console.error('Error details:', {
-        message: error.message,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        headers: error.response?.headers,
-        url: error.config?.url,
-        method: error.config?.method,
-        requestData: error.config?.data,
-      });
+      console.error('Error creating Evolution API instance:', error.message || error);
       
       if (error.code === 'ECONNABORTED') {
         throw new Error('Evolution API timeout - Le serveur met trop de temps à répondre');

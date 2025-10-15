@@ -14,7 +14,6 @@ export async function POST(request: Request) {
     // Lire TOUS les paramètres en une seule fois (le body ne peut être lu qu'une fois)
     const body = await request.json();
     const { shopId, action, instanceName } = body;
-    console.log('WhatsApp API - Request data:', { shopId, action, instanceName, userId: user.id });
 
     // Vérifier que l'utilisateur est bien le propriétaire du shopId
     const shop = await prisma.shop.findUnique({
@@ -35,19 +34,10 @@ export async function POST(request: Request) {
       return new NextResponse('Forbidden: You are not the owner of this shop', { status: 403 });
     }
 
-    console.log('WhatsApp API - Ownership verified successfully');
-
     if (action === 'create_instance') {
       // Créer une instance Evolution API
       const instanceName = `shop_${shopId}`;
       const webhookUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/evolution`;
-
-      console.log('Creating Evolution instance:', {
-        instanceName,
-        webhookUrl,
-        evolutionApiUrl: process.env.EVOLUTION_API_URL,
-        evolutionApiKeySet: !!process.env.EVOLUTION_API_KEY,
-      });
 
       // Vérifier les variables d'environnement
       if (!process.env.EVOLUTION_API_URL || !process.env.EVOLUTION_API_KEY) {
@@ -65,16 +55,12 @@ export async function POST(request: Request) {
         // Vérifier si l'instance existe déjà
         try {
           const existingStatus = await evolutionApiService.getInstanceStatus(instanceName);
-          console.log('⚠️  Instance already exists:', existingStatus);
           
           // Si l'instance existe mais n'est pas connectée, la supprimer pour en créer une nouvelle
           if (existingStatus.instance.state !== 'open') {
-            console.log('🗑️  Deleting existing disconnected instance...');
             await evolutionApiService.deleteInstance(instanceName);
-            console.log('✅ Old instance deleted');
           } else {
             // L'instance est déjà connectée
-            console.log('✅ Instance already connected');
             return NextResponse.json({
               success: true,
               instanceName,
@@ -84,7 +70,6 @@ export async function POST(request: Request) {
           }
         } catch (statusError: any) {
           // L'instance n'existe pas, on peut la créer
-          console.log('❌ Instance does not exist (404), creating new one...');
         }
 
         // Configuration avec webhook pour recevoir les événements
@@ -105,11 +90,7 @@ export async function POST(request: Request) {
           },
         };
         
-        console.log('📤 Creating instance with config:', instanceConfig);
-
         const instance = await evolutionApiService.createInstance(instanceConfig);
-
-        console.log('✅ Evolution instance created successfully:', instance);
 
         // Créer ou mettre à jour le canal dans la DB
         const existingChannel = await prisma.channel.findFirst({
@@ -163,8 +144,6 @@ export async function POST(request: Request) {
       try {
         const qrData = await evolutionApiService.connectInstance(instanceName);
         
-        console.log('QR Data from Evolution API:', qrData);
-        
         // Evolution API retourne { code, pairingCode, base64 }
         // On utilise base64 si disponible, sinon code
         const qrCodeValue = qrData.base64 || qrData.code;
@@ -197,6 +176,25 @@ export async function POST(request: Request) {
       
       try {
         const status = await evolutionApiService.getInstanceStatus(instanceName);
+        
+        // Si la connexion est ouverte, activer le canal automatiquement
+        if (status.instance.state === 'open') {
+          const channel = await prisma.channel.findFirst({
+            where: {
+              shopId,
+              type: 'WHATSAPP',
+              externalId: instanceName,
+            },
+          });
+
+          if (channel && !channel.isActive) {
+            await prisma.channel.update({
+              where: { id: channel.id },
+              data: { isActive: true },
+            });
+          }
+        }
+        
         return NextResponse.json({
           success: true,
           status: status.instance.state,
