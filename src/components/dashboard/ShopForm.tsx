@@ -331,13 +331,13 @@ export default function ShopForm({ onSuccess, onCancel, isOnboarding = false }: 
         {renderStepContent()}
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between pt-8">
-          <div>
+        <div className="flex flex-col sm:flex-row justify-between gap-3 pt-8">
+          <div className="order-2 sm:order-1">
             {currentStep > 1 && (
               <button
                 type="button"
                 onClick={prevStep}
-                className="inline-flex items-center px-6 py-3 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 cursor-pointer"
+                className="inline-flex items-center justify-center w-full sm:w-auto px-4 sm:px-6 py-3 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Précédent
@@ -345,12 +345,12 @@ export default function ShopForm({ onSuccess, onCancel, isOnboarding = false }: 
             )}
           </div>
 
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row gap-3 order-1 sm:order-2">
             {!isOnboarding && onCancel && (
               <button
                 type="button"
                 onClick={onCancel}
-                className="inline-flex items-center px-6 py-3 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 cursor-pointer"
+                className="inline-flex items-center justify-center w-full sm:w-auto px-4 sm:px-6 py-3 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 cursor-pointer"
               >
                 Annuler
               </button>
@@ -360,7 +360,7 @@ export default function ShopForm({ onSuccess, onCancel, isOnboarding = false }: 
               <button
                 type="button"
                 onClick={nextStep}
-                className="inline-flex items-center px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 border border-transparent rounded-xl hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 cursor-pointer"
+                className="inline-flex items-center justify-center w-full sm:w-auto px-4 sm:px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 border border-transparent rounded-xl hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl sm:transform sm:hover:scale-105 cursor-pointer"
               >
                 Suivant
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -369,7 +369,7 @@ export default function ShopForm({ onSuccess, onCancel, isOnboarding = false }: 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="inline-flex items-center px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 border border-transparent rounded-xl hover:from-emerald-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 cursor-pointer"
+                className="inline-flex items-center justify-center w-full sm:w-auto px-6 sm:px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-green-600 border border-transparent rounded-xl hover:from-emerald-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl sm:transform sm:hover:scale-105 cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -379,7 +379,8 @@ export default function ShopForm({ onSuccess, onCancel, isOnboarding = false }: 
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5 mr-2" />
-                    {isOnboarding ? 'Créer ma boutique' : 'Créer la boutique'}
+                    <span className="hidden sm:inline">{isOnboarding ? 'Créer ma boutique' : 'Créer la boutique'}</span>
+                    <span className="sm:hidden">Créer</span>
                   </>
                 )}
               </button>
