@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { ChannelType } from '@/generated/prisma';
 import { decryptToken } from '@/lib/encryption';
+import { evolutionApiService } from '@/services/whatsapp/evolutionApiService';
 
 const logPrefix = '[Messenger Send]';
 
@@ -14,13 +15,13 @@ const logPrefix = '[Messenger Send]';
 // ===      MÉTHODE POST : ENVOYER UN MESSAGE                     ===
 // ==================================================================
 /**
- * Envoie un message via Messenger ou Instagram Direct
+ * Envoie un message via Messenger, Instagram Direct ou WhatsApp
  * Body attendu:
  * {
  *   "conversationId": "uuid",
  *   "message": "Texte du message",
- *   "messageType": "TEXT" | "IMAGE" | "FILE" (optionnel, défaut: TEXT),
- *   "mediaUrl": "url" (optionnel, pour les images/fichiers)
+ *   "messageType": "TEXT" | "IMAGE" | "VIDEO" | "AUDIO" | "DOCUMENT" | "FILE" (optionnel, défaut: TEXT),
+ *   "mediaUrl": "url" (optionnel, pour les images/fichiers/médias)
  * }
  */
 export async function POST(request: NextRequest) {
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
           include: {
             channels: {
               where: {
-                type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM] },
+                type: { in: [ChannelType.FACEBOOK_PAGE, ChannelType.INSTAGRAM_DM, ChannelType.WHATSAPP] },
                 isActive: true
               }
             }
@@ -70,14 +71,18 @@ export async function POST(request: NextRequest) {
       channel = conversation.shop.channels.find((c: { type: any; }) => c.type === ChannelType.FACEBOOK_PAGE);
     } else if (platformLower === 'instagram' || conversation.platform === ChannelType.INSTAGRAM_DM) {
       channel = conversation.shop.channels.find((c: { type: any; }) => c.type === ChannelType.INSTAGRAM_DM);
+    } else if (platformLower === 'whatsapp' || conversation.platform === ChannelType.WHATSAPP) {
+      channel = conversation.shop.channels.find((c: { type: any; }) => c.type === ChannelType.WHATSAPP);
     }
     
     console.log(`${logPrefix} Recherche de canal pour platform: ${conversation.platform} (normalized: ${platformLower}), canal trouvé:`, !!channel);
     
-    if (!channel || !channel.accessToken) {
+    // Pour WhatsApp, pas besoin de accessToken
+    const isWhatsApp = platformLower === 'whatsapp' || conversation.platform === ChannelType.WHATSAPP;
+    if (!channel || (!isWhatsApp && !channel.accessToken)) {
       return NextResponse.json({
         success: false,
-        error: `Canal ${conversation.platform} non configuré ou token d'accès manquant`
+        error: `Canal ${conversation.platform} non configuré${!isWhatsApp ? ' ou token d\'accès manquant' : ''}`
       }, { status: 400 });
     }
 
@@ -85,10 +90,112 @@ export async function POST(request: NextRequest) {
       platform: conversation.platform,
       messageType,
       hasChannel: !!channel,
-      hasToken: !!channel?.accessToken
+      hasToken: !!channel?.accessToken,
+      isWhatsApp
     });
     
-    // --- PRÉPARER LE PAYLOAD ET L'URL SELON LA PLATEFORME ---
+    // --- GESTION SPÉCIALE POUR WHATSAPP ---
+    if (isWhatsApp) {
+      console.info('📤 Envoi de message WhatsApp via Evolution API');
+      
+      const phoneNumber = conversation.customer.phone;
+      if (!phoneNumber) {
+        return NextResponse.json({
+          success: false,
+          error: 'Numéro de téléphone du client non trouvé'
+        }, { status: 400 });
+      }
+
+      try {
+        let evolutionResponse;
+        
+        // Envoyer selon le type de message
+        if (messageType === 'TEXT') {
+          evolutionResponse = await evolutionApiService.sendTextMessage(
+            channel.externalId,
+            {
+              number: phoneNumber,
+              text: message,
+            }
+          );
+        } else if (['IMAGE', 'VIDEO', 'AUDIO', 'DOCUMENT', 'FILE'].includes(messageType)) {
+          if (!mediaUrl) {
+            return NextResponse.json({
+              success: false,
+              error: 'mediaUrl requis pour les médias'
+            }, { status: 400 });
+          }
+          
+          // Mapper les types
+          let mediaType: 'image' | 'video' | 'audio' | 'document' = 'document';
+          if (messageType === 'IMAGE') mediaType = 'image';
+          else if (messageType === 'VIDEO') mediaType = 'video';
+          else if (messageType === 'AUDIO') mediaType = 'audio';
+          else if (messageType === 'FILE' || messageType === 'DOCUMENT') mediaType = 'document';
+          
+          evolutionResponse = await evolutionApiService.sendMediaMessage(
+            channel.externalId,
+            {
+              number: phoneNumber,
+              mediaType,
+              media: mediaUrl,
+              caption: message,
+            }
+          );
+        } else {
+          return NextResponse.json({
+            success: false,
+            error: `Type de message non supporté: ${messageType}`
+          }, { status: 400 });
+        }
+
+        // Sauvegarder le message dans la DB
+        const savedMessage = await prisma.message.create({
+          data: {
+            conversationId: conversation.id,
+            content: message,
+            messageType: messageType as any,
+            mediaUrl: mediaUrl,
+            isFromCustomer: false,
+            externalId: evolutionResponse.key.id,
+            metadata: evolutionResponse,
+            isRead: true,
+          },
+        });
+
+        // Mettre à jour la conversation
+        await prisma.conversation.update({
+          where: { id: conversation.id },
+          data: {
+            lastMessageAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
+
+        console.info('✅ Message WhatsApp envoyé avec succès:', {
+          messageId: savedMessage.id,
+          externalId: evolutionResponse.key.id,
+        });
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            messageId: savedMessage.id,
+            externalId: evolutionResponse.key.id,
+            message: savedMessage,
+          },
+          message: 'Message envoyé avec succès',
+        }, { status: 200 });
+      } catch (error: any) {
+        console.error('❌ Erreur envoi WhatsApp:', error);
+        return NextResponse.json({
+          success: false,
+          error: error.message || 'Erreur lors de l\'envoi du message WhatsApp',
+        }, { status: 500 });
+      }
+    }
+    
+    // --- PRÉPARER LE PAYLOAD ET L'URL SELON LA PLATEFORME (FACEBOOK/INSTAGRAM) ---
     const recipientId = conversation.externalId;
     if (!recipientId) {
       return NextResponse.json({
