@@ -49,8 +49,8 @@ export function useAuth() {
             setTimeout(() => {
               router.push('/dashboard');
               router.refresh();
-              // Désactiver l'état de transition après la redirection
-              setTimeout(() => setIsTransitioning(false), 1000);
+              // Ne pas désactiver isTransitioning ici
+              // Il sera désactivé par le dashboard quand il sera prêt
             }, 100);
           }
         }
@@ -130,6 +130,9 @@ export function useAuth() {
         toast.success('Connexion réussie!');
       }
       
+      // Activer l'état de transition
+      setIsTransitioning(true);
+      
       // Rediriger vers le dashboard
       setTimeout(() => {
         router.push('/dashboard');
@@ -164,6 +167,7 @@ export function useAuth() {
         // Activer l'état de transition pour la connexion par email/password
         setIsTransitioning(true);
         // Ne pas rediriger ici, laisser l'onAuthStateChange gérer
+        // isTransitioning sera désactivé par le dashboard quand il sera prêt
         return true;
       } else if (credentials.phone && credentials.otp) {
         // Utiliser la nouvelle méthode verifyOTP
@@ -277,6 +281,10 @@ export function useAuth() {
     }
   };
 
+  const clearTransition = () => {
+    setIsTransitioning(false);
+  };
+
   return {
     user,
     session,
@@ -289,5 +297,6 @@ export function useAuth() {
     logout,
     sendOTP,
     verifyOTP,
+    clearTransition,
   };
 }

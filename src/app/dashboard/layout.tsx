@@ -9,6 +9,7 @@ import { profileImages } from './profile-data';
 // Icônes Heroicons pour la navigation remplacées par des icônes Lucide modernes
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/auth/AuthGuard';
+import LoadingTransition from '@/components/auth/LoadingTransition';
 
 import { Home, Package, Share2, MessagesSquare, Bot, Wand2, ShoppingCart, BarChart3, Settings } from 'lucide-react';
 
@@ -32,9 +33,10 @@ const navigation: NavItem[] = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const { user, isLoading, isAuthenticated, logout, clearTransition, isTransitioning } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileImage, setProfileImage] = useState('');
+  const [dashboardReady, setDashboardReady] = useState(false);
   
   useEffect(() => {
     // Sélectionner une image de profil aléatoire parmi les images disponibles
@@ -44,12 +46,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
+  // Indiquer que le dashboard est prêt après le montage
+  useEffect(() => {
+    if (!isLoading && user) {
+      // Attendre un peu pour s'assurer que tout est rendu
+      const timer = setTimeout(() => {
+        setDashboardReady(true);
+        // Désactiver l'état de transition
+        if (clearTransition) {
+          clearTransition();
+        }
+      }, 800); // Augmenté à 800ms pour donner le temps au dashboard de se rendre
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, user, clearTransition]);
+
+  // Afficher le loader si en transition ou en chargement
+  if (isTransitioning || isLoading) {
+    return <LoadingTransition message="Chargement du dashboard" />;
   }
 
   const handleLogout = async () => {
