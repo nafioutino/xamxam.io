@@ -18,15 +18,21 @@ export interface EvolutionInstanceSettings {
   sync_full_history: boolean;
 }
 
+export interface WebhookConfig {
+  url: string;
+  byEvents?: boolean;
+  base64?: boolean;
+  headers?: Record<string, string>;
+  events?: EvolutionWebhookEvent[];
+}
+
 export interface CreateInstanceRequest {
   instanceName: string;
   token?: string;
   qrcode?: boolean;
   number?: string;
   integration: 'WHATSAPP-BAILEYS' | 'WHATSAPP-BUSINESS';
-  webhook?: string;
-  webhook_by_events?: boolean;
-  events?: EvolutionWebhookEvent[];
+  webhook?: WebhookConfig;
   reject_call?: boolean;
   msg_call?: string;
   groups_ignore?: boolean;

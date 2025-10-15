@@ -92,14 +92,17 @@ export async function POST(request: Request) {
           instanceName,
           integration: 'WHATSAPP-BAILEYS',
           qrcode: true,
-          webhook: webhookUrl,
-          webhook_by_events: true,
-          events: [
-            'MESSAGES_UPSERT',
-            'MESSAGES_UPDATE',
-            'CONNECTION_UPDATE',
-            'QRCODE_UPDATED'
-          ],
+          webhook: {
+            url: webhookUrl,
+            byEvents: true,
+            base64: false,
+            events: [
+              'MESSAGES_UPSERT',
+              'MESSAGES_UPDATE',
+              'CONNECTION_UPDATE',
+              'QRCODE_UPDATED'
+            ],
+          },
         };
         
         console.log('📤 Creating instance with config:', instanceConfig);
