@@ -79,6 +79,14 @@ async function handleConnectionUpdate(payload: any) {
 async function handleMessageUpsert(payload: any) {
   const { instance, data } = payload;
 
+  // Log du message entrant
+  console.log('📩 Message WhatsApp reçu:', {
+    de: data.key.remoteJid,
+    type: data.messageType,
+    texte: data.message.conversation || data.message.extendedTextMessage?.text || `[${data.messageType}]`,
+    timestamp: new Date(data.messageTimestamp * 1000).toLocaleString('fr-FR'),
+  });
+
   // Trouver le canal WhatsApp
   const channel = await prisma.channel.findFirst({
     where: {
