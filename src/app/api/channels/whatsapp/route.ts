@@ -95,7 +95,7 @@ export async function POST(request: Request) {
           webhook: {
             url: webhookUrl,
             byEvents: true,
-            base64: false,
+            base64: true,
             events: [
               'MESSAGES_UPSERT',
               'MESSAGES_UPDATE',
