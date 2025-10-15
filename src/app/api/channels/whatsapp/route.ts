@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { evolutionApiService } from '@/services/whatsapp/evolutionApiService';
+import type { CreateInstanceRequest } from '@/types/evolution-api';
 
 export async function POST(request: Request) {
   try {
@@ -86,11 +87,19 @@ export async function POST(request: Request) {
           console.log('❌ Instance does not exist (404), creating new one...');
         }
 
-        // Configuration minimale pour éviter les erreurs 400
-        const instanceConfig = {
+        // Configuration avec webhook pour recevoir les événements
+        const instanceConfig: CreateInstanceRequest = {
           instanceName,
-          integration: 'WHATSAPP-BAILEYS' as const,
+          integration: 'WHATSAPP-BAILEYS',
           qrcode: true,
+          webhook: webhookUrl,
+          webhook_by_events: true,
+          events: [
+            'MESSAGES_UPSERT',
+            'MESSAGES_UPDATE',
+            'CONNECTION_UPDATE',
+            'QRCODE_UPDATED'
+          ],
         };
         
         console.log('📤 Creating instance with config:', instanceConfig);
