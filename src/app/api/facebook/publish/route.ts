@@ -116,6 +116,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       postId: result.postId,
+      postLink: result.postLink,
       message: 'Publication réussie'
     });
 

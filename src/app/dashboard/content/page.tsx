@@ -374,10 +374,35 @@ export default function ContentPage() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('🎉 Publication réussie !', {
-          duration: 4000,
-          position: 'top-right',
-        });
+        // Afficher un message de succès avec le lien si disponible
+        if (data.postLink) {
+          toast.success(
+            (t) => (
+              <div className="flex flex-col gap-2">
+                <span className="font-semibold">🎉 Publication réussie !</span>
+                <a 
+                  href={data.postLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1"
+                >
+                  <Link className="w-4 h-4" />
+                  Voir la publication
+                </a>
+              </div>
+            ),
+            {
+              duration: 6000,
+              position: 'top-right',
+            }
+          );
+        } else {
+          toast.success('🎉 Publication réussie !', {
+            duration: 4000,
+            position: 'top-right',
+          });
+        }
+        
         setMessage('');
         setImageFile(null);
         setImageUrl('');

@@ -60,6 +60,7 @@ export interface FacebookVideoUploadResult {
 export interface FacebookPublishResult {
   success: boolean;       // Indique si la publication a réussi.
   postId?: string;      // L'ID du post créé si la publication a réussi.
+  postLink?: string;    // Le lien vers la publication sur Facebook.
   error?: string;       // Un message d'erreur clair et lisible pour le frontend.
   metaError?: any;      // L'objet d'erreur complet de l'API Meta pour le débogage.
 }
@@ -123,9 +124,13 @@ export class FacebookPublishService {
       }
 
       // Si tout s'est bien passé, on renvoie le succès et l'ID du post créé.
+      // Générer le lien vers la publication
+      const postLink = data.id ? `https://www.facebook.com/${pageId}/posts/${data.id.split('_')[1] || data.id}` : undefined;
+      
       return {
         success: true,
-        postId: data.id
+        postId: data.id,
+        postLink: postLink
       };
 
     } catch (error) {
@@ -256,9 +261,13 @@ export class FacebookPublishService {
         };
       }
 
+      // Générer le lien vers la publication photo
+      const postLink = uploadResult.photoId ? `https://www.facebook.com/${pageId}/photos/${uploadResult.photoId}` : undefined;
+      
       return {
         success: true,
-        postId: uploadResult.photoId
+        postId: uploadResult.photoId,
+        postLink: postLink
       };
 
     } catch (error) {
@@ -375,9 +384,13 @@ export class FacebookPublishService {
         };
       }
 
+      // Générer le lien vers la publication vidéo
+      const postLink = uploadResult.videoId ? `https://www.facebook.com/${pageId}/videos/${uploadResult.videoId}` : undefined;
+      
       return {
         success: true,
-        postId: uploadResult.videoId
+        postId: uploadResult.videoId,
+        postLink: postLink
       };
 
     } catch (error) {

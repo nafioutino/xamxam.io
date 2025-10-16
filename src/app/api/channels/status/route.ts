@@ -73,18 +73,21 @@ export async function GET(request: NextRequest) {
           }
         } else if (channel.type === 'INSTAGRAM_DM') {
           channelType = 'instagram';
-          // Récupérer le nom d'utilisateur Instagram
+          // Récupérer le nom d'utilisateur Instagram via l'API Instagram native
           try {
             if (channel.accessToken) {
               const decryptedToken = decryptToken(channel.accessToken);
-              const response = await fetch(`https://graph.facebook.com/v23.0/${channel.externalId}?fields=username&access_token=${decryptedToken}`);
+              // Utiliser l'API Instagram native pour récupérer le username
+              const response = await fetch(`https://graph.instagram.com/v21.0/${channel.externalId}?fields=username,name&access_token=${decryptedToken}`);
               if (response.ok) {
                 const instagramData = await response.json();
-                pageName = `@${instagramData.username}`;
+                // Utiliser le username si disponible, sinon le name
+                pageName = instagramData.username ? `@${instagramData.username}` : (instagramData.name || `Instagram ${channel.externalId}`);
               }
             }
           } catch (error) {
             console.error('Erreur récupération nom Instagram:', error);
+            pageName = `Instagram ${channel.externalId}`;
           }
         } else if (channel.type === 'WHATSAPP') {
           channelType = 'whatsapp';
