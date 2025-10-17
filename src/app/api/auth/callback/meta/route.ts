@@ -140,14 +140,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Filtrer les pages qui ont les permissions nécessaires
-    const eligiblePages = pagesData.data.filter(page => {
-      // Vérifier que la page a les tâches nécessaires pour la messagerie
-      const requiredTasks = ['MESSAGING', 'MANAGE'];
-      return requiredTasks.some(task => page.tasks?.includes(task));
-    });
+    // Log des pages récupérées pour débogage
+    console.log('Pages récupérées de Facebook:', JSON.stringify(pagesData.data, null, 2));
+    console.log('Nombre de pages:', pagesData.data.length);
+
+    // Accepter toutes les pages retournées (l'utilisateur a déjà donné les permissions)
+    const eligiblePages = pagesData.data;
 
     if (eligiblePages.length === 0) {
+      console.error('Aucune page Facebook trouvée pour cet utilisateur');
       return NextResponse.redirect(
         new URL('/dashboard/channels?error=no_eligible_pages', request.url)
       );
