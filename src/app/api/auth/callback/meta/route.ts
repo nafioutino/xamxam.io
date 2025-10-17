@@ -151,7 +151,43 @@ export async function GET(request: NextRequest) {
     console.log('Nombre de pages:', pagesData.data.length);
 
     // Accepter toutes les pages retournées (l'utilisateur a déjà donné les permissions)
-    const eligiblePages = pagesData.data;
+    let eligiblePages = pagesData.data;
+
+    // Si /me/accounts retourne vide, essayer via les businesses (permissions granulaires)
+    if (eligiblePages.length === 0) {
+      console.log('⚠️ /me/accounts est vide, tentative via /me/businesses...');
+      
+      try {
+        const businessesUrl = new URL('https://graph.facebook.com/v23.0/me/businesses');
+        businessesUrl.searchParams.append('access_token', longLivedToken);
+        businessesUrl.searchParams.append('fields', 'id,name');
+
+        const businessesResponse = await fetch(businessesUrl.toString());
+        const businessesData: any = await businessesResponse.json();
+
+        console.log('Businesses récupérés:', JSON.stringify(businessesData, null, 2));
+
+        if (businessesResponse.ok && businessesData.data && businessesData.data.length > 0) {
+          // Pour chaque business, récupérer les pages
+          for (const business of businessesData.data) {
+            const businessPagesUrl = new URL(`https://graph.facebook.com/v23.0/${business.id}/client_pages`);
+            businessPagesUrl.searchParams.append('access_token', longLivedToken);
+            businessPagesUrl.searchParams.append('fields', 'id,name,access_token,category,tasks,instagram_business_account{id,username,profile_picture_url}');
+
+            const businessPagesResponse = await fetch(businessPagesUrl.toString());
+            const businessPagesData: any = await businessPagesResponse.json();
+
+            if (businessPagesResponse.ok && businessPagesData.data) {
+              eligiblePages = eligiblePages.concat(businessPagesData.data);
+            }
+          }
+
+          console.log('Pages récupérées via businesses:', eligiblePages.length);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération via businesses:', error);
+      }
+    }
 
     if (eligiblePages.length === 0) {
       console.error('Aucune page Facebook trouvée pour cet utilisateur');
