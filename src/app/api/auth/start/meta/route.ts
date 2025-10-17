@@ -11,7 +11,7 @@ export async function GET() {
     
     // Configuration Meta
     const clientId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://xamxam.io';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const redirectUri = `${baseUrl}/api/auth/callback/meta`;
     
     if (!clientId) {
@@ -25,7 +25,7 @@ export async function GET() {
     const authParams = new URLSearchParams({
       client_id: clientId,
       redirect_uri: redirectUri,
-      scope: 'pages_show_list,pages_messaging,pages_read_engagement,pages_manage_posts,public_profile',
+      scope: 'pages_show_list,pages_messaging,business_management,pages_read_engagement,pages_manage_posts,public_profile,instagram_basic,instagram_manage_messages,instagram_content_publish,whatsapp_business_management,whatsapp_business_messaging',
       response_type: 'code',
       state: csrfState
     });
