@@ -20,6 +20,11 @@ interface MetaPage {
   access_token: string;
   category: string;
   tasks: string[];
+  instagram_business_account?: {
+    id: string;
+    username: string;
+    profile_picture_url: string;
+  };
 }
 
 interface MetaPagesResponse {
@@ -72,7 +77,7 @@ export async function GET(request: NextRequest) {
     // Configuration Meta
     const clientId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
     const clientSecret = process.env.FACEBOOK_APP_SECRET;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://xamxam.io';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const redirectUri = `${baseUrl}/api/auth/callback/meta`;
 
     if (!clientId || !clientSecret) {
@@ -128,91 +133,26 @@ export async function GET(request: NextRequest) {
     // Étape 3: Récupérer les pages Facebook de l'utilisateur
     const pagesUrl = new URL('https://graph.facebook.com/v23.0/me/accounts');
     pagesUrl.searchParams.append('access_token', longLivedToken);
-    pagesUrl.searchParams.append('fields', 'id,name,access_token,category,tasks');
-
-    console.log('🔍 Appel à l\'API Facebook /me/accounts');
-    console.log('URL complète:', pagesUrl.toString().replace(longLivedToken, 'TOKEN_MASQUÉ'));
+    pagesUrl.searchParams.append('fields', 'id,name,access_token,category,tasks,instagram_business_account{id,username,profile_picture_url}');
 
     const pagesResponse = await fetch(pagesUrl.toString());
-    console.log('Status de la réponse:', pagesResponse.status, pagesResponse.statusText);
-    
     const pagesData: MetaPagesResponse | MetaError = await pagesResponse.json();
-    console.log('Réponse complète de /me/accounts:', JSON.stringify(pagesData, null, 2));
 
     if (!pagesResponse.ok || 'error' in pagesData) {
-      console.error('❌ Pages fetch failed:', pagesData);
+      console.error('Pages fetch failed:', pagesData);
       return NextResponse.redirect(
         new URL('/dashboard/channels?error=pages_fetch_failed', request.url)
       );
     }
 
-    // Log des pages récupérées pour débogage
-    console.log('Pages récupérées de Facebook:', JSON.stringify(pagesData.data, null, 2));
-    console.log('Nombre de pages:', pagesData.data.length);
-
-    // Accepter toutes les pages retournées (l'utilisateur a déjà donné les permissions)
-    let eligiblePages = pagesData.data;
-
-    // Si /me/accounts retourne vide, essayer via les permissions granulaires
-    if (eligiblePages.length === 0) {
-      console.log('⚠️ /me/accounts est vide, tentative via /me/permissions...');
-      
-      try {
-        const permissionsUrl = new URL('https://graph.facebook.com/v23.0/me/permissions');
-        permissionsUrl.searchParams.append('access_token', longLivedToken);
-
-        const permissionsResponse = await fetch(permissionsUrl.toString());
-        const permissionsData: any = await permissionsResponse.json();
-
-        console.log('Permissions récupérées:', JSON.stringify(permissionsData, null, 2));
-
-        if (permissionsResponse.ok && permissionsData.data) {
-          // Extraire les IDs de pages depuis les permissions granulaires
-          const pageIds = new Set<string>();
-          
-          for (const permission of permissionsData.data) {
-            // Les permissions granulaires ont un champ "allowed_targets" avec les IDs
-            if (permission.allowed_targets && permission.allowed_targets.length > 0) {
-              permission.allowed_targets.forEach((target: any) => {
-                if (target.target_type === 'page') {
-                  pageIds.add(target.id);
-                }
-              });
-            }
-          }
-
-          console.log('IDs de pages extraits des permissions:', Array.from(pageIds));
-
-          // Récupérer les infos de chaque page
-          for (const pageId of pageIds) {
-            try {
-              const pageUrl = new URL(`https://graph.facebook.com/v23.0/${pageId}`);
-              pageUrl.searchParams.append('access_token', longLivedToken);
-              pageUrl.searchParams.append('fields', 'id,name,access_token,category,tasks,instagram_business_account{id,username,profile_picture_url}');
-
-              const pageResponse = await fetch(pageUrl.toString());
-              const pageData: any = await pageResponse.json();
-
-              if (pageResponse.ok && !pageData.error) {
-                eligiblePages.push(pageData);
-                console.log(`✅ Page récupérée: ${pageData.name} (${pageData.id})`);
-              } else {
-                console.log(`❌ Erreur pour la page ${pageId}:`, pageData);
-              }
-            } catch (error) {
-              console.error(`Erreur lors de la récupération de la page ${pageId}:`, error);
-            }
-          }
-
-          console.log('Total de pages récupérées via permissions:', eligiblePages.length);
-        }
-      } catch (error) {
-        console.error('Erreur lors de la récupération via permissions:', error);
-      }
-    }
+    // Filtrer les pages qui ont les permissions nécessaires
+    const eligiblePages = pagesData.data.filter(page => {
+      // Vérifier que la page a les tâches nécessaires pour la messagerie
+      const requiredTasks = ['MESSAGING', 'MANAGE'];
+      return requiredTasks.some(task => page.tasks?.includes(task));
+    });
 
     if (eligiblePages.length === 0) {
-      console.error('Aucune page Facebook trouvée pour cet utilisateur');
       return NextResponse.redirect(
         new URL('/dashboard/channels?error=no_eligible_pages', request.url)
       );
