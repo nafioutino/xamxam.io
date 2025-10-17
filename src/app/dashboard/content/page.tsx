@@ -374,8 +374,57 @@ export default function ContentPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Afficher un message de succès avec le lien si disponible
-        if (data.postLink) {
+        // Afficher un message de succès adapté selon le canal et le mode
+        if (selectedChannelType === 'tiktok') {
+          // Message spécifique pour TikTok
+          if (data.tiktokUrl) {
+            // Mode direct avec lien
+            toast.success(
+              (t) => (
+                <div className="flex flex-col gap-2">
+                  <span className="font-semibold">🎉 {data.message}</span>
+                  <a 
+                    href={data.tiktokUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-pink-600 hover:text-pink-800 underline text-sm flex items-center gap-1"
+                  >
+                    <Music className="w-4 h-4" />
+                    Voir sur TikTok
+                  </a>
+                </div>
+              ),
+              {
+                duration: 8000,
+                position: 'top-right',
+              }
+            );
+          } else if (data.mode === 'draft') {
+            // Mode brouillon avec instructions
+            toast.success(
+              (t) => (
+                <div className="flex flex-col gap-2 max-w-sm">
+                  <span className="font-semibold">📝 {data.message}</span>
+                  <p className="text-sm text-gray-600">{data.instructions}</p>
+                  <div className="flex items-center gap-1 text-xs text-pink-600 mt-1">
+                    <Music className="w-3 h-3" />
+                    <span>Ouvrez TikTok → Notifications 🔔</span>
+                  </div>
+                </div>
+              ),
+              {
+                duration: 10000,
+                position: 'top-right',
+              }
+            );
+          } else {
+            toast.success(`🎉 ${data.message}`, {
+              duration: 5000,
+              position: 'top-right',
+            });
+          }
+        } else if (data.postLink) {
+          // Autres plateformes avec lien
           toast.success(
             (t) => (
               <div className="flex flex-col gap-2">
@@ -849,13 +898,13 @@ export default function ContentPage() {
                         onChange={(e) => setPrivacy(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                       >
-                        <option value="private">Moi uniquement</option>
-                        <option value="friends">Amis</option>
-                        <option value="public">Tout le monde</option>
+                        <option value="SELF_ONLY">Moi uniquement</option>
+                        <option value="MUTUAL_FOLLOW_FRIENDS">Amis</option>
+                        <option value="PUBLIC_TO_EVERYONE">Tout le monde</option>
                       </select>
                       <p className="text-xs text-gray-500 mt-1">
-                        {privacy === 'private' ? '🔒 Visible par vous seulement' : 
-                         privacy === 'friends' ? '👥 Visible par vos amis' : 
+                        {privacy === 'SELF_ONLY' ? '🔒 Visible par vous seulement' : 
+                         privacy === 'MUTUAL_FOLLOW_FRIENDS' ? '👥 Visible par vos amis' : 
                          '🌍 Visible par tous les utilisateurs TikTok'}
                       </p>
                     </div>

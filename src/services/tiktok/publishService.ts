@@ -197,7 +197,10 @@ export class TikTokPublishService {
       let videoSize: number | undefined;
       if (videoFile) {
         videoSize = videoFile.size;
+        console.log(`[TikTok Service] Video file size: ${videoSize} bytes (${(videoSize / 1024 / 1024).toFixed(2)} MB)`);
       }
+
+      console.log(`[TikTok Service] Publishing with title: "${title}", privacy: ${privacy}, videoSize: ${videoSize}`);
 
       // Étape 1: Initialiser l'upload (Mode LIVE - toutes les permissions disponibles)
       const initResult = await this.initializeVideoUpload(
@@ -368,6 +371,9 @@ export class TikTokPublishService {
     }
 
     try {
+      console.log('[TikTok Service] Init upload with body:', JSON.stringify(body, null, 2));
+      console.log('[TikTok Service] URL:', url);
+      
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -378,6 +384,7 @@ export class TikTokPublishService {
       });
 
       const data: TikTokUploadInitResponse = await response.json();
+      console.log('[TikTok Service] Init upload response:', JSON.stringify(data, null, 2));
 
       // Vérifier si la réponse contient une erreur réelle (pas "ok")
       if (!response.ok || (data.error && data.error.code !== 'ok')) {
@@ -387,7 +394,7 @@ export class TikTokPublishService {
         if (data.error?.code === 'unaudited_client_can_only_post_to_private_accounts') {
           return {
             success: false,
-            error: 'Erreur de permissions TikTok. Vérifiez que votre application est bien en mode LIVE.',
+            error: 'Votre application TikTok doit passer l\'audit Content Posting pour publier en public. Pour l\'instant, seules les publications privées (SELF_ONLY) sont autorisées. Changez la visibilité à "Moi uniquement".',
             tikTokError: data.error
           };
         }

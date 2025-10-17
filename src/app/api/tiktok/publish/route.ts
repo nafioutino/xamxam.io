@@ -107,7 +107,14 @@ export async function POST(request: NextRequest) {
       message: publishMode === 'direct' 
         ? 'Vidéo publiée avec succès sur TikTok !' 
         : 'Vidéo uploadée en brouillon sur TikTok !',
-      mode: publishMode
+      mode: publishMode,
+      // Instructions pour retrouver la vidéo
+      instructions: publishMode === 'draft' 
+        ? 'Ouvrez l\'app TikTok et allez dans votre boîte de réception (icône cloche) pour finaliser et publier votre vidéo.'
+        : result.shareId 
+          ? `Votre vidéo est en ligne ! Partagez-la avec ce lien : https://www.tiktok.com/@me/video/${result.shareId}`
+          : 'Votre vidéo a été publiée sur votre profil TikTok.',
+      tiktokUrl: result.shareId ? `https://www.tiktok.com/@me/video/${result.shareId}` : null
     };
 
     return NextResponse.json(responseData);
