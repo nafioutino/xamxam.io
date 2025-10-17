@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     // Configuration TikTok
     const clientKey = process.env.TIKTOK_CLIENT_KEY;
     const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://xamxam.io';
     const redirectUri = `${baseUrl}/api/auth/callback/tiktok`;
 
     if (!clientKey || !clientSecret) {

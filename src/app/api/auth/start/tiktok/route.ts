@@ -10,7 +10,7 @@ export async function GET() {
     
     // Configuration TikTok
     const clientKey = process.env.TIKTOK_CLIENT_KEY;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://xamxam.io';
     const redirectUri = `${baseUrl}/api/auth/callback/tiktok`;
     
     if (!clientKey) {
@@ -25,7 +25,7 @@ export async function GET() {
     const authParams = new URLSearchParams({
       client_key: clientKey,
       redirect_uri: redirectUri,
-      scope: 'user.info.basic,user.info.profile,video.list,video.upload,video.publish', // Scopes pour TikTok incluant publication
+      scope: 'user.info.basic,user.info.profile,video.upload,video.publish', // Scopes approuvés pour TikTok en mode LIVE
       response_type: 'code',
       state: csrfState
     });

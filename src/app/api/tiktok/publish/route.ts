@@ -7,10 +7,12 @@ import { decryptToken } from '@/lib/encryption';
 import prisma from '@/lib/prisma';
 
 /**
- * Gère la publication de vidéos sur TikTok.
+ * Gère la publication de vidéos sur TikTok (MODE LIVE - PRODUCTION).
  * Supporte deux modes :
  * - Publication directe (video.publish scope)
  * - Upload en brouillon (video.upload scope)
+ * 
+ * Mode LIVE: Toutes les options de confidentialité disponibles
  */
 export async function POST(request: NextRequest) {
   const logPrefix = '[TikTok Publish API]';
@@ -20,7 +22,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const title = formData.get('title') as string;
     const publishMode = formData.get('publishMode') as string || 'draft'; // 'direct' ou 'draft'
-    const privacy = formData.get('privacy') as string || 'SELF_ONLY';
+    const privacy = formData.get('privacy') as string || 'PUBLIC_TO_EVERYONE';
     const videoFile = formData.get('video') as File | null;
     const videoUrl = formData.get('videoUrl') as string | null;
 
