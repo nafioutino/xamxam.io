@@ -11,7 +11,7 @@ export async function GET() {
     
     // Configuration Meta
     const clientId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://xamxam.io';
     const redirectUri = `${baseUrl}/api/auth/callback/meta`;
     
     if (!clientId) {
