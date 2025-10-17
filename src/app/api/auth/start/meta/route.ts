@@ -25,7 +25,7 @@ export async function GET() {
     const authParams = new URLSearchParams({
       client_id: clientId,
       redirect_uri: redirectUri,
-      scope: 'pages_show_list,pages_messaging,pages_read_engagement,pages_manage_posts,public_profile',
+      scope: 'pages_show_list,pages_messaging,pages_read_engagement,pages_manage_posts,business_management,public_profile',
       response_type: 'code',
       state: csrfState
     });
