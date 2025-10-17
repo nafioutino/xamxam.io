@@ -14,6 +14,11 @@ import prisma from '@/lib/prisma';
  * 
  * Mode LIVE: Toutes les options de confidentialité disponibles
  */
+
+// Configuration pour accepter les gros fichiers (jusqu'à 500MB)
+export const runtime = 'nodejs';
+export const maxDuration = 300; // 5 minutes timeout
+
 export async function POST(request: NextRequest) {
   const logPrefix = '[TikTok Publish API]';
   
