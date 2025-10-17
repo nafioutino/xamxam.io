@@ -151,7 +151,65 @@ export async function GET(request: NextRequest) {
     console.log('Nombre de pages:', pagesData.data.length);
 
     // Accepter toutes les pages retournées (l'utilisateur a déjà donné les permissions)
-    const eligiblePages = pagesData.data;
+    let eligiblePages = pagesData.data;
+
+    // Si /me/accounts retourne vide, essayer via les permissions granulaires
+    if (eligiblePages.length === 0) {
+      console.log('⚠️ /me/accounts est vide, tentative via /me/permissions...');
+      
+      try {
+        const permissionsUrl = new URL('https://graph.facebook.com/v23.0/me/permissions');
+        permissionsUrl.searchParams.append('access_token', longLivedToken);
+
+        const permissionsResponse = await fetch(permissionsUrl.toString());
+        const permissionsData: any = await permissionsResponse.json();
+
+        console.log('Permissions récupérées:', JSON.stringify(permissionsData, null, 2));
+
+        if (permissionsResponse.ok && permissionsData.data) {
+          // Extraire les IDs de pages depuis les permissions granulaires
+          const pageIds = new Set<string>();
+          
+          for (const permission of permissionsData.data) {
+            // Les permissions granulaires ont un champ "allowed_targets" avec les IDs
+            if (permission.allowed_targets && permission.allowed_targets.length > 0) {
+              permission.allowed_targets.forEach((target: any) => {
+                if (target.target_type === 'page') {
+                  pageIds.add(target.id);
+                }
+              });
+            }
+          }
+
+          console.log('IDs de pages extraits des permissions:', Array.from(pageIds));
+
+          // Récupérer les infos de chaque page
+          for (const pageId of pageIds) {
+            try {
+              const pageUrl = new URL(`https://graph.facebook.com/v23.0/${pageId}`);
+              pageUrl.searchParams.append('access_token', longLivedToken);
+              pageUrl.searchParams.append('fields', 'id,name,access_token,category,tasks,instagram_business_account{id,username,profile_picture_url}');
+
+              const pageResponse = await fetch(pageUrl.toString());
+              const pageData: any = await pageResponse.json();
+
+              if (pageResponse.ok && !pageData.error) {
+                eligiblePages.push(pageData);
+                console.log(`✅ Page récupérée: ${pageData.name} (${pageData.id})`);
+              } else {
+                console.log(`❌ Erreur pour la page ${pageId}:`, pageData);
+              }
+            } catch (error) {
+              console.error(`Erreur lors de la récupération de la page ${pageId}:`, error);
+            }
+          }
+
+          console.log('Total de pages récupérées via permissions:', eligiblePages.length);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération via permissions:', error);
+      }
+    }
 
     if (eligiblePages.length === 0) {
       console.error('Aucune page Facebook trouvée pour cet utilisateur');
