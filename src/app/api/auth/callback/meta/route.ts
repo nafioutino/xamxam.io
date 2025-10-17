@@ -130,11 +130,17 @@ export async function GET(request: NextRequest) {
     pagesUrl.searchParams.append('access_token', longLivedToken);
     pagesUrl.searchParams.append('fields', 'id,name,access_token,category,tasks');
 
+    console.log('🔍 Appel à l\'API Facebook /me/accounts');
+    console.log('URL complète:', pagesUrl.toString().replace(longLivedToken, 'TOKEN_MASQUÉ'));
+
     const pagesResponse = await fetch(pagesUrl.toString());
+    console.log('Status de la réponse:', pagesResponse.status, pagesResponse.statusText);
+    
     const pagesData: MetaPagesResponse | MetaError = await pagesResponse.json();
+    console.log('Réponse complète de /me/accounts:', JSON.stringify(pagesData, null, 2));
 
     if (!pagesResponse.ok || 'error' in pagesData) {
-      console.error('Pages fetch failed:', pagesData);
+      console.error('❌ Pages fetch failed:', pagesData);
       return NextResponse.redirect(
         new URL('/dashboard/channels?error=pages_fetch_failed', request.url)
       );
