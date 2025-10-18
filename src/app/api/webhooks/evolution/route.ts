@@ -117,39 +117,52 @@ async function handleMessageUpsert(payload: any) {
   // Extraire le numéro de téléphone du remoteJid (format: 5585988888888@s.whatsapp.net)
   const phoneNumber = data.key.remoteJid.split('@')[0];
   
-  // Trouver ou créer le client
-  let customer = await prisma.customer.findFirst({
-    where: {
-      shopId: channel.shopId,
-      phone: phoneNumber,
-    },
-  });
-
-  if (!customer) {
-    // Récupérer les informations utilisateur WhatsApp (incluant l'avatar)
-    const userInfo = await getWhatsAppUserInfo(instance, phoneNumber);
-    
-    customer = await prisma.customer.create({
-      data: {
+  // Ne créer un customer que pour les messages entrants (fromMe = false)
+  let customer = null;
+  
+  if (!data.key.fromMe) {
+    // Trouver ou créer le client uniquement pour les messages entrants
+    customer = await prisma.customer.findFirst({
+      where: {
         shopId: channel.shopId,
-        name: data.pushName || userInfo.name,
         phone: phoneNumber,
-        avatarUrl: userInfo.avatarUrl,
       },
     });
-  } else if (!customer.avatarUrl) {
-    // Si le customer existe mais n'a pas d'avatar, essayer de le récupérer
-    try {
+
+    if (!customer) {
+      // Récupérer les informations utilisateur WhatsApp (incluant l'avatar)
       const userInfo = await getWhatsAppUserInfo(instance, phoneNumber);
-      if (userInfo.avatarUrl) {
-        customer = await prisma.customer.update({
-          where: { id: customer.id },
-          data: { avatarUrl: userInfo.avatarUrl },
-        });
+      
+      customer = await prisma.customer.create({
+        data: {
+          shopId: channel.shopId,
+          name: data.pushName || userInfo.name,
+          phone: phoneNumber,
+          avatarUrl: userInfo.avatarUrl,
+        },
+      });
+    } else if (!customer.avatarUrl) {
+      // Si le customer existe mais n'a pas d'avatar, essayer de le récupérer
+      try {
+        const userInfo = await getWhatsAppUserInfo(instance, phoneNumber);
+        if (userInfo.avatarUrl) {
+          customer = await prisma.customer.update({
+            where: { id: customer.id },
+            data: { avatarUrl: userInfo.avatarUrl },
+          });
+        }
+      } catch (error) {
+        console.error('Error updating customer avatar:', error);
       }
-    } catch (error) {
-      console.error('Error updating customer avatar:', error);
     }
+  } else {
+    // Pour les messages sortants, essayer de trouver le customer existant sans en créer un nouveau
+    customer = await prisma.customer.findFirst({
+      where: {
+        shopId: channel.shopId,
+        phone: phoneNumber,
+      },
+    });
   }
 
   // Trouver ou créer la conversation
@@ -162,6 +175,12 @@ async function handleMessageUpsert(payload: any) {
   });
 
   if (!conversation) {
+    // Ne créer une conversation que si on a un customer (message entrant)
+    if (!customer) {
+      console.warn('Ignoring outgoing message without existing customer/conversation:', data.key.remoteJid);
+      return;
+    }
+    
     conversation = await prisma.conversation.create({
       data: {
         shopId: channel.shopId,
