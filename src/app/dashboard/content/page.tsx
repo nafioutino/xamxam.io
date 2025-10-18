@@ -639,6 +639,15 @@ export default function ContentPage() {
                         const newChannelType = channelType.key;
                         setSelectedChannelType(newChannelType);
 
+                        // Sélection automatique du type de contenu selon la plateforme
+                        if (newChannelType === 'tiktok') {
+                          setContentType('video'); // TikTok = vidéo obligatoire
+                        } else if (newChannelType === 'instagram-dm') {
+                          setContentType('image'); // Instagram = image recommandée
+                        } else if (newChannelType === 'facebook-page') {
+                          setContentType('text'); // Facebook = texte par défaut
+                        }
+
                         // Logique de sélection du canal
                         let firstChannelOfNewType;
                         if (newChannelType === 'facebook-page') {
@@ -995,9 +1004,9 @@ export default function ContentPage() {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    {selectedChannelType === 'tiktok' ? 'Description' : 
-                     selectedChannelType === 'facebook-page' ? 'Que voulez-vous dire ?' : 
-                     selectedChannelType === 'instagram-dm' ? 'Légende' : 'Message'}
+                    {selectedChannelType === 'tiktok' ? 'Description de la vidéo' : 
+                     selectedChannelType === 'facebook-page' ? 'Votre publication Facebook' : 
+                     selectedChannelType === 'instagram-dm' ? 'Légende Instagram' : 'Message'}
                   </label>
                   {selectedChannelType !== 'tiktok' && (
                     <button
@@ -1023,14 +1032,14 @@ export default function ContentPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={
-                    selectedChannelType === 'tiktok' ? 'Décrivez votre vidéo TikTok... Ajoutez des hashtags populaires !' :
-                    selectedChannelType === 'facebook-page' ? 'Que voulez-vous partager avec vos amis ?' :
-                    selectedChannelType === 'instagram-dm' ? 'Rédigez une légende captivante... #hashtags' :
-                    'Écrivez votre message ou cliquez sur \'Générer avec l\'IA\'...'
+                    selectedChannelType === 'tiktok' ? 'Décrivez votre vidéo en quelques mots... #fyp #viral #trending' :
+                    selectedChannelType === 'facebook-page' ? 'Partagez vos pensées, actualités, ou posez une question à votre communauté...' :
+                    selectedChannelType === 'instagram-dm' ? 'Rédigez une légende captivante pour votre photo/vidéo... #hashtags #inspiration' :
+                    'Écrivez votre message...'
                   }
                   rows={6}
                   className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-blue-500 resize-none ${
-                    selectedChannelType === 'tiktok' ? 'focus:ring-pink-500 focus:border-pink-500' :
+                    selectedChannelType === 'tiktok' ? 'focus:ring-gray-500 focus:border-gray-500' :
                     selectedChannelType === 'facebook-page' ? 'focus:ring-blue-500 focus:border-blue-500' :
                     selectedChannelType === 'instagram-dm' ? 'focus:ring-purple-500 focus:border-purple-500' :
                     'focus:ring-blue-500 focus:border-blue-500'
@@ -1039,19 +1048,29 @@ export default function ContentPage() {
                 <div className="flex justify-between items-center mt-1">
                   <p className="text-sm text-gray-500">
                     {message.length} caractères
-                    {selectedChannelType === 'tiktok' && message.length > 150 && (
-                      <span className="text-orange-500 ml-1">(Optimal: 100-150 caractères)</span>
+                    {selectedChannelType === 'tiktok' && message.length > 100 && (
+                      <span className="text-orange-500 ml-1">(Optimal: 80-100 caractères)</span>
                     )}
-                    {selectedChannelType === 'facebook-page' && message.length > 250 && (
-                      <span className="text-orange-500 ml-1">(Optimal: moins de 250 caractères)</span>
+                    {selectedChannelType === 'facebook-page' && message.length > 400 && (
+                      <span className="text-orange-500 ml-1">(Optimal: moins de 400 caractères)</span>
                     )}
-                    {selectedChannelType === 'instagram-dm' && message.length > 125 && (
-                      <span className="text-orange-500 ml-1">(Optimal: 125 caractères max)</span>
+                    {selectedChannelType === 'instagram-dm' && message.length > 150 && (
+                      <span className="text-orange-500 ml-1">(Optimal: 125-150 caractères + hashtags)</span>
                     )}
                   </p>
                   {selectedChannelType === 'tiktok' && (
-                    <p className="text-xs text-pink-600">
+                    <p className="text-xs text-gray-600">
                       💡 Utilisez des hashtags tendance
+                    </p>
+                  )}
+                  {selectedChannelType === 'instagram-dm' && (
+                    <p className="text-xs text-purple-600">
+                      📸 Contenu visuel requis
+                    </p>
+                  )}
+                  {selectedChannelType === 'facebook-page' && (
+                    <p className="text-xs text-blue-600">
+                      📝 Texte, images ou vidéos
                     </p>
                   )}
                 </div>
@@ -1189,105 +1208,148 @@ export default function ContentPage() {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-3 gap-4">
-                <button
-                  onClick={() => setContentType('text')}
-                  disabled={selectedChannelType === 'tiktok'}
-                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
-                    selectedChannelType === 'tiktok' 
-                      ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-50'
-                      : contentType === 'text'
-                      ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-lg'
-                      : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-md'
+              {/* Types de contenu adaptés par plateforme */}
+              {selectedChannelType === 'facebook-page' && (
+                <div className="grid grid-cols-3 gap-4">
+                  <button
+                    onClick={() => setContentType('text')}
+                    className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                      contentType === 'text'
+                        ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-lg'
+                        : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-md'
                     }`}
-                >
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className={`p-3 rounded-xl transition-colors ${
-                      selectedChannelType === 'tiktok'
-                        ? 'bg-gray-200'
-                        : contentType === 'text' ? 'bg-blue-500' : 'bg-gray-100 group-hover:bg-blue-100'
+                  >
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className={`p-3 rounded-xl transition-colors ${
+                        contentType === 'text' ? 'bg-blue-500' : 'bg-gray-100 group-hover:bg-blue-100'
                       }`}>
-                      <FileText className={`h-6 w-6 ${
-                        selectedChannelType === 'tiktok'
-                          ? 'text-gray-400'
-                          : contentType === 'text' ? 'text-white' : 'text-gray-600 group-hover:text-blue-600'
+                        <FileText className={`h-6 w-6 ${
+                          contentType === 'text' ? 'text-white' : 'text-gray-600 group-hover:text-blue-600'
                         }`} />
+                      </div>
+                      <span className={`font-medium ${
+                        contentType === 'text' ? 'text-blue-700' : 'text-gray-700'
+                      }`}>Texte seul</span>
+                      <span className="text-xs text-blue-600">Statuts, pensées</span>
                     </div>
-                    <span className={`font-medium ${
-                      selectedChannelType === 'tiktok'
-                        ? 'text-gray-400'
-                        : contentType === 'text' ? 'text-blue-700' : 'text-gray-700'
-                      }`}>Texte</span>
-                    {selectedChannelType === 'facebook-page' && contentType !== 'text' && (
-                      <span className="text-xs text-blue-600">Idéal pour Facebook</span>
-                    )}
-                  </div>
-                </button>
-                <button
-                  onClick={() => setContentType('image')}
-                  disabled={selectedChannelType === 'tiktok'}
-                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
-                    selectedChannelType === 'tiktok' 
-                      ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-50'
-                      : contentType === 'image'
-                      ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-300 shadow-lg'
-                      : 'bg-white border-gray-200 hover:border-green-200 hover:shadow-md'
+                  </button>
+                  <button
+                    onClick={() => setContentType('image')}
+                    className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                      contentType === 'image'
+                        ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-300 shadow-lg'
+                        : 'bg-white border-gray-200 hover:border-green-200 hover:shadow-md'
                     }`}
-                >
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className={`p-3 rounded-xl transition-colors ${
-                      selectedChannelType === 'tiktok'
-                        ? 'bg-gray-200'
-                        : contentType === 'image' ? 'bg-green-500' : 'bg-gray-100 group-hover:bg-green-100'
+                  >
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className={`p-3 rounded-xl transition-colors ${
+                        contentType === 'image' ? 'bg-green-500' : 'bg-gray-100 group-hover:bg-green-100'
                       }`}>
-                      <Image 
-                        className={`h-6 w-6 ${
-                          selectedChannelType === 'tiktok'
-                            ? 'text-gray-400'
-                            : contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
-                        }`} 
-                      />
-                    </div>
-                    <span className={`font-medium ${
-                      selectedChannelType === 'tiktok'
-                        ? 'text-gray-400'
-                        : contentType === 'image' ? 'text-green-700' : 'text-gray-700'
-                      }`}>Image</span>
-                    {selectedChannelType === 'instagram-dm' && contentType !== 'image' && (
-                      <span className="text-xs text-purple-600">Parfait pour Instagram</span>
-                    )}
-                  </div>
-                </button>
-                <button
-                  onClick={() => setContentType('video')}
-                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${contentType === 'video'
-                      ? selectedChannelType === 'tiktok' 
-                        ? 'bg-gradient-to-br from-pink-50 to-purple-100 border-pink-300 shadow-lg'
-                        : 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 shadow-lg'
-                      : 'bg-white border-gray-200 hover:border-purple-200 hover:shadow-md'
-                    }`}
-                >
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className={`p-3 rounded-xl transition-colors ${
-                      contentType === 'video' 
-                        ? selectedChannelType === 'tiktok' ? 'bg-pink-500' : 'bg-purple-500'
-                        : 'bg-gray-100 group-hover:bg-purple-100'
-                      }`}>
-                      <Video className={`h-6 w-6 ${
-                        contentType === 'video' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                        <Image className={`h-6 w-6 ${
+                          contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
                         }`} />
+                      </div>
+                      <span className={`font-medium ${
+                        contentType === 'image' ? 'text-green-700' : 'text-gray-700'
+                      }`}>Photo</span>
+                      <span className="text-xs text-blue-600">Stories, posts</span>
                     </div>
-                    <span className={`font-medium ${
-                      contentType === 'video' 
-                        ? selectedChannelType === 'tiktok' ? 'text-pink-700' : 'text-purple-700'
-                        : 'text-gray-700'
+                  </button>
+                  <button
+                    onClick={() => setContentType('video')}
+                    className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                      contentType === 'video'
+                        ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 shadow-lg'
+                        : 'bg-white border-gray-200 hover:border-purple-200 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className={`p-3 rounded-xl transition-colors ${
+                        contentType === 'video' ? 'bg-purple-500' : 'bg-gray-100 group-hover:bg-purple-100'
+                      }`}>
+                        <Video className={`h-6 w-6 ${
+                          contentType === 'video' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                        }`} />
+                      </div>
+                      <span className={`font-medium ${
+                        contentType === 'video' ? 'text-purple-700' : 'text-gray-700'
                       }`}>Vidéo</span>
-                    {selectedChannelType === 'tiktok' && (
-                      <span className="text-xs text-pink-600 font-medium">Obligatoire</span>
-                    )}
+                      <span className="text-xs text-blue-600">Reels, stories</span>
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              {/* Types de contenu pour Instagram */}
+              {selectedChannelType === 'instagram-dm' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setContentType('image')}
+                    className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                      contentType === 'image'
+                        ? 'bg-gradient-to-br from-purple-50 to-pink-100 border-purple-300 shadow-lg'
+                        : 'bg-white border-gray-200 hover:border-purple-200 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className={`p-3 rounded-xl transition-colors ${
+                        contentType === 'image' ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-100 group-hover:bg-purple-100'
+                      }`}>
+                        <Image className={`h-6 w-6 ${
+                          contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                        }`} />
+                      </div>
+                      <span className={`font-medium ${
+                        contentType === 'image' ? 'text-purple-700' : 'text-gray-700'
+                      }`}>Photo</span>
+                      <span className="text-xs text-purple-600 font-medium">Recommandé</span>
+                      <span className="text-xs text-gray-500">Format carré/vertical</span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setContentType('video')}
+                    className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                      contentType === 'video'
+                        ? 'bg-gradient-to-br from-purple-50 to-pink-100 border-purple-300 shadow-lg'
+                        : 'bg-white border-gray-200 hover:border-purple-200 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className={`p-3 rounded-xl transition-colors ${
+                        contentType === 'video' ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-100 group-hover:bg-purple-100'
+                      }`}>
+                        <Video className={`h-6 w-6 ${
+                          contentType === 'video' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                        }`} />
+                      </div>
+                      <span className={`font-medium ${
+                        contentType === 'video' ? 'text-purple-700' : 'text-gray-700'
+                      }`}>Vidéo</span>
+                      <span className="text-xs text-purple-600">Reels & Stories</span>
+                      <span className="text-xs text-gray-500">Format vertical</span>
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              {/* Types de contenu pour TikTok */}
+              {selectedChannelType === 'tiktok' && (
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="group relative p-8 rounded-xl border-2 bg-gradient-to-br from-gray-50 to-gray-100 border-gray-300 shadow-lg">
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="p-4 rounded-xl bg-black">
+                        <Video className="h-8 w-8 text-white" />
+                      </div>
+                      <span className="font-semibold text-xl text-gray-700">Vidéo uniquement</span>
+                      <span className="text-sm text-gray-600 font-medium">Format vertical 9:16 optimal</span>
+                      <div className="text-center space-y-1">
+                        <p className="text-xs text-gray-500">Durée: 15 secondes à 10 minutes</p>
+                        <p className="text-xs text-gray-500">Résolution: 1080x1920px recommandée</p>
+                      </div>
+                    </div>
                   </div>
-                </button>
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Section image (conditionnelle) */}
