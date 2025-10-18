@@ -7,11 +7,18 @@ import { decryptToken } from '@/lib/encryption';
 import prisma from '@/lib/prisma';
 
 /**
- * Gère la publication de vidéos sur TikTok.
+ * Gère la publication de vidéos sur TikTok (MODE LIVE - PRODUCTION).
  * Supporte deux modes :
  * - Publication directe (video.publish scope)
  * - Upload en brouillon (video.upload scope)
+ * 
+ * Mode LIVE: Toutes les options de confidentialité disponibles
  */
+
+// Configuration pour accepter les gros fichiers (jusqu'à 500MB)
+export const runtime = 'nodejs';
+export const maxDuration = 300; // 5 minutes timeout
+
 export async function POST(request: NextRequest) {
   const logPrefix = '[TikTok Publish API]';
   
@@ -20,7 +27,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const title = formData.get('title') as string;
     const publishMode = formData.get('publishMode') as string || 'draft'; // 'direct' ou 'draft'
-    const privacy = formData.get('privacy') as string || 'SELF_ONLY';
+    const privacy = formData.get('privacy') as string || 'PUBLIC_TO_EVERYONE';
     const videoFile = formData.get('video') as File | null;
     const videoUrl = formData.get('videoUrl') as string | null;
 
@@ -100,7 +107,14 @@ export async function POST(request: NextRequest) {
       message: publishMode === 'direct' 
         ? 'Vidéo publiée avec succès sur TikTok !' 
         : 'Vidéo uploadée en brouillon sur TikTok !',
-      mode: publishMode
+      mode: publishMode,
+      // Instructions pour retrouver la vidéo
+      instructions: publishMode === 'draft' 
+        ? 'Ouvrez l\'app TikTok et allez dans votre boîte de réception (icône cloche) pour finaliser et publier votre vidéo.'
+        : result.shareId 
+          ? `Votre vidéo est en ligne ! Partagez-la avec ce lien : https://www.tiktok.com/@me/video/${result.shareId}`
+          : 'Votre vidéo a été publiée sur votre profil TikTok.',
+      tiktokUrl: result.shareId ? `https://www.tiktok.com/@me/video/${result.shareId}` : null
     };
 
     return NextResponse.json(responseData);

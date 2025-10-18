@@ -108,6 +108,7 @@ interface TikTokPublishResponse {
 
 // ==================================================================
 // ===                 SERVICE DE PUBLICATION TIKTOK             ===
+// ===                     (MODE LIVE - PRODUCTION)              ===
 // ==================================================================
 
 export class TikTokPublishService {
@@ -184,7 +185,7 @@ export class TikTokPublishService {
    */
   static async publishVideoLegacy(options: TikTokPublishOptionsLegacy): Promise<TikTokPublishResult> {
     try {
-      const { title, accessToken, videoUrl, videoFile, privacy = 'SELF_ONLY' } = options;
+      const { title, accessToken, videoUrl, videoFile, privacy = 'PUBLIC_TO_EVERYONE' } = options;
 
       // Validation
       const validationError = this.validatePublishOptions(options);
@@ -196,30 +197,19 @@ export class TikTokPublishService {
       let videoSize: number | undefined;
       if (videoFile) {
         videoSize = videoFile.size;
+        console.log(`[TikTok Service] Video file size: ${videoSize} bytes (${(videoSize / 1024 / 1024).toFixed(2)} MB)`);
       }
 
-      // Étape 1: Initialiser l'upload
-      let initResult = await this.initializeVideoUpload(
+      console.log(`[TikTok Service] Publishing with title: "${title}", privacy: ${privacy}, videoSize: ${videoSize}`);
+
+      // Étape 1: Initialiser l'upload (Mode LIVE - toutes les permissions disponibles)
+      const initResult = await this.initializeVideoUpload(
         accessToken, 
         title, 
         privacy, 
         false, // publication directe
         videoSize
       );
-      
-      // Si erreur d'audit client et privacy n'est pas SELF_ONLY, réessayer avec SELF_ONLY
-      if (!initResult.success && 
-          initResult.tikTokError?.code === 'unaudited_client_can_only_post_to_private_accounts' &&
-          privacy !== 'SELF_ONLY') {
-        console.log('Tentative de republication avec privacy SELF_ONLY pour client non audité');
-        initResult = await this.initializeVideoUpload(
-          accessToken, 
-          title, 
-          'SELF_ONLY', 
-          false, // publication directe
-          videoSize
-        );
-      }
       
       if (!initResult.success) {
         return initResult;
@@ -258,7 +248,7 @@ export class TikTokPublishService {
    */
   static async uploadVideoDraft(options: TikTokPublishOptionsLegacy): Promise<TikTokPublishResult> {
     try {
-      const { title, accessToken, videoUrl, videoFile, privacy = 'SELF_ONLY' } = options;
+      const { title, accessToken, videoUrl, videoFile, privacy = 'PUBLIC_TO_EVERYONE' } = options;
 
       // Validation
       const validationError = this.validatePublishOptions(options);
@@ -381,6 +371,9 @@ export class TikTokPublishService {
     }
 
     try {
+      console.log('[TikTok Service] Init upload with body:', JSON.stringify(body, null, 2));
+      console.log('[TikTok Service] URL:', url);
+      
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -391,16 +384,34 @@ export class TikTokPublishService {
       });
 
       const data: TikTokUploadInitResponse = await response.json();
+      console.log('[TikTok Service] Init upload response:', JSON.stringify(data, null, 2));
 
       // Vérifier si la réponse contient une erreur réelle (pas "ok")
       if (!response.ok || (data.error && data.error.code !== 'ok')) {
         console.error('TikTok upload init error:', data.error);
         
-        // Si c'est une erreur d'audit client, suggérer SELF_ONLY
+        // Gestion d'erreurs spécifiques pour le mode LIVE
         if (data.error?.code === 'unaudited_client_can_only_post_to_private_accounts') {
           return {
             success: false,
-            error: 'Votre application TikTok n\'est pas encore auditée. Seules les publications privées (SELF_ONLY) sont autorisées.',
+            error: 'Votre application TikTok doit passer l\'audit Content Posting pour publier en public. Pour l\'instant, seules les publications privées (SELF_ONLY) sont autorisées. Changez la visibilité à "Moi uniquement".',
+            tikTokError: data.error
+          };
+        }
+        
+        // Autres erreurs courantes en mode LIVE
+        if (data.error?.code === 'access_token_invalid') {
+          return {
+            success: false,
+            error: 'Token d\'accès TikTok invalide. Reconnexion requise.',
+            tikTokError: data.error
+          };
+        }
+        
+        if (data.error?.code === 'rate_limit_exceeded') {
+          return {
+            success: false,
+            error: 'Limite de taux TikTok dépassée. Veuillez réessayer plus tard.',
             tikTokError: data.error
           };
         }

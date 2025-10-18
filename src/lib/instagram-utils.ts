@@ -38,8 +38,8 @@ export async function fetchInstagramUserProfile(
     // Déchiffrer le token d'accès
     const decryptedToken = decryptToken(instagramAccessToken);
     
-    // Utiliser Facebook Graph API pour récupérer le profil Instagram
-    const apiUrl = new URL(`https://graph.facebook.com/v23.0/${userId}`);
+    // Utiliser l'API Instagram native pour récupérer le profil
+    const apiUrl = new URL(`https://graph.instagram.com/v21.0/${userId}`);
     apiUrl.searchParams.append('fields', 'id,username,name,profile_pic');
     apiUrl.searchParams.append('access_token', decryptedToken);
 

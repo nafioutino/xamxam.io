@@ -1,17 +1,25 @@
+// /app/api/webhooks/instagram/route.ts
+
 // ==================================================================
 // ===                        IMPORTS                             ===
 // ==================================================================
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import prisma from '@/lib/prisma';
-import { ChannelType } from '@/generated/prisma';
-import { getInstagramUserInfo } from '@/lib/instagram-utils';
+import { ChannelType, ConversationStatus } from '@/generated/prisma';
+import { getInstagramUserInfo, isInstagramUserId } from '@/lib/instagram-utils';
+import { verifyWebhookSignature } from '@/lib/encryption';
 
+// Préfixe pour tous les logs, pour les retrouver facilement.
 const logPrefix = '[Instagram Webhook]';
 
 // ==================================================================
 // ===      MÉTHODE GET : VÉRIFICATION DU WEBHOOK (UNE SEULE FOIS) ===
 // ==================================================================
+/**
+ * Gère la requête de vérification envoyée par Meta lors de la configuration du webhook Instagram.
+ * C'est une poignée de main pour prouver que nous sommes bien le propriétaire de l'URL.
+ */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const mode = searchParams.get('hub.mode');
@@ -32,11 +40,18 @@ export async function GET(request: NextRequest) {
 // ==================================================================
 // ===      MÉTHODE POST : RÉCEPTION DES ÉVÉNEMENTS INSTAGRAM     ===
 // ==================================================================
+/**
+ * Reçoit les événements en temps réel d'Instagram via Meta.
+ * Spécialement conçu pour gérer les messages Instagram DM.
+ */
 export async function POST(request: NextRequest) {
   console.log(`${logPrefix} Received a POST request.`);
-
+  
+  let rawBody: string = '';
+  let body: any;
+  
   try {
-    // --- ÉTAPE 1: RÉCUPÉRER ET VÉRIFIER LA SIGNATURE ---
+    // --- ÉTAPE 1: SÉCURITÉ - VALIDER LA SIGNATURE DE LA REQUÊTE ---
     const signature = request.headers.get('x-hub-signature-256');
     if (!signature) {
       console.error(`${logPrefix} Missing x-hub-signature-256 header.`);
@@ -51,40 +66,49 @@ export async function POST(request: NextRequest) {
       console.error(`${logPrefix} INSTAGRAM_CLIENT_SECRET manquant.`);
       return new NextResponse('Server configuration error', { status: 500 });
     }
+    
+    console.log(`${logPrefix} DEBUG - Utilisation forcée de FACEBOOK_APP_SECRET`);
 
-    // Lire le corps brut du webhook (sans parsing)
-    const arrayBuffer = await request.arrayBuffer();
-    const rawBody = Buffer.from(arrayBuffer);
-
-    // Calcul de la signature attendue
+    // Validation de la signature avec logs de débogage détaillés
+    console.log(`${logPrefix} DEBUG - App Secret utilisé: ${appSecret ? appSecret.substring(0, 8) + '...' : 'AUCUN'}`);
+    console.log(`${logPrefix} DEBUG - Signature reçue: ${signature}`);
+    console.log(`${logPrefix} DEBUG - Longueur du body: ${rawBody.length}`);
+    
+    // Test avec la fonction d'encryption.ts (méthode alternative)
+    const isValidWithEncryption = verifyWebhookSignature(rawBody, signature, appSecret);
+    console.log(`${logPrefix} DEBUG - Validation avec encryption.ts: ${isValidWithEncryption}`);
+    
+    // Test avec la méthode directe (comme Meta)
     const expectedSignature = `sha256=${crypto
       .createHmac('sha256', appSecret)
       .update(rawBody)
       .digest('hex')}`;
-
-    // Logs détaillés
-    console.log(`${logPrefix} DEBUG - Signature reçue:`, signature);
-    console.log(`${logPrefix} DEBUG - Signature attendue:`, expectedSignature);
-    console.log(`${logPrefix} DEBUG - Signatures match:`, signature === expectedSignature);
-
-    // Comparaison sécurisée
-    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+    
+    console.log(`${logPrefix} DEBUG - Signature calculée directe: ${expectedSignature}`);
+    
+    // Utiliser la fonction d'encryption.ts qui gère mieux les différences d'encodage
+    if (!isValidWithEncryption) {
       console.error(`${logPrefix} Invalid signature.`);
-      console.error(`${logPrefix} Received: ${signature}`);
-      console.error(`${logPrefix} Expected: ${expectedSignature}`);
+      console.error(`${logPrefix} Reçue: ${signature}`);
+      console.error(`${logPrefix} Attendue: ${expectedSignature}`);
       return new NextResponse('Forbidden', { status: 403 });
     }
-
     console.log(`${logPrefix} Signature validated successfully.`);
 
-    // --- ÉTAPE 2: PARSER LE CORPS APRÈS VALIDATION ---
-    const body = JSON.parse(rawBody.toString('utf8'));
+    // --- ÉTAPE 2: PARSING ET VALIDATION DU BODY ---
+    try {
+      body = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error(`${logPrefix} Failed to parse JSON body:`, parseError);
+      return new NextResponse('Bad Request - Invalid JSON', { status: 400 });
+    }
+    
     console.log(`${logPrefix} Parsed body:`, JSON.stringify(body, null, 2));
 
-    // Validation spécifique à Instagram
-    if (body.object !== 'instagram') {
-      console.warn(`${logPrefix} Received webhook for object type: ${body.object}, expected 'instagram'.`);
-      return NextResponse.json({ status: 'ignored' }, { status: 200 });
+    // Validation spécifique Instagram
+    if (!body.object || body.object !== 'instagram') {
+      console.warn(`${logPrefix} Received webhook for object type: ${body.object}, expected 'instagram'. Ignoring.`);
+      return NextResponse.json({ status: 'ignored', reason: 'not_instagram_object' }, { status: 200 });
     }
 
     if (!body.entry || !Array.isArray(body.entry)) {
@@ -92,72 +116,145 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: 'no_entries' }, { status: 200 });
     }
 
-    // --- ÉTAPE 3: TRAITEMENT DES ENTRÉES ---
+    // --- ÉTAPE 3: TRAITEMENT SYNCHRONE DES MESSAGES INSTAGRAM ---
+    let processedMessages = 0;
+    let errors = 0;
+
     for (const entry of body.entry) {
-      if (entry.messaging && Array.isArray(entry.messaging)) {
-        for (const event of entry.messaging) {
-          await processInstagramMessage(event);
+      if (!entry.messaging || !Array.isArray(entry.messaging)) {
+        console.log(`${logPrefix} Entry ${entry.id} has no messaging events, skipping.`);
+        continue;
+      }
+
+      for (const event of entry.messaging) {
+        if (event.message) {
+          try {
+            console.log(`${logPrefix} Processing Instagram message event...`);
+            await processInstagramMessage(event);
+            processedMessages++;
+          } catch (messageError) {
+            console.error(`${logPrefix} Error processing individual message:`, messageError);
+            errors++;
+            // Continue processing other messages even if one fails
+          }
+        } else {
+          console.log(`${logPrefix} Received non-message event (delivery, read, reaction, etc.), skipping.`);
         }
       }
     }
 
-    return NextResponse.json({ status: 'success' }, { status: 200 });
+    // --- ÉTAPE 4: RÉPONSE AVEC STATISTIQUES ---
+    const responseData = {
+      status: 'success',
+      processed: processedMessages,
+      errors: errors,
+      timestamp: new Date().toISOString(),
+      platform: 'instagram'
+    };
+
+    console.log(`${logPrefix} Processing completed:`, responseData);
+    return NextResponse.json(responseData, { status: 200 });
 
   } catch (error) {
-    console.error(`${logPrefix} Error processing webhook:`, error);
+    console.error(`${logPrefix} CRITICAL ERROR in POST handler:`, error);
+    
+    // Log détaillé pour le débogage
+    console.error(`${logPrefix} Request details:`, {
+      headers: Object.fromEntries(request.headers.entries()),
+      url: request.url,
+      method: request.method,
+      bodyLength: rawBody?.length || 0
+    });
+    
+    // En cas d'erreur critique, on renvoie une erreur 500 pour que Meta sache que ça a échoué
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
 
 // ==================================================================
-// ===                    TRAITEMENT DES MESSAGES                 ===
+// ===               FONCTION DE TRAITEMENT DU MESSAGE INSTAGRAM  ===
 // ==================================================================
+/**
+ * Traite un message Instagram individuel reçu de Meta.
+ * Spécialement adapté pour les messages Instagram DM.
+ */
 async function processInstagramMessage(event: any) {
+  const messageId = event.message?.mid;
+  const senderId = event.sender?.id; // Instagram-scoped ID (IGSID)
+  const recipientId = event.recipient?.id; // Instagram Business Account ID
+  const messageText = event.message?.text;
+  const timestamp = event.timestamp;
+  const attachments = event.message?.attachments;
+
+  console.log(`${logPrefix} Processing Instagram message:`, {
+    messageId,
+    senderId,
+    recipientId,
+    messageText: messageText?.substring(0, 100) + (messageText?.length > 100 ? '...' : ''),
+    timestamp,
+    hasAttachments: !!attachments?.length
+  });
+
+  // Validation des données requises
+  if (!senderId) {
+    console.error(`${logPrefix} Missing sender ID in Instagram message event`);
+    throw new Error('Missing sender ID');
+  }
+
+  if (!recipientId) {
+    console.error(`${logPrefix} Missing recipient ID in Instagram message event`);
+    throw new Error('Missing recipient ID');
+  }
+
+  if (!messageText && !attachments?.length) {
+    console.error(`${logPrefix} Missing message content for sender ${senderId}`);
+    throw new Error('Missing message content');
+  }
+
+  if (!messageId) {
+    console.error(`${logPrefix} Missing message ID for sender ${senderId}`);
+    throw new Error('Missing message ID');
+  }
+
   try {
-    console.log(`${logPrefix} Processing Instagram message event:`, JSON.stringify(event, null, 2));
-
-    // Vérifier si c'est bien un message
-    if (!event.message) {
-      console.log(`${logPrefix} Event is not a message, skipping.`);
-      return;
-    }
-
-    const senderId = event.sender?.id;
-    const recipientId = event.recipient?.id;
-    const messageText = event.message?.text || '';
-    const timestamp = event.timestamp;
-
-    if (!senderId || !recipientId) {
-      console.error(`${logPrefix} Missing sender or recipient ID.`);
-      return;
-    }
-
-    console.log(`${logPrefix} Processing message from ${senderId} to ${recipientId}: "${messageText}"`);
-
-    // --- ÉTAPE 1: RÉCUPÉRER LE CANAL INSTAGRAM ---
-    let channel = await prisma.channel.findFirst({
+    // --- ÉTAPE 1: IDENTIFIER LE CANAL INSTAGRAM ---
+    console.log(`${logPrefix} Looking for Instagram channel with externalId: ${recipientId}`);
+    
+    const channel = await prisma.channel.findFirst({
       where: {
         externalId: recipientId,
-        type: ChannelType.INSTAGRAM_DM
+        type: ChannelType.INSTAGRAM_DM,
+        isActive: true
+      },
+      include: {
+        shop: true
       }
     });
 
     if (!channel) {
-      console.error(`${logPrefix} No Instagram channel found for recipient ID: ${recipientId}`);
-      return;
+      console.error(`${logPrefix} No active Instagram channel found for ID: ${recipientId}`);
+      throw new Error(`No Instagram channel found for ID: ${recipientId}`);
     }
 
-    console.log(`${logPrefix} Channel retrieved:`, channel.type);
+    console.log(`${logPrefix} Found Instagram channel: ${channel.type} for shop: ${channel.shop.name}`);
 
-    // --- ÉTAPE 2: RÉCUPÉRER LE PROFIL DE L’UTILISATEUR ---
-    let instagramProfile;
+    // --- ÉTAPE 2: RÉCUPÉRER LES INFORMATIONS DU CLIENT INSTAGRAM ---
+    let customerInfo;
     try {
-      if (!channel.accessToken) throw new Error('No access token found for Instagram channel');
-      instagramProfile = await getInstagramUserInfo(senderId, channel.accessToken);
-      console.log(`${logPrefix} Instagram profile retrieved:`, instagramProfile);
-    } catch (profileError) {
-      console.error(`${logPrefix} Failed to retrieve Instagram profile for ${senderId}:`, profileError);
-      instagramProfile = { name: 'Utilisateur Instagram', avatarUrl: null };
+      customerInfo = await getInstagramUserInfo(senderId, channel?.accessToken || '');
+      console.log(`${logPrefix} Retrieved Instagram user info:`, {
+        id: senderId,
+        name: customerInfo.name
+      });
+    } catch (userInfoError) {
+      console.warn(`${logPrefix} Could not retrieve Instagram user info for ${senderId}:`, userInfoError);
+      // Utiliser des informations par défaut
+      customerInfo = {
+        id: senderId,
+        username: `instagram_user_${senderId.slice(-8)}`,
+        name: 'Utilisateur Instagram',
+        profile_picture_url: null
+      };
     }
 
     // --- ÉTAPE 3: CRÉER OU METTRE À JOUR LE CLIENT ---
@@ -192,26 +289,112 @@ async function processInstagramMessage(event: any) {
 
     // --- ÉTAPE 4: CRÉER OU RÉCUPÉRER LA CONVERSATION ---
     let conversation = await prisma.conversation.findFirst({
-      where: { shopId: channel.shopId, customerId: customer.id, platform: channel.type }
-    });
-    if (!conversation) {
-      conversation = await prisma.conversation.create({
-        data: { shopId: channel.shopId, customerId: customer.id, platform: channel.type, externalId: senderId, status: 'OPEN' }
-      });
-    }
-
-    // --- ÉTAPE 5: CRÉER LE MESSAGE ---
-    const message = await prisma.message.create({
-      data: {
-        content: messageText,
-        isFromCustomer: true,
-        conversationId: conversation.id,
-        externalId: `instagram_${timestamp}_${senderId}`
+      where: {
+        externalId: senderId,
+        shopId: channel.shopId
       }
     });
 
-    console.log(`${logPrefix} Message stored successfully:`, message.id);
+    if (conversation) {
+      conversation = await prisma.conversation.update({
+        where: { id: conversation.id },
+        data: {
+          updatedAt: new Date(),
+          lastMessageAt: new Date(timestamp)
+        }
+      });
+    } else {
+      conversation = await prisma.conversation.create({
+        data: {
+          externalId: senderId,
+          customerId: customer.id,
+          shopId: channel.shopId,
+          platform: ChannelType.INSTAGRAM_DM,
+          status: ConversationStatus.OPEN,
+          lastMessageAt: new Date(timestamp)
+        }
+      });
+    }
+
+    console.log(`${logPrefix} Conversation processed: ${conversation.id}`);
+
+    // --- ÉTAPE 5: TRAITER LE CONTENU DU MESSAGE ---
+    let messageContent = messageText || '';
+    let mediaUrl = null;
+    let mediaType = null;
+
+    // Gérer les pièces jointes Instagram
+    if (attachments && attachments.length > 0) {
+      const attachment = attachments[0]; // Prendre la première pièce jointe
+      mediaUrl = attachment.payload?.url;
+      
+      switch (attachment.type) {
+        case 'image':
+          mediaType = 'IMAGE';
+          messageContent = messageContent || '[Image]';
+          break;
+        case 'video':
+          mediaType = 'VIDEO';
+          messageContent = messageContent || '[Vidéo]';
+          break;
+        case 'audio':
+          mediaType = 'AUDIO';
+          messageContent = messageContent || '[Audio]';
+          break;
+        case 'ig_reel':
+        case 'reel':
+          mediaType = 'VIDEO';
+          messageContent = messageContent || '[Reel Instagram]';
+          break;
+        case 'story_mention':
+          messageContent = messageContent || '[Mention dans une Story]';
+          break;
+        case 'share':
+          messageContent = messageContent || '[Partage]';
+          break;
+        default:
+          messageContent = messageContent || '[Pièce jointe]';
+      }
+
+      console.log(`${logPrefix} Processing attachment:`, {
+        type: attachment.type,
+        mediaType,
+        hasUrl: !!mediaUrl
+      });
+    }
+
+    // --- ÉTAPE 6: SAUVEGARDER LE MESSAGE ---
+    const message = await prisma.message.create({
+      data: {
+        externalId: messageId,
+        conversationId: conversation.id,
+        content: messageContent,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType as any,
+        isFromCustomer: true
+      }
+    });
+
+    console.log(`${logPrefix} Message saved successfully:`, {
+      id: message.id,
+      externalId: message.externalId,
+      content: message.content.substring(0, 50) + (message.content.length > 50 ? '...' : ''),
+      mediaType: message.mediaType
+    });
+
+    // --- ÉTAPE 7: MARQUER LA CONVERSATION COMME NON LUE ---
+    await prisma.conversation.update({
+      where: { id: conversation.id },
+      data: {
+        unreadCount: { increment: 1 },
+        lastMessageAt: new Date(timestamp)
+      }
+    });
+
+    console.log(`${logPrefix} Message processing completed successfully for ${senderId}`);
+
   } catch (error) {
-    console.error(`${logPrefix} Error processing Instagram message:`, error);
+    console.error(`${logPrefix} Error processing Instagram message for sender ${senderId}:`, error);
+    throw error; // Re-throw pour que l'erreur soit comptée dans les statistiques
   }
 }

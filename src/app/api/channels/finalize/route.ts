@@ -19,11 +19,6 @@ interface FacebookPage {
   access_token: string; // Le Page Access Token fourni par /me/accounts
   category: string;
   tasks: string[];
-  instagram_business_account?: {
-    id: string;
-    username: string;
-    profile_picture_url: string;
-  };
 }
 
 // ==================================================================
@@ -73,11 +68,8 @@ export async function POST(request: NextRequest) {
 
     // --- ÉTAPE 4: SOUSCRIRE LA PAGE AUX WEBHOOKS ---
     // Cette étape est cruciale pour que Meta nous envoie les messages en temps réel.
-    // IMPORTANT: Pour Instagram, nous devons TOUJOURS souscrire la page Facebook,
-    // même si nous voulons recevoir des messages Instagram. Meta route automatiquement
-    // les messages Instagram via la page Facebook connectée.
     const webhookUrl = `https://graph.facebook.com/v23.0/${pageId}/subscribed_apps`;
-    const subscribedFields = ['messages', 'messaging_postbacks']; // Scopes de base pour la messagerie
+    const subscribedFields = ['messages', 'messaging_postbacks']; // Champs pour la messagerie Facebook
     
     const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
@@ -94,7 +86,7 @@ export async function POST(request: NextRequest) {
       
       // Si c'est une erreur de permissions, on continue mais on log l'erreur
       if (webhookError.error?.code === 3) {
-        logger.error(`${logPrefix} Permission error: Your app needs 'pages_manage_metadata' permission and Advanced Access for Instagram webhooks.`);
+        logger.error(`${logPrefix} Permission error: Your app needs 'pages_manage_metadata' permission.`);
       }
     } else {
       logger.info(`${logPrefix} Successfully subscribed ${platform} via page ${pageId} to webhooks.`);
@@ -111,20 +103,10 @@ export async function POST(request: NextRequest) {
     const shopId = userShop.id;
     const encryptedToken = encryptToken(pageAccessToken);
     
-    // Déterminer le type de canal et l'ID externe basé sur la plateforme
-    let channelType: ChannelType;
-    let externalId: string;
-    
-    if (platform === 'instagram') {
-      channelType = ChannelType.INSTAGRAM_DM;
-      if (!selectedPage.instagram_business_account) {
-        throw new Error('No Instagram Business account linked to this page.');
-      }
-      externalId = selectedPage.instagram_business_account.id;
-    } else {
-      channelType = ChannelType.FACEBOOK_PAGE;
-      externalId = pageId;
-    }
+    // Déterminer le type de canal et l'ID externe
+    // On ne gère que Facebook Pages ici, Instagram et WhatsApp sont gérés ailleurs
+    const channelType: ChannelType = ChannelType.FACEBOOK_PAGE;
+    const externalId: string = pageId;
 
     // --- ÉTAPE 6: STOCKER LE CANAL DANS LA BASE DE DONNÉES ---
     // On utilise `upsert` pour créer le canal s'il n'existe pas, ou le mettre à jour s'il existe déjà.

@@ -121,7 +121,11 @@ export async function POST(request: NextRequest) {
       if (!mediaUrl) {
         throw new Error('Impossible de récupérer l\'URL de l\'image');
       }
-      postId = await publishInstagramMedia(instagramAccountId, accessToken, mediaUrl, message, 'IMAGE');
+      // Créer le conteneur et attendre que le média soit prêt
+      const containerId = await createInstagramContainer(instagramAccountId, accessToken, mediaUrl, message, 'IMAGE');
+      
+      // Attendre que le média soit prêt avant de publier
+      postId = await publishInstagramContainerWithRetry(instagramAccountId, accessToken, containerId);
     } else if (contentType === 'video') {
       const mediaUrl = videoUrl || (videoFile ? await uploadToCloudinary(videoFile) : null);
       if (!mediaUrl) {
@@ -138,10 +142,28 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // --- ÉTAPE 5: RÉPONSE DE SUCCÈS ---
+    // --- ÉTAPE 5: GÉNÉRER LE LIEN VERS LA PUBLICATION ---
+    // Récupérer le permalink (lien court Instagram) de la publication
+    let postLink = null;
+    if (postId) {
+      try {
+        const permalinkUrl = `https://graph.instagram.com/v21.0/${postId}?fields=permalink&access_token=${accessToken}`;
+        const permalinkResponse = await fetch(permalinkUrl);
+        if (permalinkResponse.ok) {
+          const permalinkData = await permalinkResponse.json();
+          postLink = permalinkData.permalink;
+          console.log(`${logPrefix} 🔗 Lien de la publication: ${postLink}`);
+        }
+      } catch (error) {
+        console.warn(`${logPrefix} Impossible de récupérer le lien de la publication:`, error);
+      }
+    }
+
+    // --- ÉTAPE 6: RÉPONSE DE SUCCÈS ---
     return NextResponse.json({
       success: true,
       postId: postId,
+      postLink: postLink,
       message: 'Publication sur Instagram réussie !'
     });
 
@@ -156,8 +178,8 @@ export async function POST(request: NextRequest) {
 async function createInstagramContainer(instagramAccountId: string, accessToken: string, mediaUrl: string, caption: string, mediaType: 'IMAGE' | 'VIDEO') {
   const logPrefix = '[Instagram Container]';
   
-  // Utilisation de Facebook Graph API pour Instagram
-  const containerUrl = `https://graph.facebook.com/v23.0/${instagramAccountId}/media`;
+  // Utilisation de l'API Instagram native
+  const containerUrl = `https://graph.instagram.com/v21.0/${instagramAccountId}/media`;
   const containerParams = new URLSearchParams({
     [mediaType === 'IMAGE' ? 'image_url' : 'video_url']: mediaUrl,
     caption,
@@ -168,7 +190,7 @@ async function createInstagramContainer(instagramAccountId: string, accessToken:
     containerParams.append('media_type', 'REELS');
   }
 
-  console.log(`${logPrefix} Creating ${mediaType} container using Facebook Graph API...`);
+  console.log(`${logPrefix} Creating ${mediaType} container using Instagram API...`);
   const containerResponse = await fetch(`${containerUrl}?${containerParams.toString()}`, {
     method: 'POST',
   });
@@ -193,14 +215,14 @@ async function publishInstagramMedia(instagramAccountId: string, accessToken: st
 async function publishInstagramContainer(instagramAccountId: string, accessToken: string, containerId: string) {
   const logPrefix = '[Instagram Publish]';
   
-  // Utilisation de Facebook Graph API pour Instagram
-  const publishUrl = `https://graph.facebook.com/v23.0/${instagramAccountId}/media_publish`;
+  // Utilisation de l'API Instagram native
+  const publishUrl = `https://graph.instagram.com/v21.0/${instagramAccountId}/media_publish`;
   const publishParams = new URLSearchParams({
     creation_id: containerId,
     access_token: accessToken,
   });
   
-  console.log(`${logPrefix} Publishing container ${containerId} using Facebook Graph API...`);
+  console.log(`${logPrefix} Publishing container ${containerId} using Instagram API...`);
   const publishResponse = await fetch(`${publishUrl}?${publishParams.toString()}`, {
     method: 'POST',
   });
@@ -215,7 +237,63 @@ async function publishInstagramContainer(instagramAccountId: string, accessToken
   return publishData.id;
 }
 
-// Fonction pour publier un conteneur en arrière-plan avec retry
+// Fonction pour publier un conteneur d'image avec retry (plus rapide que les vidéos)
+// DOIT être déclarée avant son utilisation dans le code
+async function publishInstagramContainerWithRetry(instagramAccountId: string, accessToken: string, containerId: string): Promise<string> {
+  const logPrefix = '[Instagram Publish Retry]';
+  const maxRetries = 10; // Les images sont généralement plus rapides
+  const retryDelay = 2000; // Délai de 2 secondes entre chaque tentative
+  
+  console.log(`${logPrefix} Waiting for media to be ready before publishing...`);
+  
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      console.log(`${logPrefix} Attempt ${i + 1}/${maxRetries} to check container status ${containerId}`);
+      
+      // Vérifier le statut du conteneur
+      const statusUrl = `https://graph.instagram.com/v21.0/${containerId}?fields=status_code&access_token=${accessToken}`;
+      const statusResponse = await fetch(statusUrl);
+      const statusData = await statusResponse.json();
+      
+      console.log(`${logPrefix} Container status:`, statusData);
+      
+      if (statusResponse.ok && statusData.status_code === 'FINISHED') {
+        console.log(`${logPrefix} Media is ready! Publishing now...`);
+        const postId = await publishInstagramContainer(instagramAccountId, accessToken, containerId);
+        console.log(`${logPrefix} ✅ Successfully published image with ID: ${postId}`);
+        return postId;
+      } else if (statusResponse.ok && statusData.status_code === 'ERROR') {
+        console.error(`${logPrefix} ❌ Media processing failed for container ${containerId}`);
+        throw new Error('Media processing failed on Instagram servers');
+      } else if (statusResponse.ok && statusData.status_code === 'IN_PROGRESS') {
+        console.log(`${logPrefix} Media is still processing (IN_PROGRESS), waiting ${retryDelay}ms...`);
+      } else {
+        console.log(`${logPrefix} Media status: ${statusData.status_code || 'unknown'}, waiting ${retryDelay}ms...`);
+      }
+      
+      // Attendre avant la prochaine tentative
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+      
+    } catch (error) {
+      console.error(`${logPrefix} Attempt ${i + 1} failed:`, error);
+      
+      // Si c'est la dernière tentative, on lance l'erreur
+      if (i === maxRetries - 1) {
+        throw error;
+      }
+      
+      // Sinon, on attend avant de réessayer
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+    }
+  }
+  
+  console.error(`${logPrefix} ❌ Failed to publish after ${maxRetries} attempts`);
+  throw new Error('Media is not ready for publishing after multiple attempts. Please try again later.');
+}
+
+// Fonction pour publier un conteneur en arrière-plan avec retry (pour les vidéos)
 async function publishInstagramContainerAsync(instagramAccountId: string, accessToken: string, containerId: string): Promise<string | null> {
   const logPrefix = '[Background Publish]';
   const maxRetries = 15; // Réduit pour Vercel
@@ -225,8 +303,8 @@ async function publishInstagramContainerAsync(instagramAccountId: string, access
     try {
       console.log(`${logPrefix} Attempt ${i + 1}/${maxRetries} to publish container ${containerId}`);
       
-      // Utilisation de Facebook Graph API pour vérifier le statut
-      const statusUrl = `https://graph.facebook.com/v23.0/${containerId}?fields=status_code&access_token=${accessToken}`;
+      // Utilisation de l'API Instagram native pour vérifier le statut
+      const statusUrl = `https://graph.instagram.com/v21.0/${containerId}?fields=status_code&access_token=${accessToken}`;
       const statusResponse = await fetch(statusUrl);
       const statusData = await statusResponse.json();
       

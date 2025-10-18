@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   // Configuration pour les uploads de fichiers
   experimental: {
     serverActions: {
-      bodySizeLimit: '100mb', // Augmenter la limite pour les vidéos TikTok
+      bodySizeLimit: '500mb', // Augmenter la limite pour les vidéos TikTok (4GB max)
     },
   },
 };

@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
     // Étape 3: Récupérer les pages Facebook de l'utilisateur
     const pagesUrl = new URL('https://graph.facebook.com/v23.0/me/accounts');
     pagesUrl.searchParams.append('access_token', longLivedToken);
-    pagesUrl.searchParams.append('fields', 'id,name,access_token,category,tasks,instagram_business_account{id,username,profile_picture_url}');
+    pagesUrl.searchParams.append('fields', 'id,name,access_token,category,tasks');
 
     const pagesResponse = await fetch(pagesUrl.toString());
     const pagesData: MetaPagesResponse | MetaError = await pagesResponse.json();

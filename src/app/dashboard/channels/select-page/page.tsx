@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, CheckCircle, Facebook, Instagram, MessageSquare } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Facebook, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface FacebookPage {
@@ -10,11 +10,6 @@ interface FacebookPage {
   access_token: string;
   category: string;
   tasks: string[];
-  instagram_business_account?: {
-    id: string;
-    username: string;
-    profile_picture_url: string;
-  };
 }
 
 export default function SelectPagePage() {
@@ -50,10 +45,10 @@ export default function SelectPagePage() {
     fetchPages();
   }, []);
 
-  const handleConnectPage = async (page: FacebookPage, platform: 'messenger' | 'instagram') => {
+  const handleConnectPage = async (page: FacebookPage) => {
     if (connecting) return;
 
-    setConnecting(`${page.id}-${platform}`);
+    setConnecting(page.id);
     setError(null);
 
     try {
@@ -66,7 +61,7 @@ export default function SelectPagePage() {
         body: JSON.stringify({
           pageId: page.id,
           pageName: page.name,
-          platform
+          platform: 'messenger'
         })
       });
 
@@ -124,10 +119,10 @@ export default function SelectPagePage() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              Sélectionner vos canaux
+              Sélectionner une page Facebook
             </h1>
             <p className="text-gray-600 mt-1">
-              Choisissez les canaux Facebook et Instagram que vous souhaitez connecter à XAMXAM
+              Choisissez la page Facebook que vous souhaitez connecter à XAMXAM pour Messenger
             </p>
           </div>
         </div>
@@ -179,79 +174,35 @@ export default function SelectPagePage() {
                   </div>
                 </div>
 
-                {/* Available Channels */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  {/* Facebook Messenger */}
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white ring-1 ring-inset ring-blue-200">
-                        <MessageSquare className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">Facebook Messenger</h4>
-                        <p className="text-sm text-gray-600">Messages de votre page Facebook</p>
-                      </div>
+                {/* Facebook Messenger */}
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white ring-1 ring-inset ring-blue-200">
+                      <MessageSquare className="w-5 h-5" />
                     </div>
-                    <button
-                      onClick={() => handleConnectPage(page, 'messenger')}
-                      disabled={connecting === `${page.id}-messenger`}
-                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 cursor-pointer"
-                      aria-label="Connecter Facebook Messenger"
-                    >
-                      {connecting === `${page.id}-messenger` ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Connexion...</span>
-                        </>
-                      ) : (
-                        <>
-                          <MessageSquare className="w-4 h-4" />
-                          <span>Connecter Messenger</span>
-                        </>
-                      )}
-                    </button>
+                    <div>
+                      <h4 className="font-medium text-gray-900">Facebook Messenger</h4>
+                      <p className="text-sm text-gray-600">Messages de votre page Facebook</p>
+                    </div>
                   </div>
-
-                  {/* Instagram Direct */}
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white ring-1 ring-inset ring-purple-200">
-                        <Instagram className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">Instagram Direct</h4>
-                        {page.instagram_business_account ? (
-                          <p className="text-sm text-gray-600">@{page.instagram_business_account.username}</p>
-                        ) : (
-                          <p className="text-sm text-gray-500">Aucun compte Instagram Business lié</p>
-                        )}
-                      </div>
-                    </div>
-                    {page.instagram_business_account ? (
-                      <button
-                        onClick={() => handleConnectPage(page, 'instagram')}
-                        disabled={connecting === `${page.id}-instagram`}
-                        className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 cursor-pointer"
-                        aria-label="Connecter Instagram"
-                      >
-                        {connecting === `${page.id}-instagram` ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            <span>Connexion...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Instagram className="w-4 h-4" />
-                            <span>Connecter Instagram</span>
-                          </>
-                        )}
-                      </button>
+                  <button
+                    onClick={() => handleConnectPage(page)}
+                    disabled={connecting === page.id}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 cursor-pointer"
+                    aria-label="Connecter Facebook Messenger"
+                  >
+                    {connecting === page.id ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Connexion...</span>
+                      </>
                     ) : (
-                      <div className="w-full px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-center">
-                        Non disponible
-                      </div>
+                      <>
+                        <MessageSquare className="w-4 h-4" />
+                        <span>Connecter Messenger</span>
+                      </>
                     )}
-                  </div>
+                  </button>
                 </div>
               </div>
             ))}
@@ -264,10 +215,11 @@ export default function SelectPagePage() {
             📋 Prochaines étapes
           </h4>
           <div className="text-sm text-blue-800 space-y-2">
-            <p>1. <strong>Sélectionnez vos canaux</strong> - Choisissez les canaux Facebook et Instagram que vous souhaitez connecter</p>
+            <p>1. <strong>Sélectionnez votre page</strong> - Choisissez la page Facebook que vous souhaitez connecter</p>
             <p>2. <strong>Configuration automatique</strong> - Nous configurerons automatiquement les webhooks et permissions</p>
             <p>3. <strong>Test de connexion</strong> - Vous pourrez tester l'envoi et la réception de messages</p>
-            <p>4. <strong>Gestion centralisée</strong> - Tous vos messages apparaîtront dans l'interface XAMXAM</p>
+            <p>4. <strong>Gestion centralisée</strong> - Tous vos messages Messenger apparaîtront dans l'interface XAMXAM</p>
+            <p className="mt-3 pt-3 border-t border-blue-300">💡 <em>Pour Instagram, utilisez le bouton de connexion Instagram séparé depuis la page des canaux</em></p>
           </div>
         </div>
       </div>

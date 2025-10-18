@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Send, FileText, Image, Video, Calendar, BarChart3, Facebook, Instagram, Link, Upload, Eye, Settings, Zap, Clock, TrendingUp, Sparkles, Loader2, Music } from 'lucide-react';
+import { Send, FileText, Image, Video, Calendar, BarChart3, Link, Upload, Eye, Settings, Zap, Clock, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
+import { TikTokIcon, FacebookIcon, InstagramIcon } from '@/components/dashboard/ChannelIcons';
 import toast from 'react-hot-toast';
 
 interface ConnectedChannel {
@@ -79,7 +80,7 @@ export default function ContentPage() {
                 pageName: channel.pageName || `Page ${channel.externalId}`
               });
               if (!channelTypes.find(ct => ct.key === 'facebook-page')) {
-                channelTypes.push({ key: 'facebook-page', label: 'Facebook Page', icon: Facebook });
+                channelTypes.push({ key: 'facebook-page', label: 'Facebook', icon: FacebookIcon });
               }
             } else if (type === 'instagram') {
               allChannels.push({
@@ -90,7 +91,7 @@ export default function ContentPage() {
                 pageName: channel.pageName || `Instagram ${channel.externalId}`
               });
               if (!channelTypes.find(ct => ct.key === 'instagram-dm')) {
-                channelTypes.push({ key: 'instagram-dm', label: 'Instagram Direct', icon: Instagram });
+                channelTypes.push({ key: 'instagram-dm', label: 'Instagram', icon: InstagramIcon });
               }
             } else if (type === 'tiktok') {
               allChannels.push({
@@ -101,7 +102,7 @@ export default function ContentPage() {
                 pageName: channel.pageName || `TikTok ${channel.externalId}`
               });
               if (!channelTypes.find(ct => ct.key === 'tiktok')) {
-                channelTypes.push({ key: 'tiktok', label: 'TikTok', icon: Music });
+                channelTypes.push({ key: 'tiktok', label: 'TikTok', icon: TikTokIcon });
               }
             }
           });
@@ -374,10 +375,84 @@ export default function ContentPage() {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('🎉 Publication réussie !', {
-          duration: 4000,
-          position: 'top-right',
-        });
+        // Afficher un message de succès adapté selon le canal et le mode
+        if (selectedChannelType === 'tiktok') {
+          // Message spécifique pour TikTok
+          if (data.tiktokUrl) {
+            // Mode direct avec lien
+            toast.success(
+              (t) => (
+                <div className="flex flex-col gap-2">
+                  <span className="font-semibold">🎉 {data.message}</span>
+                  <a 
+                    href={data.tiktokUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-pink-600 hover:text-pink-800 underline text-sm flex items-center gap-1"
+                  >
+                    <TikTokIcon className="w-4 h-4" />
+                    Voir sur TikTok
+                  </a>
+                </div>
+              ),
+              {
+                duration: 8000,
+                position: 'top-right',
+              }
+            );
+          } else if (data.mode === 'draft') {
+            // Mode brouillon avec instructions
+            toast.success(
+              (t) => (
+                <div className="flex flex-col gap-2 max-w-sm">
+                  <span className="font-semibold">📝 {data.message}</span>
+                  <p className="text-sm text-gray-600">{data.instructions}</p>
+                  <div className="flex items-center gap-1 text-xs text-pink-600 mt-1">
+                    <TikTokIcon className="w-3 h-3" />
+                    <span>Ouvrez TikTok → Notifications 🔔</span>
+                  </div>
+                </div>
+              ),
+              {
+                duration: 10000,
+                position: 'top-right',
+              }
+            );
+          } else {
+            toast.success(`🎉 ${data.message}`, {
+              duration: 5000,
+              position: 'top-right',
+            });
+          }
+        } else if (data.postLink) {
+          // Autres plateformes avec lien
+          toast.success(
+            (t) => (
+              <div className="flex flex-col gap-2">
+                <span className="font-semibold">🎉 Publication réussie !</span>
+                <a 
+                  href={data.postLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1"
+                >
+                  <Link className="w-4 h-4" />
+                  Voir la publication
+                </a>
+              </div>
+            ),
+            {
+              duration: 6000,
+              position: 'top-right',
+            }
+          );
+        } else {
+          toast.success('🎉 Publication réussie !', {
+            duration: 4000,
+            position: 'top-right',
+          });
+        }
+        
         setMessage('');
         setImageFile(null);
         setImageUrl('');
@@ -403,17 +478,57 @@ export default function ContentPage() {
 
   return (
     <div className="space-y-6">
-      {/* En-tête */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white">
-        <div className="flex items-center space-x-3">
-          <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-            <FileText className="h-8 w-8" />
+      {/* En-tête moderne */}
+      <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white overflow-hidden">
+        {/* Motif de fond décoratif */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-4 right-4 w-32 h-32 bg-white rounded-full blur-3xl"></div>
+          <div className="absolute bottom-4 left-4 w-24 h-24 bg-white rounded-full blur-2xl"></div>
+        </div>
+        
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/20">
+                <FileText className="h-10 w-10" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold mb-2">Création de Contenu</h1>
+                <p className="text-white/90 text-lg">
+                  Créez et publiez du contenu captivant sur toutes vos plateformes
+                </p>
+              </div>
+            </div>
+            
+            {/* Badges des plateformes connectées */}
+            <div className="hidden lg:flex items-center space-x-2">
+              {availableChannelTypes.map((channelType) => {
+                const IconComponent = channelType.icon;
+                return (
+                  <div
+                    key={channelType.key}
+                    className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20"
+                  >
+                    <IconComponent className="h-5 w-5" />
+                    <span className="text-sm font-medium">{channelType.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold">Création de Contenu</h1>
-            <p className="text-blue-100 mt-1">
-              Créez et publiez du contenu sur vos réseaux sociaux connectés
-            </p>
+          
+          {/* Indicateur de progression */}
+          <div className="mt-6 flex items-center space-x-4">
+            <div className="flex items-center space-x-2 text-white/80">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-sm">
+                {availableChannelTypes.length} plateforme{availableChannelTypes.length > 1 ? 's' : ''} connectée{availableChannelTypes.length > 1 ? 's' : ''}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2 text-white/80">
+              <Zap className="h-4 w-4" />
+              <span className="text-sm">Prêt à publier</span>
+            </div>
           </div>
         </div>
       </div>
@@ -507,80 +622,321 @@ export default function ContentPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Sélection du type de canal */}
+            {/* Sélection du type de canal avec cartes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Type de canal
+              <label className="block text-sm font-medium text-gray-700 mb-4">
+                Choisissez votre plateforme
               </label>
-              <select
-                value={selectedChannelType}
-                onChange={(e) => {
-                  const newChannelType = e.target.value;
-                  setSelectedChannelType(newChannelType);
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {availableChannelTypes.map((channelType) => {
+                  const isSelected = selectedChannelType === channelType.key;
+                  const IconComponent = channelType.icon;
+                  
+                  return (
+                    <button
+                      key={channelType.key}
+                      onClick={() => {
+                        const newChannelType = channelType.key;
+                        setSelectedChannelType(newChannelType);
 
-                  // === LA LOGIQUE CORRIGÉE ===
-                  // On cherche le PREMIER canal qui correspond au NOUVEAU type sélectionné.
-                  let firstChannelOfNewType;
-                  if (newChannelType === 'facebook-page') {
-                    firstChannelOfNewType = channels.find(c => c.type === 'messenger');
-                  } else if (newChannelType === 'instagram-dm') {
-                    firstChannelOfNewType = channels.find(c => c.type === 'instagram');
-                  }
+                        // Sélection automatique du type de contenu selon la plateforme
+                        if (newChannelType === 'tiktok') {
+                          setContentType('video'); // TikTok = vidéo obligatoire
+                        } else if (newChannelType === 'instagram-dm') {
+                          setContentType('image'); // Instagram = image recommandée
+                        } else if (newChannelType === 'facebook-page') {
+                          setContentType('text'); // Facebook = texte par défaut
+                        }
 
-                  // Si on a trouvé un canal correspondant, on met à jour l'ID sélectionné.
-                  // Sinon, on met une chaîne vide pour éviter d'envoyer un mauvais ID.
-                  if (firstChannelOfNewType) {
-                    setSelectedPage(firstChannelOfNewType.externalId);
-                  } else {
-                    setSelectedPage('');
-                  }
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
-              >
-                {availableChannelTypes.map((channelType) => (
-                  <option key={channelType.key} value={channelType.key}>
-                    {channelType.label}
-                  </option>
-                ))}
-              </select>
+                        // Logique de sélection du canal
+                        let firstChannelOfNewType;
+                        if (newChannelType === 'facebook-page') {
+                          firstChannelOfNewType = channels.find(c => c.type === 'messenger');
+                        } else if (newChannelType === 'instagram-dm') {
+                          firstChannelOfNewType = channels.find(c => c.type === 'instagram');
+                        } else if (newChannelType === 'tiktok') {
+                          firstChannelOfNewType = channels.find(c => c.type === 'tiktok');
+                        }
+
+                        if (firstChannelOfNewType) {
+                          setSelectedPage(firstChannelOfNewType.externalId);
+                        } else {
+                          setSelectedPage('');
+                        }
+                      }}
+                      className={`group relative p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
+                        isSelected
+                          ? channelType.key === 'facebook-page'
+                            ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-400 shadow-lg ring-2 ring-blue-200'
+                            : channelType.key === 'instagram-dm'
+                            ? 'bg-gradient-to-br from-purple-50 to-pink-100 border-purple-400 shadow-lg ring-2 ring-purple-200'
+                            : channelType.key === 'tiktok'
+                            ? 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-400 shadow-lg ring-2 ring-gray-200'
+                            : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-400 shadow-lg ring-2 ring-blue-200'
+                          : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center space-y-3">
+                        {/* Icône de la plateforme */}
+                        <div className={`p-4 rounded-full transition-all duration-300 ${
+                          isSelected
+                            ? channelType.key === 'facebook-page'
+                              ? 'bg-blue-500 shadow-lg'
+                              : channelType.key === 'instagram-dm'
+                              ? 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg'
+                              : channelType.key === 'tiktok'
+                              ? 'bg-black shadow-lg'
+                              : 'bg-blue-500 shadow-lg'
+                            : channelType.key === 'facebook-page'
+                            ? 'bg-blue-100 group-hover:bg-blue-200'
+                            : channelType.key === 'instagram-dm'
+                            ? 'bg-purple-100 group-hover:bg-purple-200'
+                            : channelType.key === 'tiktok'
+                            ? 'bg-gray-100 group-hover:bg-gray-200'
+                            : 'bg-gray-100 group-hover:bg-gray-200'
+                        }`}>
+                          <IconComponent className={`h-8 w-8 ${
+                            isSelected
+                              ? 'text-white'
+                              : channelType.key === 'facebook-page'
+                              ? 'text-blue-600 group-hover:text-blue-700'
+                              : channelType.key === 'instagram-dm'
+                              ? 'text-purple-600 group-hover:text-purple-700'
+                              : channelType.key === 'tiktok'
+                              ? 'text-gray-600 group-hover:text-gray-700'
+                              : 'text-gray-600 group-hover:text-gray-700'
+                          }`} />
+                        </div>
+
+                        {/* Nom de la plateforme */}
+                        <div className="text-center">
+                          <h3 className={`font-semibold text-lg ${
+                            isSelected
+                              ? channelType.key === 'facebook-page'
+                                ? 'text-blue-700'
+                                : channelType.key === 'instagram-dm'
+                                ? 'text-purple-700'
+                                : channelType.key === 'tiktok'
+                                ? 'text-gray-700'
+                                : 'text-blue-700'
+                              : 'text-gray-700 group-hover:text-gray-900'
+                          }`}>
+                            {channelType.label}
+                          </h3>
+                          <p className={`text-sm mt-1 ${
+                            isSelected
+                              ? channelType.key === 'facebook-page'
+                                ? 'text-blue-600'
+                                : channelType.key === 'instagram-dm'
+                                ? 'text-purple-600'
+                                : channelType.key === 'tiktok'
+                                ? 'text-gray-600'
+                                : 'text-blue-600'
+                              : 'text-gray-500 group-hover:text-gray-600'
+                          }`}>
+                            {channelType.key === 'facebook-page' 
+                              ? 'Publications et stories'
+                              : channelType.key === 'instagram-dm'
+                              ? 'Photos et vidéos'
+                              : channelType.key === 'tiktok'
+                              ? 'Vidéos courtes'
+                              : 'Contenu social'
+                            }
+                          </p>
+                        </div>
+
+                        {/* Badge de sélection */}
+                        {isSelected && (
+                          <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center ${
+                            channelType.key === 'facebook-page'
+                              ? 'bg-blue-500'
+                              : channelType.key === 'instagram-dm'
+                              ? 'bg-purple-500'
+                              : channelType.key === 'tiktok'
+                              ? 'bg-black'
+                              : 'bg-blue-500'
+                          }`}>
+                            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Sélection de la page/compte (conditionnel) */}
             {selectedChannelType === 'facebook-page' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Page Facebook
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <FacebookIcon className="h-4 w-4 inline mr-2 text-blue-600" />
+                  Sélectionnez votre page Facebook
                 </label>
-                <select
-                  value={selectedPage}
-                  onChange={(e) => setSelectedPage(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
-                >
+                <div className="space-y-2">
                   {channels.filter(c => c.type === 'messenger').map((channel) => (
-                    <option key={channel.externalId} value={channel.externalId}>
-                      {channel.pageName || `Page ${channel.externalId}`}
-                    </option>
+                    <button
+                      key={channel.externalId}
+                      onClick={() => setSelectedPage(channel.externalId)}
+                      className={`w-full p-4 rounded-lg border-2 transition-all duration-200 text-left ${
+                        selectedPage === channel.externalId
+                          ? 'border-blue-400 bg-blue-50 shadow-md'
+                          : 'border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-25'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`p-2 rounded-full ${
+                            selectedPage === channel.externalId
+                              ? 'bg-blue-500'
+                              : 'bg-blue-100'
+                          }`}>
+                            <FacebookIcon className={`h-4 w-4 ${
+                              selectedPage === channel.externalId
+                                ? 'text-white'
+                                : 'text-blue-600'
+                            }`} />
+                          </div>
+                          <div>
+                            <p className={`font-medium ${
+                              selectedPage === channel.externalId
+                                ? 'text-blue-900'
+                                : 'text-gray-900'
+                            }`}>
+                              {channel.pageName || `Page ${channel.externalId}`}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Page Facebook • ID: {channel.externalId}
+                            </p>
+                          </div>
+                        </div>
+                        {selectedPage === channel.externalId && (
+                          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
             )}
 
             {selectedChannelType === 'instagram-dm' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Compte Instagram
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <InstagramIcon className="h-4 w-4 inline mr-2 text-purple-600" />
+                  Sélectionnez votre compte Instagram
                 </label>
-                <select
-                  value={selectedPage}
-                  onChange={(e) => setSelectedPage(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
-                >
+                <div className="space-y-2">
                   {channels.filter(c => c.type === 'instagram').map((channel) => (
-                    <option key={channel.externalId} value={channel.externalId}>
-                      {channel.pageName || `Instagram ${channel.externalId}`}
-                    </option>
+                    <button
+                      key={channel.externalId}
+                      onClick={() => setSelectedPage(channel.externalId)}
+                      className={`w-full p-4 rounded-lg border-2 transition-all duration-200 text-left ${
+                        selectedPage === channel.externalId
+                          ? 'border-purple-400 bg-purple-50 shadow-md'
+                          : 'border-gray-200 bg-white hover:border-purple-200 hover:bg-purple-25'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`p-2 rounded-full ${
+                            selectedPage === channel.externalId
+                              ? 'bg-gradient-to-r from-purple-500 to-pink-500'
+                              : 'bg-purple-100'
+                          }`}>
+                            <InstagramIcon className={`h-4 w-4 ${
+                              selectedPage === channel.externalId
+                                ? 'text-white'
+                                : 'text-purple-600'
+                            }`} />
+                          </div>
+                          <div>
+                            <p className={`font-medium ${
+                              selectedPage === channel.externalId
+                                ? 'text-purple-900'
+                                : 'text-gray-900'
+                            }`}>
+                              {channel.pageName || `Instagram ${channel.externalId}`}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Compte Instagram • ID: {channel.externalId}
+                            </p>
+                          </div>
+                        </div>
+                        {selectedPage === channel.externalId && (
+                          <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </button>
                   ))}
-                </select>
+                </div>
+              </div>
+            )}
+
+            {selectedChannelType === 'tiktok' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <TikTokIcon className="h-4 w-4 inline mr-2 text-gray-600" />
+                  Sélectionnez votre compte TikTok
+                </label>
+                <div className="space-y-2">
+                  {channels.filter(c => c.type === 'tiktok').map((channel) => (
+                    <button
+                      key={channel.externalId}
+                      onClick={() => setSelectedPage(channel.externalId)}
+                      className={`w-full p-4 rounded-lg border-2 transition-all duration-200 text-left ${
+                        selectedPage === channel.externalId
+                          ? 'border-gray-400 bg-gray-50 shadow-md'
+                          : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-25'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className={`p-2 rounded-full ${
+                            selectedPage === channel.externalId
+                              ? 'bg-black'
+                              : 'bg-gray-100'
+                          }`}>
+                            <TikTokIcon className={`h-4 w-4 ${
+                              selectedPage === channel.externalId
+                                ? 'text-white'
+                                : 'text-gray-600'
+                            }`} />
+                          </div>
+                          <div>
+                            <p className={`font-medium ${
+                              selectedPage === channel.externalId
+                                ? 'text-gray-900'
+                                : 'text-gray-900'
+                            }`}>
+                              {channel.pageName || `TikTok ${channel.externalId}`}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Compte TikTok • ID: {channel.externalId}
+                            </p>
+                          </div>
+                        </div>
+                        {selectedPage === channel.externalId && (
+                          <div className="w-5 h-5 bg-black rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -648,9 +1004,9 @@ export default function ContentPage() {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <label className="block text-sm font-medium text-gray-700">
-                    {selectedChannelType === 'tiktok' ? 'Description' : 
-                     selectedChannelType === 'facebook-page' ? 'Que voulez-vous dire ?' : 
-                     selectedChannelType === 'instagram-dm' ? 'Légende' : 'Message'}
+                    {selectedChannelType === 'tiktok' ? 'Description de la vidéo' : 
+                     selectedChannelType === 'facebook-page' ? 'Votre publication Facebook' : 
+                     selectedChannelType === 'instagram-dm' ? 'Légende Instagram' : 'Message'}
                   </label>
                   {selectedChannelType !== 'tiktok' && (
                     <button
@@ -676,14 +1032,14 @@ export default function ContentPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={
-                    selectedChannelType === 'tiktok' ? 'Décrivez votre vidéo TikTok... Ajoutez des hashtags populaires !' :
-                    selectedChannelType === 'facebook-page' ? 'Que voulez-vous partager avec vos amis ?' :
-                    selectedChannelType === 'instagram-dm' ? 'Rédigez une légende captivante... #hashtags' :
-                    'Écrivez votre message ou cliquez sur \'Générer avec l\'IA\'...'
+                    selectedChannelType === 'tiktok' ? 'Décrivez votre vidéo en quelques mots... #fyp #viral #trending' :
+                    selectedChannelType === 'facebook-page' ? 'Partagez vos pensées, actualités, ou posez une question à votre communauté...' :
+                    selectedChannelType === 'instagram-dm' ? 'Rédigez une légende captivante pour votre photo/vidéo... #hashtags #inspiration' :
+                    'Écrivez votre message...'
                   }
                   rows={6}
                   className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-blue-500 resize-none ${
-                    selectedChannelType === 'tiktok' ? 'focus:ring-pink-500 focus:border-pink-500' :
+                    selectedChannelType === 'tiktok' ? 'focus:ring-gray-500 focus:border-gray-500' :
                     selectedChannelType === 'facebook-page' ? 'focus:ring-blue-500 focus:border-blue-500' :
                     selectedChannelType === 'instagram-dm' ? 'focus:ring-purple-500 focus:border-purple-500' :
                     'focus:ring-blue-500 focus:border-blue-500'
@@ -692,19 +1048,29 @@ export default function ContentPage() {
                 <div className="flex justify-between items-center mt-1">
                   <p className="text-sm text-gray-500">
                     {message.length} caractères
-                    {selectedChannelType === 'tiktok' && message.length > 150 && (
-                      <span className="text-orange-500 ml-1">(Optimal: 100-150 caractères)</span>
+                    {selectedChannelType === 'tiktok' && message.length > 100 && (
+                      <span className="text-orange-500 ml-1">(Optimal: 80-100 caractères)</span>
                     )}
-                    {selectedChannelType === 'facebook-page' && message.length > 250 && (
-                      <span className="text-orange-500 ml-1">(Optimal: moins de 250 caractères)</span>
+                    {selectedChannelType === 'facebook-page' && message.length > 400 && (
+                      <span className="text-orange-500 ml-1">(Optimal: moins de 400 caractères)</span>
                     )}
-                    {selectedChannelType === 'instagram-dm' && message.length > 125 && (
-                      <span className="text-orange-500 ml-1">(Optimal: 125 caractères max)</span>
+                    {selectedChannelType === 'instagram-dm' && message.length > 150 && (
+                      <span className="text-orange-500 ml-1">(Optimal: 125-150 caractères + hashtags)</span>
                     )}
                   </p>
                   {selectedChannelType === 'tiktok' && (
-                    <p className="text-xs text-pink-600">
+                    <p className="text-xs text-gray-600">
                       💡 Utilisez des hashtags tendance
+                    </p>
+                  )}
+                  {selectedChannelType === 'instagram-dm' && (
+                    <p className="text-xs text-purple-600">
+                      📸 Contenu visuel requis
+                    </p>
+                  )}
+                  {selectedChannelType === 'facebook-page' && (
+                    <p className="text-xs text-blue-600">
+                      📝 Texte, images ou vidéos
                     </p>
                   )}
                 </div>
@@ -724,7 +1090,7 @@ export default function ContentPage() {
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center">
                             <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center">
-                              <Music className="h-4 w-4 text-white" />
+                              <TikTokIcon className="h-4 w-4 text-white" />
                             </div>
                             <div className="ml-3">
                               <p className="text-sm font-medium">@votre_compte</p>
@@ -742,7 +1108,7 @@ export default function ContentPage() {
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                        <Music className="h-8 w-8 mb-2 text-pink-400" />
+                        <TikTokIcon className="h-8 w-8 mb-2 text-pink-400" />
                         <p className="text-sm text-center">
                           Votre description TikTok apparaîtra ici
                         </p>
@@ -785,7 +1151,7 @@ export default function ContentPage() {
               {selectedChannelType === 'tiktok' && (
                 <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-sm text-yellow-800">
-                    <Music className="h-4 w-4 inline mr-1" />
+                    <TikTokIcon className="h-4 w-4 inline mr-1" />
                     TikTok ne supporte que les vidéos
                   </p>
                 </div>
@@ -795,7 +1161,7 @@ export default function ContentPage() {
               {selectedChannelType === 'tiktok' && (
                 <div className="mb-6 p-4 bg-pink-50 border border-pink-200 rounded-lg">
                   <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                    <Music className="h-4 w-4 mr-2 text-pink-600" />
+                    <TikTokIcon className="h-4 w-4 mr-2 text-pink-600" />
                     Paramètres TikTok
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
@@ -824,13 +1190,13 @@ export default function ContentPage() {
                         onChange={(e) => setPrivacy(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
                       >
-                        <option value="private">Moi uniquement</option>
-                        <option value="friends">Amis</option>
-                        <option value="public">Tout le monde</option>
+                        <option value="SELF_ONLY">Moi uniquement</option>
+                        <option value="MUTUAL_FOLLOW_FRIENDS">Amis</option>
+                        <option value="PUBLIC_TO_EVERYONE">Tout le monde</option>
                       </select>
                       <p className="text-xs text-gray-500 mt-1">
-                        {privacy === 'private' ? '🔒 Visible par vous seulement' : 
-                         privacy === 'friends' ? '👥 Visible par vos amis' : 
+                        {privacy === 'SELF_ONLY' ? '🔒 Visible par vous seulement' : 
+                         privacy === 'MUTUAL_FOLLOW_FRIENDS' ? '👥 Visible par vos amis' : 
                          '🌍 Visible par tous les utilisateurs TikTok'}
                       </p>
                     </div>
@@ -842,105 +1208,148 @@ export default function ContentPage() {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-3 gap-4">
-                <button
-                  onClick={() => setContentType('text')}
-                  disabled={selectedChannelType === 'tiktok'}
-                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
-                    selectedChannelType === 'tiktok' 
-                      ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-50'
-                      : contentType === 'text'
-                      ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-lg'
-                      : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-md'
+              {/* Types de contenu adaptés par plateforme */}
+              {selectedChannelType === 'facebook-page' && (
+                <div className="grid grid-cols-3 gap-4">
+                  <button
+                    onClick={() => setContentType('text')}
+                    className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                      contentType === 'text'
+                        ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-lg'
+                        : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-md'
                     }`}
-                >
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className={`p-3 rounded-xl transition-colors ${
-                      selectedChannelType === 'tiktok'
-                        ? 'bg-gray-200'
-                        : contentType === 'text' ? 'bg-blue-500' : 'bg-gray-100 group-hover:bg-blue-100'
+                  >
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className={`p-3 rounded-xl transition-colors ${
+                        contentType === 'text' ? 'bg-blue-500' : 'bg-gray-100 group-hover:bg-blue-100'
                       }`}>
-                      <FileText className={`h-6 w-6 ${
-                        selectedChannelType === 'tiktok'
-                          ? 'text-gray-400'
-                          : contentType === 'text' ? 'text-white' : 'text-gray-600 group-hover:text-blue-600'
+                        <FileText className={`h-6 w-6 ${
+                          contentType === 'text' ? 'text-white' : 'text-gray-600 group-hover:text-blue-600'
                         }`} />
+                      </div>
+                      <span className={`font-medium ${
+                        contentType === 'text' ? 'text-blue-700' : 'text-gray-700'
+                      }`}>Texte seul</span>
+                      <span className="text-xs text-blue-600">Statuts, pensées</span>
                     </div>
-                    <span className={`font-medium ${
-                      selectedChannelType === 'tiktok'
-                        ? 'text-gray-400'
-                        : contentType === 'text' ? 'text-blue-700' : 'text-gray-700'
-                      }`}>Texte</span>
-                    {selectedChannelType === 'facebook-page' && contentType !== 'text' && (
-                      <span className="text-xs text-blue-600">Idéal pour Facebook</span>
-                    )}
-                  </div>
-                </button>
-                <button
-                  onClick={() => setContentType('image')}
-                  disabled={selectedChannelType === 'tiktok'}
-                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
-                    selectedChannelType === 'tiktok' 
-                      ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-50'
-                      : contentType === 'image'
-                      ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-300 shadow-lg'
-                      : 'bg-white border-gray-200 hover:border-green-200 hover:shadow-md'
+                  </button>
+                  <button
+                    onClick={() => setContentType('image')}
+                    className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                      contentType === 'image'
+                        ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-300 shadow-lg'
+                        : 'bg-white border-gray-200 hover:border-green-200 hover:shadow-md'
                     }`}
-                >
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className={`p-3 rounded-xl transition-colors ${
-                      selectedChannelType === 'tiktok'
-                        ? 'bg-gray-200'
-                        : contentType === 'image' ? 'bg-green-500' : 'bg-gray-100 group-hover:bg-green-100'
+                  >
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className={`p-3 rounded-xl transition-colors ${
+                        contentType === 'image' ? 'bg-green-500' : 'bg-gray-100 group-hover:bg-green-100'
                       }`}>
-                      <Image 
-                        className={`h-6 w-6 ${
-                          selectedChannelType === 'tiktok'
-                            ? 'text-gray-400'
-                            : contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
-                        }`} 
-                      />
-                    </div>
-                    <span className={`font-medium ${
-                      selectedChannelType === 'tiktok'
-                        ? 'text-gray-400'
-                        : contentType === 'image' ? 'text-green-700' : 'text-gray-700'
-                      }`}>Image</span>
-                    {selectedChannelType === 'instagram-dm' && contentType !== 'image' && (
-                      <span className="text-xs text-purple-600">Parfait pour Instagram</span>
-                    )}
-                  </div>
-                </button>
-                <button
-                  onClick={() => setContentType('video')}
-                  className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${contentType === 'video'
-                      ? selectedChannelType === 'tiktok' 
-                        ? 'bg-gradient-to-br from-pink-50 to-purple-100 border-pink-300 shadow-lg'
-                        : 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 shadow-lg'
-                      : 'bg-white border-gray-200 hover:border-purple-200 hover:shadow-md'
-                    }`}
-                >
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className={`p-3 rounded-xl transition-colors ${
-                      contentType === 'video' 
-                        ? selectedChannelType === 'tiktok' ? 'bg-pink-500' : 'bg-purple-500'
-                        : 'bg-gray-100 group-hover:bg-purple-100'
-                      }`}>
-                      <Video className={`h-6 w-6 ${
-                        contentType === 'video' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                        <Image className={`h-6 w-6 ${
+                          contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
                         }`} />
+                      </div>
+                      <span className={`font-medium ${
+                        contentType === 'image' ? 'text-green-700' : 'text-gray-700'
+                      }`}>Photo</span>
+                      <span className="text-xs text-blue-600">Stories, posts</span>
                     </div>
-                    <span className={`font-medium ${
-                      contentType === 'video' 
-                        ? selectedChannelType === 'tiktok' ? 'text-pink-700' : 'text-purple-700'
-                        : 'text-gray-700'
+                  </button>
+                  <button
+                    onClick={() => setContentType('video')}
+                    className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                      contentType === 'video'
+                        ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 shadow-lg'
+                        : 'bg-white border-gray-200 hover:border-purple-200 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className={`p-3 rounded-xl transition-colors ${
+                        contentType === 'video' ? 'bg-purple-500' : 'bg-gray-100 group-hover:bg-purple-100'
+                      }`}>
+                        <Video className={`h-6 w-6 ${
+                          contentType === 'video' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                        }`} />
+                      </div>
+                      <span className={`font-medium ${
+                        contentType === 'video' ? 'text-purple-700' : 'text-gray-700'
                       }`}>Vidéo</span>
-                    {selectedChannelType === 'tiktok' && (
-                      <span className="text-xs text-pink-600 font-medium">Obligatoire</span>
-                    )}
+                      <span className="text-xs text-blue-600">Reels, stories</span>
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              {/* Types de contenu pour Instagram */}
+              {selectedChannelType === 'instagram-dm' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setContentType('image')}
+                    className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                      contentType === 'image'
+                        ? 'bg-gradient-to-br from-purple-50 to-pink-100 border-purple-300 shadow-lg'
+                        : 'bg-white border-gray-200 hover:border-purple-200 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className={`p-3 rounded-xl transition-colors ${
+                        contentType === 'image' ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-100 group-hover:bg-purple-100'
+                      }`}>
+                        <Image className={`h-6 w-6 ${
+                          contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                        }`} />
+                      </div>
+                      <span className={`font-medium ${
+                        contentType === 'image' ? 'text-purple-700' : 'text-gray-700'
+                      }`}>Photo</span>
+                      <span className="text-xs text-purple-600 font-medium">Recommandé</span>
+                      <span className="text-xs text-gray-500">Format carré/vertical</span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setContentType('video')}
+                    className={`group relative p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
+                      contentType === 'video'
+                        ? 'bg-gradient-to-br from-purple-50 to-pink-100 border-purple-300 shadow-lg'
+                        : 'bg-white border-gray-200 hover:border-purple-200 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className={`p-3 rounded-xl transition-colors ${
+                        contentType === 'video' ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-100 group-hover:bg-purple-100'
+                      }`}>
+                        <Video className={`h-6 w-6 ${
+                          contentType === 'video' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                        }`} />
+                      </div>
+                      <span className={`font-medium ${
+                        contentType === 'video' ? 'text-purple-700' : 'text-gray-700'
+                      }`}>Vidéo</span>
+                      <span className="text-xs text-purple-600">Reels & Stories</span>
+                      <span className="text-xs text-gray-500">Format vertical</span>
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              {/* Types de contenu pour TikTok */}
+              {selectedChannelType === 'tiktok' && (
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="group relative p-8 rounded-xl border-2 bg-gradient-to-br from-gray-50 to-gray-100 border-gray-300 shadow-lg">
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="p-4 rounded-xl bg-black">
+                        <Video className="h-8 w-8 text-white" />
+                      </div>
+                      <span className="font-semibold text-xl text-gray-700">Vidéo uniquement</span>
+                      <span className="text-sm text-gray-600 font-medium">Format vertical 9:16 optimal</span>
+                      <div className="text-center space-y-1">
+                        <p className="text-xs text-gray-500">Durée: 15 secondes à 10 minutes</p>
+                        <p className="text-xs text-gray-500">Résolution: 1080x1920px recommandée</p>
+                      </div>
+                    </div>
                   </div>
-                </button>
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Section image (conditionnelle) */}
@@ -1144,9 +1553,9 @@ export default function ContentPage() {
               <div className="text-sm text-gray-600">
                 {message.trim() && (
                   <span className="flex items-center space-x-2">
-                    {selectedChannelType === 'tiktok' && <Music className="h-4 w-4 text-pink-600" />}
-                    {selectedChannelType === 'facebook-page' && <Facebook className="h-4 w-4 text-blue-600" />}
-                    {selectedChannelType === 'instagram-dm' && <Instagram className="h-4 w-4 text-purple-600" />}
+                    {selectedChannelType === 'tiktok' && <TikTokIcon className="h-4 w-4 text-gray-600" />}
+                    {selectedChannelType === 'facebook-page' && <FacebookIcon className="h-4 w-4 text-blue-600" />}
+                    {selectedChannelType === 'instagram-dm' && <InstagramIcon className="h-4 w-4 text-purple-600" />}
                     <span>
                       ✓ Prêt à publier sur {
                         selectedChannelType === 'tiktok' ? 'TikTok' :

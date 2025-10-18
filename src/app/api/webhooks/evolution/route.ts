@@ -225,10 +225,19 @@ async function handleMessageUpsert(payload: any) {
 async function handleMessageUpdate(payload: any) {
   const { data } = payload;
 
+  // Dans messages.update, la structure est différente :
+  // data.keyId au lieu de data.key.id
+  const externalId = data.keyId || data.key?.id;
+  
+  if (!externalId) {
+    console.error('No externalId found in message update:', data);
+    return;
+  }
+
   // Mettre à jour le statut du message dans la DB
   const message = await prisma.message.findFirst({
     where: {
-      externalId: data.key.id,
+      externalId,
     },
   });
 
@@ -242,8 +251,13 @@ async function handleMessageUpdate(payload: any) {
         metadata: {
           ...(message.metadata as any),
           status: data.status,
+          updatedAt: new Date().toISOString(),
         },
       },
     });
+    
+    console.info(`✅ Statut du message mis à jour: ${externalId} → ${data.status}`);
+  } else {
+    console.info(`ℹ️ Message non trouvé pour mise à jour: ${externalId}`);
   }
 }
