@@ -89,6 +89,12 @@ async function handleConnectionUpdate(payload: any) {
 async function handleMessageUpsert(payload: any) {
   const { instance, data } = payload;
 
+  // Ignorer les messages de groupe (remoteJid se termine par @g.us)
+  if (data.key.remoteJid.endsWith('@g.us')) {
+    console.log('🚫 Message de groupe ignoré:', data.key.remoteJid);
+    return;
+  }
+
   // Log du message entrant (console.info pour visibilité sur Vercel)
   console.info('📩 MESSAGE WHATSAPP REÇU:', JSON.stringify({
     de: data.key?.remoteJid,
@@ -96,7 +102,7 @@ async function handleMessageUpsert(payload: any) {
     texte: data.message?.conversation || data.message?.extendedTextMessage?.text || `[${data.messageType}]`,
     timestamp: new Date(data.messageTimestamp * 1000).toLocaleString('fr-FR'),
     instance,
-  }, null, 2));
+  }, null, 2))
 
   // Trouver le canal WhatsApp
   const channel = await prisma.channel.findFirst({
