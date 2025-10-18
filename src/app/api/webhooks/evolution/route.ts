@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import type { EvolutionWebhookPayload } from '@/types/evolution-api';
+import { getWhatsAppUserInfo } from '@/lib/whatsapp-utils';
 
 export async function POST(request: Request) {
   try {
@@ -125,13 +126,30 @@ async function handleMessageUpsert(payload: any) {
   });
 
   if (!customer) {
+    // Récupérer les informations utilisateur WhatsApp (incluant l'avatar)
+    const userInfo = await getWhatsAppUserInfo(instance, phoneNumber);
+    
     customer = await prisma.customer.create({
       data: {
         shopId: channel.shopId,
-        name: data.pushName || phoneNumber,
+        name: data.pushName || userInfo.name,
         phone: phoneNumber,
+        avatarUrl: userInfo.avatarUrl,
       },
     });
+  } else if (!customer.avatarUrl) {
+    // Si le customer existe mais n'a pas d'avatar, essayer de le récupérer
+    try {
+      const userInfo = await getWhatsAppUserInfo(instance, phoneNumber);
+      if (userInfo.avatarUrl) {
+        customer = await prisma.customer.update({
+          where: { id: customer.id },
+          data: { avatarUrl: userInfo.avatarUrl },
+        });
+      }
+    } catch (error) {
+      console.error('Error updating customer avatar:', error);
+    }
   }
 
   // Trouver ou créer la conversation

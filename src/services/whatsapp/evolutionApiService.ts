@@ -206,6 +206,33 @@ class EvolutionApiService {
       throw error;
     }
   }
+
+  /**
+   * Récupère l'URL de la photo de profil d'un contact WhatsApp
+   * @param instanceName Nom de l'instance WhatsApp
+   * @param phoneNumber Numéro de téléphone (format: 5585988888888)
+   * @returns URL de la photo de profil ou null si non disponible
+   */
+  async fetchProfilePictureUrl(
+    instanceName: string,
+    phoneNumber: string
+  ): Promise<string | null> {
+    try {
+      const response = await this.apiClient.post(
+        `/chat/fetchProfilePictureUrl/${instanceName}`,
+        { number: phoneNumber }
+      );
+
+      if (response.status === 200 && response.data?.profilePictureUrl) {
+        return response.data.profilePictureUrl;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error fetching WhatsApp profile picture:', error);
+      return null; // Ne pas faire échouer le processus si l'avatar n'est pas disponible
+    }
+  }
 }
 
 export const evolutionApiService = new EvolutionApiService();
