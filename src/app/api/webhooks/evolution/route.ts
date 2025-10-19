@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import type { EvolutionWebhookPayload } from '@/types/evolution-api';
+import { getWhatsAppUserInfo } from '@/lib/whatsapp-utils';
 
 export async function POST(request: Request) {
   try {
@@ -88,6 +89,12 @@ async function handleConnectionUpdate(payload: any) {
 async function handleMessageUpsert(payload: any) {
   const { instance, data } = payload;
 
+  // Ignorer les messages de groupe (remoteJid se termine par @g.us)
+  if (data.key.remoteJid.endsWith('@g.us')) {
+    console.log('🚫 Message de groupe ignoré:', data.key.remoteJid);
+    return;
+  }
+
   // Log du message entrant (console.info pour visibilité sur Vercel)
   console.info('📩 MESSAGE WHATSAPP REÇU:', JSON.stringify({
     de: data.key?.remoteJid,
@@ -95,7 +102,7 @@ async function handleMessageUpsert(payload: any) {
     texte: data.message?.conversation || data.message?.extendedTextMessage?.text || `[${data.messageType}]`,
     timestamp: new Date(data.messageTimestamp * 1000).toLocaleString('fr-FR'),
     instance,
-  }, null, 2));
+  }, null, 2))
 
   // Trouver le canal WhatsApp
   const channel = await prisma.channel.findFirst({
@@ -116,19 +123,49 @@ async function handleMessageUpsert(payload: any) {
   // Extraire le numéro de téléphone du remoteJid (format: 5585988888888@s.whatsapp.net)
   const phoneNumber = data.key.remoteJid.split('@')[0];
   
-  // Trouver ou créer le client
-  let customer = await prisma.customer.findFirst({
-    where: {
-      shopId: channel.shopId,
-      phone: phoneNumber,
-    },
-  });
-
-  if (!customer) {
-    customer = await prisma.customer.create({
-      data: {
+  // Ne créer un customer que pour les messages entrants (fromMe = false)
+  let customer = null;
+  
+  if (!data.key.fromMe) {
+    // Trouver ou créer le client uniquement pour les messages entrants
+    customer = await prisma.customer.findFirst({
+      where: {
         shopId: channel.shopId,
-        name: data.pushName || phoneNumber,
+        phone: phoneNumber,
+      },
+    });
+
+    if (!customer) {
+      // Récupérer les informations utilisateur WhatsApp (incluant l'avatar)
+      const userInfo = await getWhatsAppUserInfo(instance, phoneNumber);
+      
+      customer = await prisma.customer.create({
+        data: {
+          shopId: channel.shopId,
+          name: data.pushName || userInfo.name,
+          phone: phoneNumber,
+          avatarUrl: userInfo.avatarUrl,
+        },
+      });
+    } else if (!customer.avatarUrl) {
+      // Si le customer existe mais n'a pas d'avatar, essayer de le récupérer
+      try {
+        const userInfo = await getWhatsAppUserInfo(instance, phoneNumber);
+        if (userInfo.avatarUrl) {
+          customer = await prisma.customer.update({
+            where: { id: customer.id },
+            data: { avatarUrl: userInfo.avatarUrl },
+          });
+        }
+      } catch (error) {
+        console.error('Error updating customer avatar:', error);
+      }
+    }
+  } else {
+    // Pour les messages sortants, essayer de trouver le customer existant sans en créer un nouveau
+    customer = await prisma.customer.findFirst({
+      where: {
+        shopId: channel.shopId,
         phone: phoneNumber,
       },
     });
@@ -144,6 +181,12 @@ async function handleMessageUpsert(payload: any) {
   });
 
   if (!conversation) {
+    // Ne créer une conversation que si on a un customer (message entrant)
+    if (!customer) {
+      console.warn('Ignoring outgoing message without existing customer/conversation:', data.key.remoteJid);
+      return;
+    }
+    
     conversation = await prisma.conversation.create({
       data: {
         shopId: channel.shopId,
