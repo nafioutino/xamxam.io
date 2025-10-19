@@ -249,51 +249,6 @@ async function handleMessageUpsert(payload: any) {
     messageType = 'CONTACT';
   }
 
-  // Nettoyer les métadonnées pour éviter les payloads trop volumineux
-  const cleanMetadata = {
-    key: data.key,
-    messageTimestamp: data.messageTimestamp,
-    pushName: data.pushName,
-    status: data.status,
-    instanceId: data.instanceId,
-    source: data.source,
-    messageType: data.messageType,
-    // Exclure les données base64 volumineuses
-    message: {
-      ...data.message,
-      // Nettoyer les données base64 des messages audio
-      ...(data.message.audioMessage && {
-        audioMessage: {
-          ...data.message.audioMessage,
-          base64: undefined, // Supprimer le base64 volumineux
-        }
-      }),
-      // Nettoyer les données base64 des messages image
-      ...(data.message.imageMessage && {
-        imageMessage: {
-          ...data.message.imageMessage,
-          base64: undefined, // Supprimer le base64 volumineux
-          jpegThumbnail: undefined, // Supprimer la miniature
-        }
-      }),
-      // Nettoyer les données base64 des messages vidéo
-      ...(data.message.videoMessage && {
-        videoMessage: {
-          ...data.message.videoMessage,
-          base64: undefined,
-          jpegThumbnail: undefined,
-        }
-      }),
-      // Nettoyer les données base64 des documents
-      ...(data.message.documentMessage && {
-        documentMessage: {
-          ...data.message.documentMessage,
-          base64: undefined,
-        }
-      }),
-    }
-  };
-
   // Créer le message dans la DB
   await prisma.message.create({
     data: {
@@ -304,7 +259,7 @@ async function handleMessageUpsert(payload: any) {
       isFromCustomer: !data.key.fromMe,
       isRead: data.key.fromMe,
       externalId: data.key.id,
-      metadata: cleanMetadata,
+      metadata: data,
       createdAt: new Date(data.messageTimestamp * 1000),
     },
   });
