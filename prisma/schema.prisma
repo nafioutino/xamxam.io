@@ -72,22 +72,24 @@ model Profile {
 }
 
 model Shop {
-  id            String         @id @default(uuid()) @db.Uuid
-  name          String
-  description   String?
-  address       String?
-  openingHours  Json?
-  faq           Json?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  ownerId       String         @unique @db.Uuid
-  categories    Category[]
-  channels      Channel[]
-  conversations Conversation[]
-  customers     Customer[]
-  orders        Order[]
-  products      Product[]
-  owner         Profile        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  id                 String               @id @default(uuid()) @db.Uuid
+  name               String
+  description        String?
+  address            String?
+  openingHours       Json?
+  faq                Json?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  ownerId            String               @unique @db.Uuid
+  categories         Category[]
+  channels           Channel[]
+  conversations      Conversation[]
+  customers          Customer[]
+  orders             Order[]
+  products           Product[]
+  owner              Profile              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  agentConfiguration AgentConfiguration?
+  knowledgeChunks    KnowledgeChunk[]
 
   @@schema("public")
 }
@@ -552,6 +554,57 @@ model oauth_clients {
   @@index([client_id])
   @@index([deleted_at])
   @@schema("auth")
+}
+
+model AgentConfiguration {
+  id               String   @id @default(uuid()) @db.Uuid
+  
+  // Champs de l'onglet "Organisation"
+  orgName          String?
+  orgDescription   String?
+  orgIndustry      String?
+  orgWebsite       String?
+  orgPhone         String?
+  orgEmail         String?
+  orgAddress       String?
+  orgTargetAudience String?
+  orgValues        String[]
+  orgMission       String?
+  
+  // Champs de l'onglet "Personnalité"
+  agentName        String   @default("Assistant Virtuel")
+  agentTone        String   @default("professional") // Ex: 'professional', 'friendly'
+  agentLanguage    String   @default("fr")
+  agentExpertise   String[]
+  agentResponseStyle String @default("conversational") // Ex: 'concise', 'detailed'
+  agentGreeting    String?
+  agentSignature   String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relation 1-à-1 avec Shop
+  shopId           String   @unique @db.Uuid
+  shop             Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@schema("public")
+}
+
+model KnowledgeChunk {
+  id        String    @id @default(uuid()) @db.Uuid
+  content   String    // Le morceau de texte brut
+  embedding Unsupported("vector(1536)")?   // Le vecteur numérique (embedding) - dimension 1536 pour OpenAI
+  source    String?   // Le nom du fichier ou l'URL d'origine
+  metadata  Json?     // Métadonnées supplémentaires (page, section, etc.)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relation N-à-1 avec Shop
+  shopId    String    @db.Uuid
+  shop      Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@schema("public")
 }
 
 enum ChannelType {
