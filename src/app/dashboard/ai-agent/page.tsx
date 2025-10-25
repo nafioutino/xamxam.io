@@ -111,97 +111,165 @@ export default function AIAgentPage() {
   const [activeTab, setActiveTab] = useState<'organization' | 'personality' | 'knowledge'>('organization');
   const [newValue, setNewValue] = useState('');
   const [newExpertise, setNewExpertise] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  // Fonctions de drag and drop
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      // Créer un événement simulé pour réutiliser handleFileUpload
+      const simulatedEvent = {
+        target: { files: files }
+      } as React.ChangeEvent<HTMLInputElement>;
+      handleFileUpload(simulatedEvent);
+    }
+  };
 
   // Gestion des fichiers
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
-    Array.from(files).forEach(file => {
-      const newItem: KnowledgeItem = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        type: 'document',
-        title: file.name,
-        fileName: file.name,
-        fileSize: file.size,
-        uploadedAt: new Date(),
-        status: 'processing'
-      };
+    const file = files[0]; // On traite un fichier à la fois pour la simplicité
+    if (!file) return;
 
-      setKnowledgeBase(prev => [...prev, newItem]);
+    const newItemId = Date.now().toString();
+    const newItem: KnowledgeItem = {
+      id: newItemId,
+      type: 'document',
+      title: file.name,
+      fileName: file.name,
+      fileSize: file.size,
+      uploadedAt: new Date(),
+      status: 'processing'
+    };
+    setKnowledgeBase(prev => [...prev, newItem]);
+    toast.loading(`Téléversement de ${file.name}...`, { id: `upload-${newItemId}` });
 
-      // Simuler le traitement du fichier
-      setTimeout(() => {
-        setKnowledgeBase(prev => 
-          prev.map(item => 
-            item.id === newItem.id 
-              ? { ...item, status: 'ready' as const }
-              : item
-          )
-        );
-        toast.success(`Document "${file.name}" ajouté à la base de connaissances`);
-      }, 2000);
-    });
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/knowledge/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Upload failed.');
+      }
 
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      setKnowledgeBase(prev => prev.map(item => item.id === newItemId ? { ...item, status: 'ready' } : item));
+      toast.success('Document envoyé pour traitement !', { id: `upload-${newItemId}` });
+    } catch (error) {
+      setKnowledgeBase(prev => prev.map(item => item.id === newItemId ? { ...item, status: 'error' } : item));
+      toast.error('Erreur lors du téléversement.', { id: `upload-${newItemId}` });
+      console.error('File upload error:', error);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
   // Ajouter du contenu textuel
-  const handleAddTextContent = () => {
+  const handleAddTextContent = async () => {
     if (!newTextTitle.trim() || !newTextContent.trim()) {
       toast.error('Veuillez remplir le titre et le contenu');
       return;
     }
+    
+    toast.loading('Ajout du contenu en cours...', { id: 'ingest-toast' });
+    try {
+      const response = await fetch('/api/knowledge/ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceType: 'text',
+          sourceData: newTextContent,
+          sourceTitle: newTextTitle,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to ingest text content.');
+      }
+      
+      // Ajoute à l'UI locale pour un retour immédiat (optimistic update)
+      setKnowledgeBase(prev => [...prev, {
+        id: Date.now().toString(),
+        type: 'text',
+        title: newTextTitle,
+        content: newTextContent,
+        uploadedAt: new Date(),
+        status: 'ready' // On suppose que ça va marcher
+      }]);
 
-    const newItem: KnowledgeItem = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      type: 'text',
-      title: newTextTitle,
-      content: newTextContent,
-      uploadedAt: new Date(),
-      status: 'ready'
-    };
-
-    setKnowledgeBase(prev => [...prev, newItem]);
-    setNewTextTitle('');
-    setNewTextContent('');
-    toast.success('Contenu textuel ajouté à la base de connaissances');
+      setNewTextTitle('');
+      setNewTextContent('');
+      toast.success('Contenu textuel envoyé pour traitement !', { id: 'ingest-toast' });
+    } catch (error) {
+      toast.error('Erreur lors de l\'envoi du contenu.', { id: 'ingest-toast' });
+      console.error('Text ingest error:', error);
+    }
   };
 
   // Ajouter une URL
-  const handleAddUrl = () => {
+  const handleAddUrl = async () => {
     if (!newUrlTitle.trim() || !newUrl.trim()) {
       toast.error('Veuillez remplir le titre et l\'URL');
       return;
     }
 
-    const newItem: KnowledgeItem = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      type: 'url',
-      title: newUrlTitle,
-      url: newUrl,
-      uploadedAt: new Date(),
-      status: 'processing'
-    };
+    toast.loading('Traitement de l\'URL en cours...', { id: 'ingest-toast' });
+    try {
+      const response = await fetch('/api/knowledge/ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceType: 'url',
+          sourceData: newUrl,
+          sourceTitle: newUrlTitle,
+        }),
+      });
 
-    setKnowledgeBase(prev => [...prev, newItem]);
-    setNewUrlTitle('');
-    setNewUrl('');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to ingest URL.');
+      }
 
-    // Simuler le traitement de l'URL
-    setTimeout(() => {
-      setKnowledgeBase(prev => 
-        prev.map(item => 
-          item.id === newItem.id 
-            ? { ...item, status: 'ready' as const }
-            : item
-        )
-      );
-      toast.success('URL ajoutée à la base de connaissances');
-    }, 1500);
+      setKnowledgeBase(prev => [...prev, {
+        id: Date.now().toString(),
+        type: 'url',
+        title: newUrlTitle,
+        url: newUrl,
+        uploadedAt: new Date(),
+        status: 'ready'
+      }]);
+
+      setNewUrlTitle('');
+      setNewUrl('');
+      toast.success('URL envoyée pour traitement !', { id: 'ingest-toast' });
+    } catch (error) {
+      toast.error('Erreur lors de l\'envoi de l\'URL.', { id: 'ingest-toast' });
+      console.error('URL ingest error:', error);
+    }
   };
 
   // Supprimer un élément de la base de connaissances
@@ -247,9 +315,25 @@ export default function AIAgentPage() {
   };
 
   // Sauvegarder la configuration
-  const handleSave = () => {
-    // Ici, vous ajouteriez la logique pour sauvegarder en base de données
-    toast.success('Configuration de l\'agent IA sauvegardée avec succès !');
+  const handleSave = async () => {
+    toast.loading('Sauvegarde en cours...', { id: 'save-toast' });
+    try {
+      const response = await fetch('/api/agent/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ organizationInfo, agentPersonality }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to save configuration.');
+      }
+      
+      toast.success('Configuration sauvegardée avec succès !', { id: 'save-toast' });
+    } catch (error) {
+      toast.error('Erreur lors de la sauvegarde.', { id: 'save-toast' });
+      console.error('Save error:', error);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -757,31 +841,52 @@ export default function AIAgentPage() {
                       Documents et fichiers
                     </h3>
                     
-                    <div className="border-2 border-dashed border-blue-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-25 transition-all duration-300 cursor-pointer group">
-                      <div className="group-hover:scale-110 transition-transform duration-300">
-                        <Upload className="mx-auto h-16 w-16 text-blue-400 group-hover:text-blue-500" />
+                    <div 
+                      className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer group ${
+                        isDragOver 
+                          ? 'border-blue-500 bg-blue-100 scale-105' 
+                          : 'border-blue-300 hover:border-blue-400 hover:bg-blue-25'
+                      }`}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <div className={`transition-transform duration-300 ${isDragOver ? 'scale-125' : 'group-hover:scale-110'}`}>
+                        <Upload className={`mx-auto h-16 w-16 transition-colors duration-300 ${
+                          isDragOver 
+                            ? 'text-blue-600' 
+                            : 'text-blue-400 group-hover:text-blue-500'
+                        }`} />
                       </div>
                       <div className="mt-6">
-                        <label htmlFor="file-upload" className="cursor-pointer">
-                          <span className="block text-lg font-semibold text-gray-900 group-hover:text-blue-700">
-                            Glissez vos documents ici
-                          </span>
-                          <span className="mt-2 block text-sm text-gray-600">
-                            ou cliquez pour parcourir vos fichiers
-                          </span>
-                          <span className="mt-3 inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                            PDF, DOC, TXT • Max 10MB
-                          </span>
-                        </label>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          multiple
-                          accept=".pdf,.doc,.docx,.txt"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
+                        <span className={`block text-lg font-semibold transition-colors duration-300 ${
+                          isDragOver 
+                            ? 'text-blue-800' 
+                            : 'text-gray-900 group-hover:text-blue-700'
+                        }`}>
+                          {isDragOver ? 'Relâchez pour téléverser' : 'Glissez vos documents ici'}
+                        </span>
+                        <span className="mt-2 block text-sm text-gray-600">
+                          ou cliquez pour parcourir vos fichiers
+                        </span>
+                        <span className={`mt-3 inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300 ${
+                          isDragOver 
+                            ? 'bg-blue-200 text-blue-800' 
+                            : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          PDF, DOC, TXT, CSV, JSON • Max 10MB
+                        </span>
                       </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept=".pdf,.doc,.docx,.txt,.csv,.json"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        id="file-upload"
+                      />
                     </div>
                   </div>
 
