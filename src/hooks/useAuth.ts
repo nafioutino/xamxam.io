@@ -201,10 +201,7 @@ export function useAuth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`,
-          queryParams: {
-            next: '/dashboard'
-          }
+          redirectTo: `${window.location.origin}/dashboard`
         }
       });
       
