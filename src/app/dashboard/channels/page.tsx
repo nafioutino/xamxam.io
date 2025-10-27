@@ -6,8 +6,8 @@ import {
   WhatsAppIcon, 
   TikTokIcon, 
   MessengerIcon, 
-  EmailIcon, 
-  SMSIcon,
+  // EmailIcon,  // Temporairement commenté
+  // SMSIcon,    // Temporairement commenté
   InstagramIcon,
   TwitterIcon,
   LinkedInIcon
@@ -79,30 +79,31 @@ const availableChannels: Channel[] = [
     borderColor: 'border-pink-200',
     hoverColor: 'hover:bg-pink-100',
   },
-  {
-    id: 'email',
-    name: 'Email',
-    type: 'email',
-    status: 'disconnected',
-    description: 'Configurez votre email professionnel pour les communications',
-    icon: EmailIcon,
-    color: 'text-gray-600',
-    bgColor: 'bg-gray-50',
-    borderColor: 'border-gray-200',
-    hoverColor: 'hover:bg-gray-100',
-  },
-  {
-    id: 'sms',
-    name: 'SMS',
-    type: 'sms',
-    status: 'disconnected',
-    description: 'Envoyez des SMS à vos clients directement depuis XAMXAM',
-    icon: SMSIcon,
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-50',
-    borderColor: 'border-purple-200',
-    hoverColor: 'hover:bg-purple-100',
-  },
+  // TEMPORAIREMENT DÉSACTIVÉS - Email et SMS
+  // {
+  //   id: 'email',
+  //   name: 'Email',
+  //   type: 'email',
+  //   status: 'disconnected',
+  //   description: 'Configurez votre email professionnel pour les communications',
+  //   icon: EmailIcon,
+  //   color: 'text-gray-600',
+  //   bgColor: 'bg-gray-50',
+  //   borderColor: 'border-gray-200',
+  //   hoverColor: 'hover:bg-gray-100',
+  // },
+  // {
+  //   id: 'sms',
+  //   name: 'SMS',
+  //   type: 'sms',
+  //   status: 'disconnected',
+  //   description: 'Envoyez des SMS à vos clients directement depuis XAMXAM',
+  //   icon: SMSIcon,
+  //   color: 'text-purple-500',
+  //   bgColor: 'bg-purple-50',
+  //   borderColor: 'border-purple-200',
+  //   hoverColor: 'hover:bg-purple-100',
+  // },
 ];
 
 const getStatusIcon = (status: Channel['status']) => {
