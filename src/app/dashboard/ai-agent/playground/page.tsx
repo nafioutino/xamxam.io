@@ -2,16 +2,17 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { 
-  Bot, 
-  Send, 
-  User, 
-  Sparkles, 
+import {
+  Bot,
+  Send,
+  User,
   MessageSquare,
   Loader2,
   Brain,
   Zap,
-  Play
+  Play,
+  Lightbulb,
+  Sparkles
 } from 'lucide-react';
 
 interface Message {
@@ -108,45 +109,42 @@ export default function AIPlaygroundPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-lg border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-3 rounded-xl shadow-lg">
-                <Play className="h-8 w-8 text-white" />
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+                <Play className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">AI Playground</h1>
-                <p className="text-sm text-gray-600">Testez votre agent IA personnalisé en temps réel</p>
+                <h1 className="text-xl font-semibold text-gray-900">AI Playground</h1>
+                <p className="text-sm text-gray-500">Testez votre agent IA personnalisé en temps réel</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Brain className="h-4 w-4" />
-                <span>RAG + GPT-4o-mini</span>
-              </div>
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <Brain className="h-4 w-4" />
+              <span>RAG + GPT-4o-mini</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden h-[calc(100vh-200px)] flex flex-col">
-          
+      <div className="max-w-4xl mx-auto px-6 py-6">
+        <div className="bg-white border border-gray-200 rounded-lg min-h-[calc(100vh-220px)] flex flex-col">
           {/* Zone de conversation */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {messages.length === 0 ? (
               <div className="text-center py-16">
-                <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                  <MessageSquare className="h-10 w-10 text-purple-600" />
+                <div className="w-16 h-16 mx-auto mb-6 rounded-xl bg-blue-100 flex items-center justify-center">
+                  <MessageSquare className="h-8 w-8 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Bienvenue dans l'AI Playground !</h3>
-                <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                  Posez une question à votre agent IA. Il utilisera automatiquement les connaissances que vous avez ajoutées pour vous répondre.
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Bienvenue dans l'AI Playground !</h3>
+                <p className="text-sm text-gray-600 mb-6 max-w-md mx-auto">
+                  Posez une question à votre agent IA. Il s'appuiera sur la configuration et la base de connaissances que vous avez fournies.
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl mx-auto">
                   {[
                     "Quels sont vos produits ?",
                     "Comment puis-je vous contacter ?",
@@ -156,10 +154,12 @@ export default function AIPlaygroundPage() {
                     <button
                       key={index}
                       onClick={() => setInputMessage(suggestion)}
-                      className="p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200 text-sm"
+                      className="flex items-start gap-3 p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors text-sm"
                     >
-                      <Sparkles className="h-4 w-4 inline mr-2 text-purple-500" />
-                      {suggestion}
+                      <div className="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center">
+                        <Lightbulb className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <span className="flex-1 text-gray-700">{suggestion}</span>
                     </button>
                   ))}
                 </div>
@@ -171,9 +171,9 @@ export default function AIPlaygroundPage() {
                   className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                    className={`max-w-[80%] rounded-xl px-4 py-3 ${
                       message.sender === 'user'
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                        ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 text-gray-900 border border-gray-200'
                     }`}
                   >
@@ -181,12 +181,12 @@ export default function AIPlaygroundPage() {
                       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                         message.sender === 'user' 
                           ? 'bg-white/20' 
-                          : 'bg-gradient-to-r from-purple-500 to-pink-600'
+                          : 'bg-blue-600/10 text-blue-600'
                       }`}>
                         {message.sender === 'user' ? (
                           <User className="h-4 w-4 text-white" />
                         ) : (
-                          <Bot className="h-4 w-4 text-white" />
+                          <Bot className="h-4 w-4 text-blue-600" />
                         )}
                       </div>
                       <div className="flex-1">
@@ -208,13 +208,10 @@ export default function AIPlaygroundPage() {
             {/* Indicateur de chargement */}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 text-gray-900 border border-gray-200 rounded-2xl px-4 py-3 max-w-[80%]">
+                <div className="bg-gray-100 text-gray-900 border border-gray-200 rounded-xl px-4 py-3 max-w-[70%]">
                   <div className="flex items-center space-x-3">
-                    <div className="bg-gradient-to-r from-purple-500 to-pink-600 w-8 h-8 rounded-full flex items-center justify-center">
-                      <Bot className="h-4 w-4 text-white" />
-                    </div>
                     <div className="flex items-center space-x-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
+                      <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
                       <span className="text-sm text-gray-600">L'IA réfléchit...</span>
                     </div>
                   </div>
@@ -227,7 +224,7 @@ export default function AIPlaygroundPage() {
 
           {/* Zone de saisie */}
           <div className="border-t border-gray-200 p-4 bg-gray-50">
-            <form onSubmit={handleSubmit} className="flex space-x-4">
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">
               <div className="flex-1">
                 <input
                   ref={inputRef}
@@ -236,31 +233,31 @@ export default function AIPlaygroundPage() {
                   onChange={(e) => setInputMessage(e.target.value)}
                   placeholder="Posez votre question à l'agent IA..."
                   disabled={isLoading}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
                 />
               </div>
               <button
                 type="submit"
                 disabled={!inputMessage.trim() || isLoading}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
+                className={`inline-flex items-center justify-center px-5 py-3 text-sm font-medium rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isLoading ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                }`}
               >
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <Send className="h-5 w-5" />
                 )}
-                <span className="hidden sm:inline">
+                <span className="hidden sm:inline ml-2">
                   {isLoading ? 'Envoi...' : 'Envoyer'}
                 </span>
               </button>
             </form>
             
-            <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
-              <div className="flex items-center space-x-4">
-                <span className="flex items-center space-x-1">
-                  <Zap className="h-3 w-3" />
-                  <span>Alimenté par vos connaissances</span>
-                </span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 text-xs text-gray-500 gap-2">
+              <div className="flex items-center space-x-2">
+                <Zap className="h-3 w-3" />
+                <span>Alimenté par vos connaissances</span>
               </div>
               <span>Appuyez sur Entrée pour envoyer</span>
             </div>
