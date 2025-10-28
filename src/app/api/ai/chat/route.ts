@@ -1,0 +1,166 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
+import prisma from '@/lib/prisma';
+import OpenAI from 'openai';
+
+export async function POST(request: NextRequest) {
+  try {
+    // 1. Authentification et Validation
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    const shop = await prisma.shop.findUnique({ 
+      where: { ownerId: user.id } 
+    });
+    
+    if (!shop) {
+      return new NextResponse('Shop not found', { status: 404 });
+    }
+
+    const { message } = await request.json();
+    
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return new NextResponse('Message is required', { status: 400 });
+    }
+
+    console.log('[API AI CHAT] Processing question:', {
+      shopId: shop.id,
+      messageLength: message.length
+    });
+
+    // 2. Initialiser OpenAI
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('[API AI CHAT] OPENAI_API_KEY is not configured');
+      return new NextResponse('OpenAI service is not configured', { status: 500 });
+    }
+
+    // 3. Étape RAG #1 : Créer l'Embedding de la Question
+    console.log('[API AI CHAT] Creating embedding for question...');
+    const embeddingResponse = await openai.embeddings.create({
+      model: 'text-embedding-3-small',
+      input: message,
+    });
+
+    const queryEmbedding = embeddingResponse.data[0].embedding;
+    console.log('[API AI CHAT] Embedding created, dimension:', queryEmbedding.length);
+
+    // 4. Étape RAG #2 : Récupérer le Contexte (Retrieval)
+    console.log('[API AI CHAT] Searching for relevant knowledge chunks...');
+    const { data: matchingChunks, error: rpcError } = await supabase.rpc('match_knowledge_chunks', {
+      query_embedding: queryEmbedding,
+      shop_id_param: shop.id,
+      match_threshold: 0.5, // Threshold plus permissif pour trouver plus de chunks
+      match_count: 5
+    });
+
+    if (rpcError) {
+      console.error('[API AI CHAT] RPC function failed:', rpcError);
+      return new NextResponse('Knowledge retrieval failed', { status: 500 });
+    }
+
+    console.log('[API AI CHAT] Found matching chunks:', matchingChunks?.length || 0);
+    
+    // Log des scores de similarité pour debug
+    if (matchingChunks && matchingChunks.length > 0) {
+      console.log('[API AI CHAT] Similarity scores:', 
+        matchingChunks.map((chunk: any) => ({
+          source: chunk.source,
+          similarity: chunk.similarity?.toFixed(3),
+          contentPreview: chunk.content?.substring(0, 50) + '...'
+        }))
+      );
+    }
+
+    // 5. Récupérer la configuration de l'agent
+    const agentConfig = await prisma.agentConfiguration.findUnique({
+      where: { shopId: shop.id }
+    });
+
+    // 6. Étape RAG #3 : Construire le Prompt pour la Génération
+    const contextText = matchingChunks && matchingChunks.length > 0 
+      ? matchingChunks.map((chunk: any) => chunk.content).join('\n\n')
+      : '';
+
+    console.log('[API AI CHAT] Context length:', contextText.length);
+
+    // Construire le prompt système dynamique
+    const systemPrompt = agentConfig ? `Tu es ${agentConfig.agentName || 'Assistant IA'}, un assistant ${agentConfig.agentTone || 'professionnel'} pour ${agentConfig.orgName || 'cette organisation'}.
+
+INFORMATIONS SUR L'ORGANISATION :
+- Nom : ${agentConfig.orgName || 'Non spécifié'}
+- Description : ${agentConfig.orgDescription || 'Non spécifié'}
+- Secteur : ${agentConfig.orgIndustry || 'Non spécifié'}
+- Mission : ${agentConfig.orgMission || 'Non spécifié'}
+- Valeurs : ${agentConfig.orgValues?.join(', ') || 'Non spécifié'}
+
+PERSONNALITÉ DE L'AGENT :
+- Ton : ${agentConfig.agentTone || 'professionnel'}
+- Style de réponse : ${agentConfig.agentResponseStyle || 'conversationnel'}
+- Domaines d'expertise : ${agentConfig.agentExpertise?.join(', ') || 'Général'}
+- Langue : ${agentConfig.agentLanguage || 'fr'}
+
+INSTRUCTIONS :
+1. Réponds uniquement en français (sauf si demandé autrement)
+2. Utilise un ton ${agentConfig.agentTone || 'professionnel'} et un style ${agentConfig.agentResponseStyle || 'conversationnel'}
+3. Base tes réponses sur les informations fournies dans le contexte ci-dessous
+4. Si tu ne trouves pas d'information pertinente dans le contexte, dis-le clairement
+5. Sois utile, précis et bienveillant
+6. Ne termine pas tes messages avec une signature formelle sauf si c'est vraiment pertinent dans le contexte
+
+${contextText ? `CONTEXTE PERTINENT (base tes réponses sur ces informations) :
+${contextText}` : 'AUCUN CONTEXTE SPÉCIFIQUE TROUVÉ - Réponds avec tes connaissances générales tout en restant dans le cadre de ton rôle.'}` 
+    : `Tu es un assistant IA professionnel. Réponds de manière utile et précise en français.
+
+${contextText ? `CONTEXTE PERTINENT :
+${contextText}` : 'Aucun contexte spécifique disponible.'}`;
+
+    const userPrompt = `Question de l'utilisateur : ${message}`;
+
+    // 7. Étape RAG #4 : Générer la Réponse
+    console.log('[API AI CHAT] Generating AI response...');
+    const chatResponse = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 1000,
+    });
+
+    const aiReply = chatResponse.choices[0].message.content;
+
+    if (!aiReply) {
+      console.error('[API AI CHAT] OpenAI returned empty response');
+      return new NextResponse('Failed to generate response', { status: 500 });
+    }
+
+    console.log('[API AI CHAT] Response generated successfully:', {
+      shopId: shop.id,
+      responseLength: aiReply.length,
+      chunksUsed: matchingChunks?.length || 0
+    });
+
+    // 8. Répondre au Frontend
+    return NextResponse.json({ 
+      reply: aiReply,
+      metadata: {
+        chunksFound: matchingChunks?.length || 0,
+        hasContext: contextText.length > 0,
+        agentName: agentConfig?.agentName || 'Assistant IA'
+      }
+    });
+    
+  } catch (error) {
+    console.error('[API AI CHAT] Unexpected error:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+}
