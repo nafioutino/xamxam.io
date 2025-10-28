@@ -83,6 +83,8 @@ export default function AIAgentPage() {
   const [activeTab, setActiveTab] = useState<'personality' | 'knowledge'>('personality');
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedKnowledgeType, setSelectedKnowledgeType] = useState<'files' | 'webpages' | 'text' | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
 
   // Fonctions de drag and drop
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -113,13 +115,31 @@ export default function AIAgentPage() {
   };
 
   // Gestion des fichiers
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
-    const file = files[0]; // On traite un fichier à la fois pour la simplicité
+    const file = files[0];
     if (!file) return;
 
+    setPendingFile(file);
+    setIsDragOver(false);
+    toast.success(`"${file.name}" prêt à être téléversé`);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleConfirmFileUpload = async () => {
+    if (!pendingFile) {
+      toast.error('Veuillez sélectionner un fichier avant de téléverser');
+      return;
+    }
+
+    if (isUploadingFile) return;
+
+    const file = pendingFile;
     const newItemId = Date.now().toString();
     const newItem: KnowledgeItem = {
       id: newItemId,
@@ -130,32 +150,44 @@ export default function AIAgentPage() {
       uploadedAt: new Date(),
       status: 'processing'
     };
+
     setKnowledgeBase(prev => [...prev, newItem]);
+    setIsUploadingFile(true);
     toast.loading(`Téléversement de ${file.name}...`, { id: `upload-${newItemId}` });
 
     try {
       const formData = new FormData();
       formData.append('file', file);
-      
+
       const response = await fetch('/api/knowledge/upload', {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Upload failed.');
       }
 
       setKnowledgeBase(prev => prev.map(item => item.id === newItemId ? { ...item, status: 'ready' } : item));
-      setSelectedKnowledgeType(null);
       toast.success('Document envoyé pour traitement !', { id: `upload-${newItemId}` });
+      setPendingFile(null);
     } catch (error) {
       setKnowledgeBase(prev => prev.map(item => item.id === newItemId ? { ...item, status: 'error' } : item));
       toast.error('Erreur lors du téléversement.', { id: `upload-${newItemId}` });
       console.error('File upload error:', error);
     } finally {
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      setIsUploadingFile(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleCancelPendingFile = () => {
+    setPendingFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -628,20 +660,28 @@ export default function AIAgentPage() {
                             <Upload className={`h-12 w-12 transition-colors duration-300 ${
                               isDragOver 
                                 ? 'text-blue-600' 
-                                : 'text-gray-400 group-hover:text-blue-500'
+                                : pendingFile
+                                  ? 'text-blue-500'
+                                  : 'text-gray-400 group-hover:text-blue-500'
                             }`} />
                             <span className={`mt-3 text-sm font-medium transition-colors duration-300 ${
                               isDragOver 
                                 ? 'text-blue-700' 
                                 : 'text-gray-900 group-hover:text-blue-700'
                             }`}>
-                              {isDragOver ? 'Relâchez pour téléverser' : 'Glissez vos documents ici'}
+                              {isDragOver
+                                ? 'Relâchez pour téléverser'
+                                : pendingFile
+                                  ? `Fichier sélectionné : ${pendingFile.name}`
+                                  : 'Glissez vos documents ici'}
                             </span>
                             <span className="mt-1 text-xs text-gray-500">
-                              ou cliquez pour parcourir vos fichiers
+                              {pendingFile ? 'Cliquez sur “Téléverser” pour lancer l’envoi' : 'ou cliquez pour parcourir vos fichiers'}
                             </span>
                             <span className="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                              PDF, DOC, TXT, CSV, JSON • Max 10MB
+                              {pendingFile
+                                ? `${formatFileSize(pendingFile.size)} • PDF, DOC, TXT, CSV, JSON`
+                                : 'PDF, DOC, TXT, CSV, JSON • Max 10MB'}
                             </span>
                           </div>
                           <input
@@ -654,6 +694,32 @@ export default function AIAgentPage() {
                             id="file-upload"
                           />
                         </div>
+
+                        {pendingFile && (
+                          <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-blue-100 bg-blue-50/60 rounded-lg p-4">
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">Fichier prêt à l’envoi</p>
+                              <p className="text-xs text-gray-600 mt-1">{pendingFile.name} • {formatFileSize(pendingFile.size)}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={handleCancelPendingFile}
+                                className="px-3 py-2 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                              >
+                                Annuler
+                              </button>
+                              <button
+                                onClick={handleConfirmFileUpload}
+                                disabled={isUploadingFile}
+                                className={`px-3 py-2 text-xs sm:text-sm rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                                  isUploadingFile ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                                }`}
+                              >
+                                {isUploadingFile ? 'Envoi...' : 'Téléverser'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
