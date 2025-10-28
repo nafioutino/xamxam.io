@@ -746,44 +746,19 @@ enum oauth_response_type {
 }
 
 model AgentConfiguration {
-  id               String   @id @default(uuid()) @db.Uuid
-  
-  // Champs de l'onglet "Organisation"
-  orgName          String?
-  orgDescription   String?
-  orgIndustry      String?
-  orgWebsite       String?
-  orgPhone         String?
-  orgEmail         String?
-  orgAddress       String?
-  orgLocation      String?
-  orgSize          String?
-  orgTargetAudience String?
-  orgValues        String[]
-  orgMission       String?
-  orgProducts      String?
-  
-  // Champs de l'onglet "Personnalité"
-  agentName        String   @default("Assistant Virtuel")
-  agentRole        String?
-  agentTone        String   @default("professional") // Ex: 'professional', 'friendly'
-  agentStyle       String?
-  agentLanguageLevel String?
-  agentSpecialties String?
-  agentLimitations String?
-  agentLanguage    String   @default("fr")
-  agentExpertise   String[]
-  agentResponseStyle String @default("conversational") // Ex: 'concise', 'detailed'
-  agentGreeting    String?
-  agentFarewell    String?
-  agentSignature   String?
+  id                 String   @id @default(uuid()) @db.Uuid
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  agentName          String   @default("Assistant Virtuel")
+  agentTone          String   @default("professional")
+  agentLanguage      String   @default("fr")
+  agentResponseStyle String   @default("conversational")
+  agentGreeting      String?
 
-  // Relation 1-à-1 avec Shop
-  shopId           String   @unique @db.Uuid
-  shop             Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  shopId             String   @unique @db.Uuid
+  shop               Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   @@schema("public")
 }

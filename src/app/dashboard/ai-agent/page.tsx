@@ -55,6 +55,25 @@ export default function AIAgentPage() {
     greeting: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?'
   });
 
+  // Charger la configuration existante au démarrage
+  React.useEffect(() => {
+    const loadConfiguration = async () => {
+      try {
+        const response = await fetch('/api/agent/config');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data.agentPersonality) {
+            setAgentPersonality(data.data.agentPersonality);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading configuration:', error);
+      }
+    };
+
+    loadConfiguration();
+  }, []);
+
   // État pour la base de connaissances
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeItem[]>([]);
   const [newTextContent, setNewTextContent] = useState('');

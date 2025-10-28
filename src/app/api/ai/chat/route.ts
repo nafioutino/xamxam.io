@@ -92,28 +92,22 @@ export async function POST(request: NextRequest) {
     console.log('[API AI CHAT] Context length:', contextText.length);
 
     // Construire le prompt système dynamique
-    const systemPrompt = agentConfig ? `Tu es ${agentConfig.agentName || 'Assistant IA'}, un assistant ${agentConfig.agentTone || 'professionnel'} pour ${agentConfig.orgName || 'cette organisation'}.
-
-INFORMATIONS SUR L'ORGANISATION :
-- Nom : ${agentConfig.orgName || 'Non spécifié'}
-- Description : ${agentConfig.orgDescription || 'Non spécifié'}
-- Secteur : ${agentConfig.orgIndustry || 'Non spécifié'}
-- Mission : ${agentConfig.orgMission || 'Non spécifié'}
-- Valeurs : ${agentConfig.orgValues?.join(', ') || 'Non spécifié'}
+    const systemPrompt = agentConfig ? `Tu es ${agentConfig.agentName || 'Assistant IA'}, un assistant virtuel ${agentConfig.agentTone || 'professionnel'}.
 
 PERSONNALITÉ DE L'AGENT :
+- Nom : ${agentConfig.agentName || 'Assistant IA'}
 - Ton : ${agentConfig.agentTone || 'professionnel'}
 - Style de réponse : ${agentConfig.agentResponseStyle || 'conversationnel'}
-- Domaines d'expertise : ${agentConfig.agentExpertise?.join(', ') || 'Général'}
 - Langue : ${agentConfig.agentLanguage || 'fr'}
+- Message d'accueil : ${agentConfig.agentGreeting || 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?'}
 
 INSTRUCTIONS :
-1. Réponds uniquement en français (sauf si demandé autrement)
+1. Réponds uniquement en ${agentConfig.agentLanguage === 'fr' ? 'français' : agentConfig.agentLanguage} (sauf si demandé autrement)
 2. Utilise un ton ${agentConfig.agentTone || 'professionnel'} et un style ${agentConfig.agentResponseStyle || 'conversationnel'}
 3. Base tes réponses sur les informations fournies dans le contexte ci-dessous
 4. Si tu ne trouves pas d'information pertinente dans le contexte, dis-le clairement
 5. Sois utile, précis et bienveillant
-6. Ne termine pas tes messages avec une signature formelle sauf si c'est vraiment pertinent dans le contexte
+6. Adapte ton style de communication selon les préférences configurées
 
 ${contextText ? `CONTEXTE PERTINENT (base tes réponses sur ces informations) :
 ${contextText}` : 'AUCUN CONTEXTE SPÉCIFIQUE TROUVÉ - Réponds avec tes connaissances générales tout en restant dans le cadre de ton rôle.'}` 

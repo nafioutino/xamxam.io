@@ -19,67 +19,35 @@ export async function POST(request: NextRequest) {
       return new NextResponse('Shop not found', { status: 404 });
     }
 
-    const { organizationInfo, agentPersonality } = await request.json();
+    const { agentPersonality } = await request.json();
 
     // Validation des données requises
-    if (!organizationInfo || !agentPersonality) {
-      return new NextResponse('Missing required data', { status: 400 });
+    if (!agentPersonality) {
+      return new NextResponse('Missing agent personality data', { status: 400 });
     }
 
     // Upsert de la configuration de l'agent
     const agentConfig = await prisma.agentConfiguration.upsert({
       where: { shopId: shop.id },
       update: {
-        // Organisation Info
-        orgName: organizationInfo.name || '',
-        orgDescription: organizationInfo.description || '',
-        orgIndustry: organizationInfo.industry || '',
-        orgWebsite: organizationInfo.website || '',
-        orgPhone: organizationInfo.phone || '',
-        orgEmail: organizationInfo.email || '',
-        orgAddress: organizationInfo.address || '',
-        orgTargetAudience: organizationInfo.targetAudience || '',
-        orgValues: organizationInfo.values || [],
-        orgMission: organizationInfo.mission || '',
-        
-        // Agent Personality
-        agentName: agentPersonality.name || '',
-        agentRole: agentPersonality.role || '',
-        agentTone: agentPersonality.tone || '',
-        agentStyle: agentPersonality.style || '',
-        agentLanguageLevel: agentPersonality.languageLevel || '',
-        agentSpecialties: agentPersonality.specialties || '',
-        agentLimitations: agentPersonality.limitations || '',
+        // Agent Personality - seulement les champs utilisés dans le frontend
+        agentName: agentPersonality.name || 'Assistant Virtuel',
+        agentTone: agentPersonality.tone || 'professional',
+        agentLanguage: agentPersonality.language || 'fr',
+        agentResponseStyle: agentPersonality.responseStyle || 'conversational',
         agentGreeting: agentPersonality.greeting || '',
-        agentFarewell: agentPersonality.farewell || '',
         
         updatedAt: new Date(),
       },
       create: {
         shopId: shop.id,
         
-        // Organisation Info
-        orgName: organizationInfo.name || '',
-        orgDescription: organizationInfo.description || '',
-        orgIndustry: organizationInfo.industry || '',
-        orgWebsite: organizationInfo.website || '',
-        orgPhone: organizationInfo.phone || '',
-        orgEmail: organizationInfo.email || '',
-        orgAddress: organizationInfo.address || '',
-        orgTargetAudience: organizationInfo.targetAudience || '',
-        orgValues: organizationInfo.values || [],
-        orgMission: organizationInfo.mission || '',
-        
-        // Agent Personality
-        agentName: agentPersonality.name || '',
-        agentRole: agentPersonality.role || '',
-        agentTone: agentPersonality.tone || '',
-        agentStyle: agentPersonality.style || '',
-        agentLanguageLevel: agentPersonality.languageLevel || '',
-        agentSpecialties: agentPersonality.specialties || '',
-        agentLimitations: agentPersonality.limitations || '',
+        // Agent Personality - seulement les champs utilisés dans le frontend
+        agentName: agentPersonality.name || 'Assistant Virtuel',
+        agentTone: agentPersonality.tone || 'professional',
+        agentLanguage: agentPersonality.language || 'fr',
+        agentResponseStyle: agentPersonality.responseStyle || 'conversational',
         agentGreeting: agentPersonality.greeting || '',
-        agentFarewell: agentPersonality.farewell || '',
         
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -121,9 +89,28 @@ export async function GET(request: NextRequest) {
       where: { shopId: shop.id }
     });
 
+    // Formater les données pour le frontend
+    const formattedData = agentConfig ? {
+      agentPersonality: {
+        name: agentConfig.agentName || 'Assistant Virtuel',
+        tone: agentConfig.agentTone || 'professional',
+        language: agentConfig.agentLanguage || 'fr',
+        responseStyle: agentConfig.agentResponseStyle || 'conversational',
+        greeting: agentConfig.agentGreeting || 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?'
+      }
+    } : {
+      agentPersonality: {
+        name: 'Assistant Virtuel',
+        tone: 'professional',
+        language: 'fr',
+        responseStyle: 'conversational',
+        greeting: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?'
+      }
+    };
+
     return NextResponse.json({ 
       success: true, 
-      data: agentConfig 
+      data: formattedData
     });
     
   } catch (error) {
