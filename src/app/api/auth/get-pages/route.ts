@@ -17,7 +17,12 @@ export async function GET(request: NextRequest) {
     const pagesData = cookieStore.get('meta_pages')?.value;
     const userToken = cookieStore.get('meta_user_token')?.value;
     
+    console.log("GET /api/auth/get-pages - Cookies trouvés:");
+    console.log("- meta_pages présent:", !!pagesData);
+    console.log("- meta_user_token présent:", !!userToken);
+    
     if (!pagesData || !userToken) {
+      console.log("Données manquantes dans les cookies - redirection nécessaire");
       return NextResponse.json(
         { error: 'No pages data found. Please authenticate again.' },
         { status: 404 }
@@ -26,6 +31,8 @@ export async function GET(request: NextRequest) {
     
     try {
       const pages: FacebookPage[] = JSON.parse(pagesData);
+      console.log("Pages récupérées depuis les cookies:", pages.length);
+      console.log("Détails des pages:", pages.map(p => ({ id: p.id, name: p.name })));
       
       return NextResponse.json({
         pages,

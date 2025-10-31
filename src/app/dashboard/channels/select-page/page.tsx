@@ -23,19 +23,26 @@ export default function SelectPagePage() {
     // Récupérer les pages depuis les cookies (stockées par l'API callback)
     const fetchPages = async () => {
       try {
+        console.log("SelectPagePage: Tentative de récupération des pages...");
         const response = await fetch('/api/auth/get-pages', {
           method: 'GET',
           credentials: 'include'
         });
 
+        console.log("SelectPagePage: Réponse API get-pages:", response.status);
+
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error("SelectPagePage: Erreur API get-pages:", errorText);
           throw new Error('Failed to fetch pages');
         }
 
         const data = await response.json();
+        console.log("SelectPagePage: Données reçues:", data);
         setPages(data.pages || []);
+        console.log("SelectPagePage: Pages définies:", data.pages?.length || 0);
       } catch (err) {
-        console.error('Error fetching pages:', err);
+        console.error('SelectPagePage: Error fetching pages:', err);
         setError('Impossible de récupérer vos pages Facebook. Veuillez réessayer.');
       } finally {
         setLoading(false);
@@ -48,32 +55,43 @@ export default function SelectPagePage() {
   const handleConnectPage = async (page: FacebookPage) => {
     if (connecting) return;
 
+    console.log("SelectPagePage: Connexion de la page:", { id: page.id, name: page.name });
     setConnecting(page.id);
     setError(null);
 
     try {
+      const requestBody = {
+        pageId: page.id,
+        pageName: page.name,
+        platform: 'messenger'
+      };
+      console.log("SelectPagePage: Envoi de la requête finalize:", requestBody);
+
       const response = await fetch('/api/channels/finalize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          pageId: page.id,
-          pageName: page.name,
-          platform: 'messenger'
-        })
+        body: JSON.stringify(requestBody)
       });
+
+      console.log("SelectPagePage: Réponse API finalize:", response.status);
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("SelectPagePage: Erreur API finalize:", errorData);
         throw new Error(errorData.error || 'Connection failed');
       }
 
+      const successData = await response.json();
+      console.log("SelectPagePage: Succès API finalize:", successData);
+
       // Redirection vers la page des canaux avec succès
+      console.log("SelectPagePage: Redirection vers /dashboard/channels?success=page_connected");
       router.push('/dashboard/channels?success=page_connected');
     } catch (err) {
-      console.error('Error connecting page:', err);
+      console.error('SelectPagePage: Error connecting page:', err);
       setError(err instanceof Error ? err.message : 'Erreur lors de la connexion');
       setConnecting(null);
     }

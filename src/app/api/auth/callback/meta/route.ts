@@ -152,7 +152,11 @@ export async function GET(request: NextRequest) {
       return requiredTasks.some(task => page.tasks?.includes(task));
     });
 
+    console.log("Pages éligibles trouvées:", eligiblePages.length);
+    console.log("Détails des pages éligibles:", eligiblePages.map(p => ({ id: p.id, name: p.name, tasks: p.tasks })));
+
     if (eligiblePages.length === 0) {
+      console.log("Aucune page éligible trouvée - redirection avec erreur");
       return NextResponse.redirect(
         new URL('/dashboard/channels?error=no_eligible_pages', request.url)
       );
@@ -160,10 +164,10 @@ export async function GET(request: NextRequest) {
 
     // Stocker temporairement les données dans des cookies sécurisés
     // (En production, utilisez une session ou une base de données temporaire)
-    const response = NextResponse.redirect(
-      // new URL('/dashboard/channels/select-page', request.url)
-      `${baseUrl}/dashboard/channels/select-page`
-    );
+    const selectPageUrl = new URL('/dashboard/channels/select-page', request.url);
+    console.log("Redirection vers:", selectPageUrl.toString());
+    
+    const response = NextResponse.redirect(selectPageUrl);
 
     // Stocker les données de manière sécurisée (chiffrement recommandé en production)
     response.cookies.set('meta_user_token', longLivedToken, {

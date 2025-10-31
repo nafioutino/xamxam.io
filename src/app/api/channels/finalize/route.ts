@@ -32,23 +32,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { pageId, pageName, platform } = body;
     
+    console.log(`${logPrefix} Requête reçue:`, { pageId, pageName, platform });
+    
     if (!pageId || !pageName || !platform) {
+      console.error(`${logPrefix} Champs manquants:`, { pageId, pageName, platform });
       return NextResponse.json({ error: 'Missing required fields: pageId, pageName, platform' }, { status: 400 });
     }
     
     const cookieStore = await cookies();
     const pagesDataString = cookieStore.get('meta_pages')?.value;
     
+    console.log(`${logPrefix} Cookie meta_pages présent:`, !!pagesDataString);
+    
     if (!pagesDataString) {
+      console.error(`${logPrefix} Aucune donnée de pages dans les cookies`);
       return NextResponse.json({ error: 'Session expired or invalid. Please try connecting again.' }, { status: 401 });
     }
     
     const pages: FacebookPage[] = JSON.parse(pagesDataString);
+    console.log(`${logPrefix} Pages trouvées dans les cookies:`, pages.length);
+    console.log(`${logPrefix} Détails des pages:`, pages.map(p => ({ id: p.id, name: p.name })));
 
     // --- ÉTAPE 2: EXTRAIRE LE PAGE ACCESS TOKEN DE LA SESSION ---
     // C'est l'étape la plus critique. Le bon token est celui qui a été fourni par l'appel `/me/accounts`
     // lors du callback, car il a été généré en tenant compte des permissions que l'utilisateur vient d'accorder.
     const selectedPage = pages.find(page => page.id === pageId);
+
+    console.log(`${logPrefix} Page sélectionnée trouvée:`, !!selectedPage);
+    console.log(`${logPrefix} Token de la page présent:`, !!selectedPage?.access_token);
 
     if (!selectedPage || !selectedPage.access_token) {
       console.error(`${logPrefix} Page or Page Access Token not found in session for pageId: ${pageId}`);
@@ -95,27 +106,37 @@ export async function POST(request: NextRequest) {
     // --- ÉTAPE 5: RÉCUPÉRER LA BOUTIQUE ET CHIFFRER LE TOKEN ---
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+    console.log(`${logPrefix} Utilisateur authentifié:`, !!user);
+    
     if (!user) throw new Error('User not authenticated.');
     
     const userShop = await prisma.shop.findUnique({ where: { ownerId: user.id } });
+    console.log(`${logPrefix} Boutique trouvée:`, !!userShop);
+    console.log(`${logPrefix} ID de la boutique:`, userShop?.id);
+    
     if (!userShop) throw new Error('Shop not found for the current user.');
     
     const shopId = userShop.id;
     const encryptedToken = encryptToken(pageAccessToken);
+    console.log(`${logPrefix} Token chiffré avec succès`);
     
     // Déterminer le type de canal et l'ID externe
     // On ne gère que Facebook Pages ici, Instagram et WhatsApp sont gérés ailleurs
     const channelType: ChannelType = ChannelType.FACEBOOK_PAGE;
     const externalId: string = pageId;
+    
+    console.log(`${logPrefix} Préparation de l'upsert:`, { shopId, channelType, externalId });
 
     // --- ÉTAPE 6: STOCKER LE CANAL DANS LA BASE DE DONNÉES ---
     // On utilise `upsert` pour créer le canal s'il n'existe pas, ou le mettre à jour s'il existe déjà.
     // C'est plus robuste qu'une logique `findFirst` + `if/else`.
-    await prisma.channel.upsert({
+    const channelResult = await prisma.channel.upsert({
       where: { shopId_type_externalId: { shopId, type: channelType, externalId } },
       update: { accessToken: encryptedToken, isActive: true },
       create: { type: channelType, externalId, accessToken: encryptedToken, isActive: true, shopId }
     });
+    
+    console.log(`${logPrefix} Canal créé/mis à jour avec succès:`, { id: channelResult.id, type: channelResult.type, externalId: channelResult.externalId });
     logger.info(`${logPrefix} Channel data for ${platform} (${externalId}) stored successfully in DB.`);
 
     // --- ÉTAPE 7: NETTOYER LA SESSION ET RÉPONDRE ---
