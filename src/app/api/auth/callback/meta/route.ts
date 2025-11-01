@@ -130,32 +130,6 @@ export async function GET(request: NextRequest) {
     console.log("Voici le longLivedToken:", longLivedToken);
     console.log("Voici le longLivedTokenExpiresIn:", longLivedTokenExpiresIn);
 
-    // Diagnostic : Vérifier les permissions actuelles du token
-    const permissionsResponse = await fetch(
-      `https://graph.facebook.com/v23.0/me/permissions?access_token=${longLivedToken}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    if (permissionsResponse.ok) {
-      const permissionsData = await permissionsResponse.json();
-      const grantedPermissions = permissionsData.data?.filter(p => p.status === 'granted').map(p => p.permission) || [];
-      const declinedPermissions = permissionsData.data?.filter(p => p.status === 'declined').map(p => p.permission) || [];
-      
-      console.log("Permissions accordées:", grantedPermissions);
-      console.log("Permissions refusées:", declinedPermissions);
-      console.log("pages_show_list présente:", grantedPermissions.includes('pages_show_list'));
-      
-      // Vérifier si pages_show_list est accordée
-      if (!grantedPermissions.includes('pages_show_list')) {
-        console.log("PROBLÈME: pages_show_list n'est pas accordée - c'est pourquoi /me/accounts retourne un tableau vide");
-      }
-    }
-
     // Étape 3: Récupérer les pages Facebook de l'utilisateur
     const pagesUrl = new URL('https://graph.facebook.com/v23.0/me/accounts');
     pagesUrl.searchParams.append('access_token', longLivedToken);
@@ -171,36 +145,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log("Pages trouvées avec /me/accounts:", pagesData.data.length);
-    console.log("Détails des pages:", pagesData.data.map(p => ({ id: p.id, name: p.name, tasks: p.tasks })));
-
-    // Si /me/accounts retourne un tableau vide, essayer une approche alternative
-    if (pagesData.data.length === 0) {
-      console.log("Tentative de récupération des pages via /me avec fields=accounts");
-      
-      try {
-        const alternativeResponse = await fetch(
-          `https://graph.facebook.com/v23.0/me?fields=accounts{id,name,access_token,category,tasks,instagram_business_account{id,username,profile_picture_url}}&access_token=${longLivedToken}`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        if (alternativeResponse.ok) {
-          const alternativeData = await alternativeResponse.json();
-          if (alternativeData.accounts && alternativeData.accounts.data) {
-            console.log("Pages trouvées via approche alternative:", alternativeData.accounts.data.length);
-            pagesData.data = alternativeData.accounts.data;
-          }
-        }
-      } catch (error) {
-        console.log("Approche alternative échouée:", error);
-      }
-    }
-
     // Filtrer les pages qui ont les permissions nécessaires
     const eligiblePages = pagesData.data.filter(page => {
       // Vérifier que la page a les tâches nécessaires pour la messagerie
@@ -208,32 +152,18 @@ export async function GET(request: NextRequest) {
       return requiredTasks.some(task => page.tasks?.includes(task));
     });
 
-    console.log("Pages éligibles trouvées:", eligiblePages.length);
-    console.log("Détails des pages éligibles:", eligiblePages.map(p => ({ id: p.id, name: p.name, tasks: p.tasks })));
-
     if (eligiblePages.length === 0) {
-      console.log("Aucune page éligible trouvée - redirection avec erreur");
-      
-      // Différencier les cas d'erreur pour un meilleur diagnostic
-      if (pagesData.data.length === 0) {
-        console.log("Aucune page trouvée - l'utilisateur doit autoriser l'accès aux pages dans ses paramètres Facebook");
-        return NextResponse.redirect(
-          new URL('/dashboard/channels?error=no_pages_access', request.url)
-        );
-      } else {
-        console.log("Pages trouvées mais aucune n'a les permissions MESSAGING/MANAGE requises");
-        return NextResponse.redirect(
-          new URL('/dashboard/channels?error=no_messaging_permissions', request.url)
-        );
-      }
+      return NextResponse.redirect(
+        new URL('/dashboard/channels?error=no_eligible_pages', request.url)
+      );
     }
 
     // Stocker temporairement les données dans des cookies sécurisés
     // (En production, utilisez une session ou une base de données temporaire)
-    const selectPageUrl = new URL('/dashboard/channels/select-page', request.url);
-    console.log("Redirection vers:", selectPageUrl.toString());
-    
-    const response = NextResponse.redirect(selectPageUrl);
+    const response = NextResponse.redirect(
+      // new URL('/dashboard/channels/select-page', request.url)
+      `${baseUrl}/dashboard/channels/select-page`
+    );
 
     // Stocker les données de manière sécurisée (chiffrement recommandé en production)
     response.cookies.set('meta_user_token', longLivedToken, {
