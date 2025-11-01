@@ -145,8 +145,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    let allPages = pagesData.data;
+
+    // Fallback: Si aucune page n'est trouvée avec /me/accounts, essayer /me/assigned_pages
+    // Ceci est nécessaire pour les pages business qui ne sont pas retournées par /me/accounts
+    if (allPages.length === 0) {
+      console.log("Aucune page trouvée avec /me/accounts, tentative avec /me/assigned_pages...");
+      
+      const assignedPagesUrl = new URL('https://graph.facebook.com/v23.0/me/assigned_pages');
+      assignedPagesUrl.searchParams.append('access_token', longLivedToken);
+      assignedPagesUrl.searchParams.append('fields', 'id,name,access_token,category,tasks');
+
+      const assignedPagesResponse = await fetch(assignedPagesUrl.toString());
+      const assignedPagesData: MetaPagesResponse | MetaError = await assignedPagesResponse.json();
+
+      if (assignedPagesResponse.ok && !('error' in assignedPagesData)) {
+        allPages = assignedPagesData.data;
+        console.log("Pages trouvées avec /me/assigned_pages:", allPages.length);
+      } else {
+        console.error('Assigned pages fetch failed:', assignedPagesData);
+      }
+    }
+
     // Filtrer les pages qui ont les permissions nécessaires
-    const eligiblePages = pagesData.data.filter(page => {
+    const eligiblePages = allPages.filter(page => {
       // Vérifier que la page a les tâches nécessaires pour la messagerie
       const requiredTasks = ['MESSAGING', 'MANAGE'];
       return requiredTasks.some(task => page.tasks?.includes(task));
