@@ -25,9 +25,10 @@ export async function GET() {
     const authParams = new URLSearchParams({
       client_id: clientId,
       redirect_uri: redirectUri,
-      scope: 'pages_show_list,pages_messaging,pages_read_engagement,pages_manage_posts,public_profile',
+      scope: 'pages_show_list,pages_messaging,pages_read_engagement,pages_manage_posts,pages_read_user_content,public_profile',
       response_type: 'code',
-      state: csrfState
+      state: csrfState,
+      auth_type: 'rerequest'
     });
     
     const metaAuthUrl = `https://www.facebook.com/v23.0/dialog/oauth?${authParams.toString()}`;
