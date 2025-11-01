@@ -145,30 +145,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let allPages = pagesData.data;
-
-    // Fallback: Si aucune page n'est trouvée avec /me/accounts, essayer /me/assigned_pages
-    // Ceci est nécessaire pour les pages business qui ne sont pas retournées par /me/accounts
-    if (allPages.length === 0) {
-      console.log("Aucune page trouvée avec /me/accounts, tentative avec /me/assigned_pages...");
-      
-      const assignedPagesUrl = new URL('https://graph.facebook.com/v23.0/me/assigned_pages');
-      assignedPagesUrl.searchParams.append('access_token', longLivedToken);
-      assignedPagesUrl.searchParams.append('fields', 'id,name,access_token,category,tasks');
-
-      const assignedPagesResponse = await fetch(assignedPagesUrl.toString());
-      const assignedPagesData: MetaPagesResponse | MetaError = await assignedPagesResponse.json();
-
-      if (assignedPagesResponse.ok && !('error' in assignedPagesData)) {
-        allPages = assignedPagesData.data;
-        console.log("Pages trouvées avec /me/assigned_pages:", allPages.length);
-      } else {
-        console.error('Assigned pages fetch failed:', assignedPagesData);
-      }
-    }
+    console.log("Pages trouvées avec /me/accounts:", pagesData.data.length);
+    console.log("Détails des pages:", pagesData.data.map(p => ({ id: p.id, name: p.name, tasks: p.tasks })));
 
     // Filtrer les pages qui ont les permissions nécessaires
-    const eligiblePages = allPages.filter(page => {
+    const eligiblePages = pagesData.data.filter(page => {
       // Vérifier que la page a les tâches nécessaires pour la messagerie
       const requiredTasks = ['MESSAGING', 'MANAGE'];
       return requiredTasks.some(task => page.tasks?.includes(task));
@@ -179,9 +160,19 @@ export async function GET(request: NextRequest) {
 
     if (eligiblePages.length === 0) {
       console.log("Aucune page éligible trouvée - redirection avec erreur");
-      return NextResponse.redirect(
-        new URL('/dashboard/channels?error=no_eligible_pages', request.url)
-      );
+      
+      // Différencier les cas d'erreur pour un meilleur diagnostic
+      if (pagesData.data.length === 0) {
+        console.log("Aucune page trouvée - l'utilisateur doit autoriser l'accès aux pages dans ses paramètres Facebook");
+        return NextResponse.redirect(
+          new URL('/dashboard/channels?error=no_pages_access', request.url)
+        );
+      } else {
+        console.log("Pages trouvées mais aucune n'a les permissions MESSAGING/MANAGE requises");
+        return NextResponse.redirect(
+          new URL('/dashboard/channels?error=no_messaging_permissions', request.url)
+        );
+      }
     }
 
     // Stocker temporairement les données dans des cookies sécurisés
