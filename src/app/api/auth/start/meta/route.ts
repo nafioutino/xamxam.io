@@ -28,7 +28,8 @@ export async function GET() {
       scope: 'pages_show_list,pages_messaging,pages_read_engagement,pages_manage_posts,pages_read_user_content,public_profile',
       response_type: 'code',
       state: csrfState,
-      auth_type: 'rerequest'
+      auth_type: 'rerequest',
+      display: 'popup'
     });
     
     const metaAuthUrl = `https://www.facebook.com/v23.0/dialog/oauth?${authParams.toString()}`;

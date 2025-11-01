@@ -143,7 +143,17 @@ export async function GET(request: NextRequest) {
 
     if (permissionsResponse.ok) {
       const permissionsData = await permissionsResponse.json();
-      console.log("Permissions accordées:", permissionsData.data?.map(p => `${p.permission}: ${p.status}`) || []);
+      const grantedPermissions = permissionsData.data?.filter(p => p.status === 'granted').map(p => p.permission) || [];
+      const declinedPermissions = permissionsData.data?.filter(p => p.status === 'declined').map(p => p.permission) || [];
+      
+      console.log("Permissions accordées:", grantedPermissions);
+      console.log("Permissions refusées:", declinedPermissions);
+      console.log("pages_show_list présente:", grantedPermissions.includes('pages_show_list'));
+      
+      // Vérifier si pages_show_list est accordée
+      if (!grantedPermissions.includes('pages_show_list')) {
+        console.log("PROBLÈME: pages_show_list n'est pas accordée - c'est pourquoi /me/accounts retourne un tableau vide");
+      }
     }
 
     // Étape 3: Récupérer les pages Facebook de l'utilisateur
@@ -163,6 +173,33 @@ export async function GET(request: NextRequest) {
 
     console.log("Pages trouvées avec /me/accounts:", pagesData.data.length);
     console.log("Détails des pages:", pagesData.data.map(p => ({ id: p.id, name: p.name, tasks: p.tasks })));
+
+    // Si /me/accounts retourne un tableau vide, essayer une approche alternative
+    if (pagesData.data.length === 0) {
+      console.log("Tentative de récupération des pages via /me avec fields=accounts");
+      
+      try {
+        const alternativeResponse = await fetch(
+          `https://graph.facebook.com/v23.0/me?fields=accounts{id,name,access_token,category,tasks,instagram_business_account{id,username,profile_picture_url}}&access_token=${longLivedToken}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (alternativeResponse.ok) {
+          const alternativeData = await alternativeResponse.json();
+          if (alternativeData.accounts && alternativeData.accounts.data) {
+            console.log("Pages trouvées via approche alternative:", alternativeData.accounts.data.length);
+            pagesData.data = alternativeData.accounts.data;
+          }
+        }
+      } catch (error) {
+        console.log("Approche alternative échouée:", error);
+      }
+    }
 
     // Filtrer les pages qui ont les permissions nécessaires
     const eligiblePages = pagesData.data.filter(page => {
