@@ -130,6 +130,22 @@ export async function GET(request: NextRequest) {
     console.log("Voici le longLivedToken:", longLivedToken);
     console.log("Voici le longLivedTokenExpiresIn:", longLivedTokenExpiresIn);
 
+    // Diagnostic : Vérifier les permissions actuelles du token
+    const permissionsResponse = await fetch(
+      `https://graph.facebook.com/v23.0/me/permissions?access_token=${longLivedToken}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (permissionsResponse.ok) {
+      const permissionsData = await permissionsResponse.json();
+      console.log("Permissions accordées:", permissionsData.data?.map(p => `${p.permission}: ${p.status}`) || []);
+    }
+
     // Étape 3: Récupérer les pages Facebook de l'utilisateur
     const pagesUrl = new URL('https://graph.facebook.com/v23.0/me/accounts');
     pagesUrl.searchParams.append('access_token', longLivedToken);
