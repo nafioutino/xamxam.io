@@ -12,31 +12,13 @@ import {
   Sparkles, 
   Brain, 
   MessageSquare, 
-  Building2,
-  Globe,
-  Phone,
-  Mail,
-  MapPin,
-  Users,
-  Target,
   Lightbulb,
   BookOpen,
   Plus,
   X,
   Check,
   AlertCircle,
-  User,
-  Languages,
-  Palette,
-  Signature,
-  Briefcase,
-  HelpCircle,
-  ShoppingBag,
-  Headphones,
-  DollarSign,
-  Rocket,
-  ClipboardList,
-  Eye
+  User
 } from 'lucide-react';
 
 interface KnowledgeItem {
@@ -51,56 +33,46 @@ interface KnowledgeItem {
   status: 'processing' | 'ready' | 'error';
 }
 
-interface OrganizationInfo {
-  name: string;
-  description: string;
-  industry: string;
-  website: string;
-  phone: string;
-  email: string;
-  address: string;
-  targetAudience: string;
-  values: string[];
-  mission: string;
-}
 
 interface AgentPersonality {
   name: string;
   tone: 'professional' | 'friendly' | 'casual' | 'formal';
   language: string;
-  expertise: string[];
   responseStyle: 'concise' | 'detailed' | 'conversational';
   greeting: string;
-  signature: string;
 }
 
 export default function AIAgentPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // État pour les informations de l'organisation
-  const [organizationInfo, setOrganizationInfo] = useState<OrganizationInfo>({
-    name: '',
-    description: '',
-    industry: '',
-    website: '',
-    phone: '',
-    email: '',
-    address: '',
-    targetAudience: '',
-    values: [],
-    mission: ''
-  });
 
   // État pour la personnalité de l'agent
   const [agentPersonality, setAgentPersonality] = useState<AgentPersonality>({
     name: 'Assistant XAMXAM',
     tone: 'professional',
     language: 'fr',
-    expertise: [],
     responseStyle: 'conversational',
-    greeting: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?',
-    signature: 'Cordialement, votre assistant virtuel'
+    greeting: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?'
   });
+
+  // Charger la configuration existante au démarrage
+  React.useEffect(() => {
+    const loadConfiguration = async () => {
+      try {
+        const response = await fetch('/api/agent/config');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data.agentPersonality) {
+            setAgentPersonality(data.data.agentPersonality);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading configuration:', error);
+      }
+    };
+
+    loadConfiguration();
+  }, []);
 
   // État pour la base de connaissances
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeItem[]>([]);
@@ -108,100 +80,202 @@ export default function AIAgentPage() {
   const [newTextTitle, setNewTextTitle] = useState('');
   const [newUrl, setNewUrl] = useState('');
   const [newUrlTitle, setNewUrlTitle] = useState('');
-  const [activeTab, setActiveTab] = useState<'organization' | 'personality' | 'knowledge'>('organization');
-  const [newValue, setNewValue] = useState('');
-  const [newExpertise, setNewExpertise] = useState('');
+  const [activeTab, setActiveTab] = useState<'personality' | 'knowledge'>('personality');
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [selectedKnowledgeType, setSelectedKnowledgeType] = useState<'files' | 'webpages' | 'text' | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
+
+  // Fonctions de drag and drop
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      // Créer un événement simulé pour réutiliser handleFileUpload
+      const simulatedEvent = {
+        target: { files: files }
+      } as React.ChangeEvent<HTMLInputElement>;
+      handleFileUpload(simulatedEvent);
+    }
+  };
 
   // Gestion des fichiers
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
-    Array.from(files).forEach(file => {
-      const newItem: KnowledgeItem = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        type: 'document',
-        title: file.name,
-        fileName: file.name,
-        fileSize: file.size,
-        uploadedAt: new Date(),
-        status: 'processing'
-      };
+    const file = files[0];
+    if (!file) return;
 
-      setKnowledgeBase(prev => [...prev, newItem]);
+    setPendingFile(file);
+    setIsDragOver(false);
+    toast.success(`"${file.name}" prêt à être téléversé`);
 
-      // Simuler le traitement du fichier
-      setTimeout(() => {
-        setKnowledgeBase(prev => 
-          prev.map(item => 
-            item.id === newItem.id 
-              ? { ...item, status: 'ready' as const }
-              : item
-          )
-        );
-        toast.success(`Document "${file.name}" ajouté à la base de connaissances`);
-      }, 2000);
-    });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
-    // Reset input
+  const handleConfirmFileUpload = async () => {
+    if (!pendingFile) {
+      toast.error('Veuillez sélectionner un fichier avant de téléverser');
+      return;
+    }
+
+    if (isUploadingFile) return;
+
+    const file = pendingFile;
+    const newItemId = Date.now().toString();
+    const newItem: KnowledgeItem = {
+      id: newItemId,
+      type: 'document',
+      title: file.name,
+      fileName: file.name,
+      fileSize: file.size,
+      uploadedAt: new Date(),
+      status: 'processing'
+    };
+
+    setKnowledgeBase(prev => [...prev, newItem]);
+    setIsUploadingFile(true);
+    toast.loading(`Téléversement de ${file.name}...`, { id: `upload-${newItemId}` });
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/knowledge/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Upload failed.');
+      }
+
+      setKnowledgeBase(prev => prev.map(item => item.id === newItemId ? { ...item, status: 'ready' } : item));
+      toast.success('Document envoyé pour traitement !', { id: `upload-${newItemId}` });
+      setPendingFile(null);
+    } catch (error) {
+      setKnowledgeBase(prev => prev.map(item => item.id === newItemId ? { ...item, status: 'error' } : item));
+      toast.error('Erreur lors du téléversement.', { id: `upload-${newItemId}` });
+      console.error('File upload error:', error);
+    } finally {
+      setIsUploadingFile(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleCancelPendingFile = () => {
+    setPendingFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   // Ajouter du contenu textuel
-  const handleAddTextContent = () => {
+  const handleAddTextContent = async () => {
     if (!newTextTitle.trim() || !newTextContent.trim()) {
       toast.error('Veuillez remplir le titre et le contenu');
       return;
     }
+    
+    toast.loading('Ajout du contenu en cours...', { id: 'ingest-toast' });
+    try {
+      const response = await fetch('/api/knowledge/ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceType: 'text',
+          sourceData: newTextContent,
+          sourceTitle: newTextTitle,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to ingest text content.');
+      }
+      
+      // Ajoute à l'UI locale pour un retour immédiat (optimistic update)
+      setKnowledgeBase(prev => [...prev, {
+        id: Date.now().toString(),
+        type: 'text',
+        title: newTextTitle,
+        content: newTextContent,
+        uploadedAt: new Date(),
+        status: 'ready' // On suppose que ça va marcher
+      }]);
 
-    const newItem: KnowledgeItem = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      type: 'text',
-      title: newTextTitle,
-      content: newTextContent,
-      uploadedAt: new Date(),
-      status: 'ready'
-    };
-
-    setKnowledgeBase(prev => [...prev, newItem]);
-    setNewTextTitle('');
-    setNewTextContent('');
-    toast.success('Contenu textuel ajouté à la base de connaissances');
+      setNewTextTitle('');
+      setNewTextContent('');
+      setSelectedKnowledgeType(null);
+      toast.success('Contenu textuel envoyé pour traitement !', { id: 'ingest-toast' });
+    } catch (error) {
+      toast.error('Erreur lors de l\'envoi du contenu.', { id: 'ingest-toast' });
+      console.error('Text ingest error:', error);
+    }
   };
 
   // Ajouter une URL
-  const handleAddUrl = () => {
+  const handleAddUrl = async () => {
     if (!newUrlTitle.trim() || !newUrl.trim()) {
       toast.error('Veuillez remplir le titre et l\'URL');
       return;
     }
 
-    const newItem: KnowledgeItem = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      type: 'url',
-      title: newUrlTitle,
-      url: newUrl,
-      uploadedAt: new Date(),
-      status: 'processing'
-    };
+    toast.loading('Traitement de l\'URL en cours...', { id: 'ingest-toast' });
+    try {
+      const response = await fetch('/api/knowledge/ingest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceType: 'url',
+          sourceData: newUrl,
+          sourceTitle: newUrlTitle,
+        }),
+      });
 
-    setKnowledgeBase(prev => [...prev, newItem]);
-    setNewUrlTitle('');
-    setNewUrl('');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to ingest URL.');
+      }
 
-    // Simuler le traitement de l'URL
-    setTimeout(() => {
-      setKnowledgeBase(prev => 
-        prev.map(item => 
-          item.id === newItem.id 
-            ? { ...item, status: 'ready' as const }
-            : item
-        )
-      );
-      toast.success('URL ajoutée à la base de connaissances');
-    }, 1500);
+      setKnowledgeBase(prev => [...prev, {
+        id: Date.now().toString(),
+        type: 'url',
+        title: newUrlTitle,
+        url: newUrl,
+        uploadedAt: new Date(),
+        status: 'ready'
+      }]);
+
+      setNewUrlTitle('');
+      setNewUrl('');
+      setSelectedKnowledgeType(null);
+      toast.success('URL envoyée pour traitement !', { id: 'ingest-toast' });
+    } catch (error) {
+      toast.error('Erreur lors de l\'envoi de l\'URL.', { id: 'ingest-toast' });
+      console.error('URL ingest error:', error);
+    }
   };
 
   // Supprimer un élément de la base de connaissances
@@ -210,46 +284,28 @@ export default function AIAgentPage() {
     toast.success('Élément supprimé de la base de connaissances');
   };
 
-  // Ajouter une valeur
-  const handleAddValue = () => {
-    if (!newValue.trim()) return;
-    setOrganizationInfo(prev => ({
-      ...prev,
-      values: [...prev.values, newValue.trim()]
-    }));
-    setNewValue('');
-  };
 
-  // Supprimer une valeur
-  const handleRemoveValue = (index: number) => {
-    setOrganizationInfo(prev => ({
-      ...prev,
-      values: prev.values.filter((_, i) => i !== index)
-    }));
-  };
-
-  // Ajouter une expertise
-  const handleAddExpertise = () => {
-    if (!newExpertise.trim()) return;
-    setAgentPersonality(prev => ({
-      ...prev,
-      expertise: [...prev.expertise, newExpertise.trim()]
-    }));
-    setNewExpertise('');
-  };
-
-  // Supprimer une expertise
-  const handleRemoveExpertise = (index: number) => {
-    setAgentPersonality(prev => ({
-      ...prev,
-      expertise: prev.expertise.filter((_, i) => i !== index)
-    }));
-  };
 
   // Sauvegarder la configuration
-  const handleSave = () => {
-    // Ici, vous ajouteriez la logique pour sauvegarder en base de données
-    toast.success('Configuration de l\'agent IA sauvegardée avec succès !');
+  const handleSave = async () => {
+    toast.loading('Sauvegarde en cours...', { id: 'save-toast' });
+    try {
+      const response = await fetch('/api/agent/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentPersonality }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to save configuration.');
+      }
+      
+      toast.success('Configuration sauvegardée avec succès !', { id: 'save-toast' });
+    } catch (error) {
+      toast.error('Erreur lors de la sauvegarde.', { id: 'save-toast' });
+      console.error('Save error:', error);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -272,340 +328,107 @@ export default function AIAgentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-lg border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-xl shadow-lg">
-                <Bot className="h-8 w-8 text-white" />
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+                <Bot className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Personnalisation de l'Agent IA</h1>
-                <p className="text-sm text-gray-600">Configurez votre assistant virtuel personnalisé pour une expérience unique</p>
+                <h1 className="text-xl font-semibold text-gray-900">Personnalisation de l'Agent IA</h1>
+                <p className="text-sm text-gray-500">Configurez votre assistant virtuel personnalisé pour une expérience unique</p>
               </div>
             </div>
             <button
               onClick={handleSave}
-              className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-semibold rounded-lg shadow-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105 cursor-pointer"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors cursor-pointer"
             >
-              <Save className="h-5 w-5 mr-2" />
+              <Save className="h-4 w-4 mr-2" />
               Sauvegarder
             </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-6">
         {/* Navigation par onglets */}
-        <div className="mb-8">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <nav className="flex" aria-label="Tabs">
-              <button
-                onClick={() => setActiveTab('organization')}
-                className={`${
-                  activeTab === 'organization'
-                    ? 'border-blue-500 text-blue-600 bg-gradient-to-r from-blue-50 to-indigo-50 border-b-3'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                } flex-1 py-4 px-6 border-b-2 font-semibold text-sm flex items-center justify-center space-x-3 transition-all duration-200 cursor-pointer`}
-              >
-                <Building2 className="h-5 w-5" />
-                <span>Organisation</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('personality')}
-                className={`${
-                  activeTab === 'personality'
-                    ? 'border-blue-500 text-blue-600 bg-gradient-to-r from-blue-50 to-indigo-50 border-b-3'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                } flex-1 py-4 px-6 border-b-2 font-semibold text-sm flex items-center justify-center space-x-3 transition-all duration-200 cursor-pointer`}
-              >
-                <MessageSquare className="h-5 w-5" />
-                <span>Personnalité</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('knowledge')}
-                className={`${
-                  activeTab === 'knowledge'
-                    ? 'border-blue-500 text-blue-600 bg-gradient-to-r from-blue-50 to-indigo-50 border-b-3'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                } flex-1 py-4 px-6 border-b-2 font-semibold text-sm flex items-center justify-center space-x-3 transition-all duration-200 cursor-pointer`}
-              >
-                <Brain className="h-5 w-5" />
-                <span>Base de connaissances</span>
-              </button>
-            </nav>
-          </div>
+        <div className="mb-6">
+          <nav className="flex space-x-1 bg-gray-100 p-1 rounded-lg" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('personality')}
+              className={`${
+                activeTab === 'personality'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              } flex-1 py-2.5 px-4 text-sm font-medium rounded-md transition-all duration-200 cursor-pointer flex items-center justify-center space-x-2`}
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Personnalité</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('knowledge')}
+              className={`${
+                activeTab === 'knowledge'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              } flex-1 py-2.5 px-4 text-sm font-medium rounded-md transition-all duration-200 cursor-pointer flex items-center justify-center space-x-2`}
+            >
+              <Brain className="h-4 w-4" />
+              <span>Base de connaissances</span>
+            </button>
+          </nav>
         </div>
 
         {/* Contenu des onglets */}
-        {activeTab === 'organization' && (
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-6 border-b border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center">
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-lg mr-3">
-                  <Building2 className="h-6 w-6 text-white" />
-                </div>
-                Informations sur votre organisation
-              </h2>
-              <p className="text-gray-600">Définissez l'identité et les valeurs de votre organisation pour personnaliser votre agent IA</p>
-            </div>
-            
-            <div className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Informations de base */}
-                <div className="space-y-6">
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <Briefcase className="h-5 w-5 mr-2 text-blue-600" />
-                      Informations générales
-                    </h3>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Nom de l'organisation *
-                        </label>
-                        <input
-                          type="text"
-                          value={organizationInfo.name}
-                          onChange={(e) => setOrganizationInfo(prev => ({ ...prev, name: e.target.value }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
-                          placeholder="Ex: XAMXAM Solutions"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Description de l'organisation *
-                        </label>
-                        <textarea
-                          value={organizationInfo.description}
-                          onChange={(e) => setOrganizationInfo(prev => ({ ...prev, description: e.target.value }))}
-                          rows={4}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white resize-none"
-                          placeholder="Décrivez votre organisation, ses activités principales et ce qui la rend unique..."
-                        />
-                      </div>
-
-                      <div>
-                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                           Secteur d'activité *
-                         </label>
-                         <select
-                           value={organizationInfo.industry}
-                           onChange={(e) => setOrganizationInfo(prev => ({ ...prev, industry: e.target.value }))}
-                           className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white cursor-pointer"
-                         >
-                           <option value="">Sélectionnez un secteur</option>
-                           <option value="technology">Technologie & Innovation</option>
-                           <option value="commerce">Commerce & Retail</option>
-                           <option value="services">Services professionnels</option>
-                           <option value="education">Éducation & Formation</option>
-                           <option value="healthcare">Santé & Bien-être</option>
-                           <option value="finance">Finance & Assurance</option>
-                           <option value="manufacturing">Industrie & Manufacturing</option>
-                           <option value="hospitality">Hôtellerie & Restauration</option>
-                           <option value="other">Autre</option>
-                         </select>
-                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Coordonnées */}
-                <div className="space-y-6">
-                  <div className="bg-gray-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <Phone className="h-5 w-5 mr-2 text-blue-600" />
-                      Coordonnées
-                    </h3>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                          <Globe className="h-4 w-4 mr-1 text-gray-500" />
-                          Site web
-                        </label>
-                        <input
-                          type="url"
-                          value={organizationInfo.website}
-                          onChange={(e) => setOrganizationInfo(prev => ({ ...prev, website: e.target.value }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
-                          placeholder="https://www.example.com"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                          <Phone className="h-4 w-4 mr-1 text-gray-500" />
-                          Téléphone
-                        </label>
-                        <input
-                          type="tel"
-                          value={organizationInfo.phone}
-                          onChange={(e) => setOrganizationInfo(prev => ({ ...prev, phone: e.target.value }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
-                          placeholder="+221 XX XXX XX XX"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                          <Mail className="h-4 w-4 mr-1 text-gray-500" />
-                          Email de contact
-                        </label>
-                        <input
-                          type="email"
-                          value={organizationInfo.email}
-                          onChange={(e) => setOrganizationInfo(prev => ({ ...prev, email: e.target.value }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
-                          placeholder="contact@example.com"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                          <MapPin className="h-4 w-4 mr-1 text-gray-500" />
-                          Adresse
-                        </label>
-                        <textarea
-                          value={organizationInfo.address}
-                          onChange={(e) => setOrganizationInfo(prev => ({ ...prev, address: e.target.value }))}
-                          rows={3}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white resize-none"
-                          placeholder="Adresse complète de votre organisation"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section étendue */}
-              <div className="mt-8 pt-8 border-t border-gray-200">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <Target className="h-5 w-5 mr-2 text-blue-600" />
-                      Public cible
-                    </h3>
-                    <textarea
-                      value={organizationInfo.targetAudience}
-                      onChange={(e) => setOrganizationInfo(prev => ({ ...prev, targetAudience: e.target.value }))}
-                      rows={4}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white resize-none"
-                      placeholder="Décrivez votre public cible : qui sont vos clients idéaux ? Quels sont leurs besoins et attentes ?"
-                    />
-                  </div>
-
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6">
-                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                       <Lightbulb className="h-5 w-5 mr-2 text-purple-600" />
-                       Mission
-                     </h3>
-                     <textarea
-                       value={organizationInfo.mission}
-                       onChange={(e) => setOrganizationInfo(prev => ({ ...prev, mission: e.target.value }))}
-                       rows={4}
-                       className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white resize-none"
-                       placeholder="Quelle est la mission de votre organisation ? Quel est votre objectif principal ?"
-                     />
-                   </div>
-                </div>
-
-                {/* Valeurs */}
-                 <div className="mt-8 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6">
-                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                     <Users className="h-5 w-5 mr-2 text-green-600" />
-                     Valeurs de l'organisation
-                   </h3>
-                   <p className="text-sm text-gray-600 mb-4">Ajoutez les valeurs fondamentales qui guident votre organisation</p>
-                   
-                   <div className="flex flex-wrap gap-3 mb-4">
-                     {organizationInfo.values.map((value, index) => (
-                       <span
-                         key={index}
-                         className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm"
-                       >
-                         {value}
-                         <button
-                           onClick={() => handleRemoveValue(index)}
-                           className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-green-600 hover:bg-green-200 hover:text-green-800 transition-colors duration-200 cursor-pointer"
-                         >
-                           <X className="h-3 w-3" />
-                         </button>
-                       </span>
-                     ))}
-                   </div>
-                   
-                   <div className="flex gap-3">
-                     <input
-                       type="text"
-                       value={newValue}
-                       onChange={(e) => setNewValue(e.target.value)}
-                       onKeyPress={(e) => e.key === 'Enter' && handleAddValue()}
-                       className="flex-1 px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white"
-                       placeholder="Ex: Innovation, Intégrité, Excellence..."
-                     />
-                     <button
-                       onClick={handleAddValue}
-                       className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 shadow-lg cursor-pointer"
-                     >
-                       <Plus className="h-5 w-5" />
-                     </button>
-                   </div>
-                 </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {activeTab === 'personality' && (
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-8 py-6 border-b border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center">
-                <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-2 rounded-lg mr-3">
-                  <MessageSquare className="h-6 w-6 text-white" />
+          <div className="bg-white rounded-lg border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <MessageSquare className="h-4 w-4 text-purple-600" />
                 </div>
-                Personnalité de votre agent IA
-              </h2>
-              <p className="text-gray-600">Définissez le caractère et le style de communication de votre assistant virtuel</p>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Personnalité de votre agent IA</h2>
+                  <p className="text-sm text-gray-500">Définissez le caractère et le style de communication de votre assistant virtuel</p>
+                </div>
+              </div>
             </div>
             
-            <div className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Caractéristiques principales */}
                 <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <div className="border border-gray-200 rounded-lg p-6">
+                    <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center">
                       <Sparkles className="h-5 w-5 mr-2 text-purple-600" />
                       Caractéristiques principales
                     </h3>
                     
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Nom de l'agent *
                         </label>
                         <input
                           type="text"
                           value={agentPersonality.name}
                           onChange={(e) => setAgentPersonality(prev => ({ ...prev, name: e.target.value }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
                           placeholder="Ex: Assistant XAMXAM, Sophie, Alex..."
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Langue principale
                         </label>
                         <select
                           value={agentPersonality.language}
                           onChange={(e) => setAgentPersonality(prev => ({ ...prev, language: e.target.value }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white cursor-pointer"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm cursor-pointer"
                         >
                           <option value="fr">Français</option>
                           <option value="en">Anglais</option>
@@ -615,13 +438,13 @@ export default function AIAgentPage() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Ton de communication *
                         </label>
                         <select
                           value={agentPersonality.tone}
                           onChange={(e) => setAgentPersonality(prev => ({ ...prev, tone: e.target.value as 'professional' | 'friendly' | 'casual' | 'formal' }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white cursor-pointer"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm cursor-pointer"
                         >
                           <option value="professional">Professionnel et formel</option>
                           <option value="friendly">Amical et chaleureux</option>
@@ -635,21 +458,21 @@ export default function AIAgentPage() {
 
                 {/* Style de communication */}
                 <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <div className="border border-gray-200 rounded-lg p-6">
+                    <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center">
                       <User className="h-5 w-5 mr-2 text-pink-600" />
                       Style de communication
                     </h3>
                     
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Style de réponse
                         </label>
                         <select
                           value={agentPersonality.responseStyle}
                           onChange={(e) => setAgentPersonality(prev => ({ ...prev, responseStyle: e.target.value as 'concise' | 'detailed' | 'conversational' }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 bg-white cursor-pointer"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm cursor-pointer"
                         >
                           <option value="concise">Concis et direct</option>
                           <option value="detailed">Détaillé et explicatif</option>
@@ -658,28 +481,15 @@ export default function AIAgentPage() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Message d'accueil
                         </label>
                         <textarea
-                          rows={3}
+                          rows={4}
                           value={agentPersonality.greeting}
                           onChange={(e) => setAgentPersonality(prev => ({ ...prev, greeting: e.target.value }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 bg-white resize-none"
-                          placeholder="Le premier message que vos clients verront"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Signature
-                        </label>
-                        <input
-                          type="text"
-                          value={agentPersonality.signature}
-                          onChange={(e) => setAgentPersonality(prev => ({ ...prev, signature: e.target.value }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 bg-white"
-                          placeholder="Comment l'agent signe ses messages"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm"
+                          placeholder="Le premier message que vos clients verront..."
                         />
                       </div>
                     </div>
@@ -687,47 +497,32 @@ export default function AIAgentPage() {
                 </div>
               </div>
 
-              {/* Section étendue */}
-              <div className="mt-8 pt-8 border-t border-gray-200">
-                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Lightbulb className="h-5 w-5 mr-2 text-indigo-600" />
-                    Domaines d'expertise
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">Définissez les domaines dans lesquels votre agent excelle</p>
-                  
-                  <div className="flex flex-wrap gap-3 mb-4">
-                    {agentPersonality.expertise.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-indigo-100 to-blue-100 text-indigo-800 border border-indigo-200 shadow-sm"
-                      >
-                        {skill}
-                        <button
-                          onClick={() => handleRemoveExpertise(index)}
-                          className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-indigo-600 hover:bg-indigo-200 hover:text-indigo-800 transition-colors duration-200 cursor-pointer"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </span>
-                    ))}
+              {/* Section de conseils */}
+              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h3 className="text-base font-semibold text-gray-900 mb-3 flex items-center">
+                  <Lightbulb className="h-5 w-5 mr-2 text-blue-600" />
+                  Conseils pour optimiser votre agent
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
+                      <MessageSquare className="h-3 w-3 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">Ton de communication</h4>
+                      <p className="text-xs text-gray-600 mt-1">Choisissez un ton qui correspond à votre marque et à votre audience cible.</p>
+                    </div>
                   </div>
                   
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      value={newExpertise}
-                      onChange={(e) => setNewExpertise(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleAddExpertise()}
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white"
-                      placeholder="Ex: Vente, Support technique, Mode..."
-                    />
-                    <button
-                      onClick={handleAddExpertise}
-                      className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 shadow-lg cursor-pointer"
-                    >
-                      <Plus className="h-5 w-5" />
-                    </button>
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center">
+                      <User className="h-3 w-3 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">Message d'accueil</h4>
+                      <p className="text-xs text-gray-600 mt-1">Un bon message d'accueil donne le ton et met vos clients en confiance.</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -736,176 +531,308 @@ export default function AIAgentPage() {
         )}
 
         {activeTab === 'knowledge' && (
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-8 py-6 border-b border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center">
-                <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-2 rounded-lg mr-3">
-                  <Brain className="h-6 w-6 text-white" />
+          <div className="bg-white rounded-lg border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Brain className="h-4 w-4 text-green-600" />
                 </div>
-                Base de connaissances
-              </h2>
-              <p className="text-gray-600">Alimentez votre agent IA avec des documents, contenus et ressources pertinents</p>
-            </div>
-            
-            <div className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Section Upload de documents */}
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <Upload className="h-5 w-5 mr-2 text-blue-600" />
-                      Documents et fichiers
-                    </h3>
-                    
-                    <div className="border-2 border-dashed border-blue-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-25 transition-all duration-300 cursor-pointer group">
-                      <div className="group-hover:scale-110 transition-transform duration-300">
-                        <Upload className="mx-auto h-16 w-16 text-blue-400 group-hover:text-blue-500" />
-                      </div>
-                      <div className="mt-6">
-                        <label htmlFor="file-upload" className="cursor-pointer">
-                          <span className="block text-lg font-semibold text-gray-900 group-hover:text-blue-700">
-                            Glissez vos documents ici
-                          </span>
-                          <span className="mt-2 block text-sm text-gray-600">
-                            ou cliquez pour parcourir vos fichiers
-                          </span>
-                          <span className="mt-3 inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                            PDF, DOC, TXT • Max 10MB
-                          </span>
-                        </label>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          multiple
-                          accept=".pdf,.doc,.docx,.txt"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Ajout de contenu texte */}
-                  <div className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <BookOpen className="h-5 w-5 mr-2 text-purple-600" />
-                      Contenu texte personnalisé
-                    </h3>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Titre du contenu
-                        </label>
-                        <input
-                          type="text"
-                          value={newTextTitle}
-                          onChange={(e) => setNewTextTitle(e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
-                          placeholder="Ex: FAQ, Procédures, Informations produits..."
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Contenu
-                        </label>
-                        <textarea
-                          value={newTextContent}
-                          onChange={(e) => setNewTextContent(e.target.value)}
-                          rows={6}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white resize-none"
-                          placeholder="Ajoutez des informations importantes : FAQ, procédures, politiques, descriptions de produits..."
-                        />
-                      </div>
-                      <button
-                        onClick={handleAddTextContent}
-                        className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-lg hover:from-purple-700 hover:to-violet-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 shadow-lg cursor-pointer flex items-center justify-center"
-                      >
-                        <Plus className="h-5 w-5 mr-2" />
-                        Ajouter le contenu
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section URLs et ressources */}
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <LinkIcon className="h-5 w-5 mr-2 text-orange-600" />
-                      Ressources web
-                    </h3>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Titre de la ressource
-                        </label>
-                        <input
-                          type="text"
-                          value={newUrlTitle}
-                          onChange={(e) => setNewUrlTitle(e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white"
-                          placeholder="Ex: Documentation API, Guide utilisateur..."
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          URL de la ressource
-                        </label>
-                        <input
-                          type="url"
-                          value={newUrl}
-                          onChange={(e) => setNewUrl(e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white"
-                          placeholder="https://example.com/documentation"
-                        />
-                      </div>
-                      <button
-                        onClick={handleAddUrl}
-                        className="w-full px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-lg hover:from-orange-700 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 shadow-lg cursor-pointer flex items-center justify-center"
-                      >
-                        <Plus className="h-5 w-5 mr-2" />
-                        Ajouter l'URL
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Suggestions de contenu */}
-                  <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <Lightbulb className="h-5 w-5 mr-2 text-teal-600" />
-                      Suggestions de contenu
-                    </h3>
-                    
-                    <div className="space-y-3">
-                      <p className="text-sm text-gray-600 mb-4">Ajoutez ces types de contenu pour améliorer votre agent :</p>
-                      
-                      <div className="grid grid-cols-1 gap-3">
-                        {[
-                          { icon: ClipboardList, title: 'FAQ clients', desc: 'Questions fréquemment posées' },
-                          { icon: ShoppingBag, title: 'Catalogue produits', desc: 'Descriptions et spécifications' },
-                          { icon: Headphones, title: 'Procédures support', desc: 'Guides de résolution' },
-                          { icon: Building2, title: 'Informations entreprise', desc: 'Histoire, valeurs, équipe' },
-                          { icon: DollarSign, title: 'Tarifs et conditions', desc: 'Grilles tarifaires, CGV' },
-                          { icon: Rocket, title: 'Guides utilisateur', desc: 'Tutoriels et modes d\'emploi' }
-                        ].map((suggestion, index) => {
-                          const IconComponent = suggestion.icon;
-                          return (
-                            <div key={index} className="flex items-center p-3 bg-white rounded-lg border border-teal-200 hover:border-teal-300 transition-colors duration-200 cursor-pointer">
-                              <IconComponent className="h-6 w-6 mr-3 text-teal-600" />
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900">{suggestion.title}</p>
-                                <p className="text-xs text-gray-600">{suggestion.desc}</p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Base de connaissances</h2>
+                  <p className="text-sm text-gray-500">Alimentez votre agent IA avec des documents, contenus et ressources pertinents</p>
                 </div>
               </div>
+            </div>
+            
+            <div className="p-6">
+              {!selectedKnowledgeType ? (
+                // Étape 1 : Sélection du type de connaissance
+                <div className="max-w-2xl mx-auto">
+                  <div className="text-center mb-6">
+                    <h3 className="text-base font-semibold text-gray-900 mb-2">Ajouter une base de connaissances</h3>
+                    <p className="text-sm text-gray-500">Choisissez le type de contenu que vous souhaitez ajouter</p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {/* Option Upload Files */}
+                    <div 
+                      onClick={() => setSelectedKnowledgeType('files')}
+                      className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 cursor-pointer group"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-200">
+                        <Upload className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div className="ml-3 flex-1">
+                        <h4 className="text-sm font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                          Télécharger des fichiers
+                        </h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Fichiers de taille inférieure à 10MB
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <Plus className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors duration-200" />
+                      </div>
+                    </div>
+
+                    {/* Option Add Web Pages */}
+                    <div 
+                      onClick={() => setSelectedKnowledgeType('webpages')}
+                      className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 cursor-pointer group"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors duration-200">
+                        <LinkIcon className="h-5 w-5 text-orange-600" />
+                      </div>
+                      <div className="ml-3 flex-1">
+                        <h4 className="text-sm font-semibold text-gray-900 group-hover:text-orange-700 transition-colors duration-200">
+                          Ajouter des pages Web
+                        </h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Crawler le contenu de votre site web
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <Plus className="h-4 w-4 text-gray-400 group-hover:text-orange-600 transition-colors duration-200" />
+                      </div>
+                    </div>
+
+                    {/* Option Add Text */}
+                    <div 
+                      onClick={() => setSelectedKnowledgeType('text')}
+                      className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 cursor-pointer group"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors duration-200">
+                        <BookOpen className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div className="ml-3 flex-1">
+                        <h4 className="text-sm font-semibold text-gray-900 group-hover:text-purple-700 transition-colors duration-200">
+                          Ajouter du texte
+                        </h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Ajouter des articles manuellement
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <Plus className="h-4 w-4 text-gray-400 group-hover:text-purple-600 transition-colors duration-200" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Étape 2 : Interface spécifique selon le type sélectionné
+                <div>
+                  {/* Header avec bouton retour */}
+                  <div className="flex items-center justify-between mb-6">
+                    <button
+                      onClick={() => setSelectedKnowledgeType(null)}
+                      className="flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Retour à la sélection
+                    </button>
+                    <div className="text-xs text-gray-500">
+                      {selectedKnowledgeType === 'files' && 'Téléchargement de fichiers'}
+                      {selectedKnowledgeType === 'webpages' && 'Pages Web'}
+                      {selectedKnowledgeType === 'text' && 'Contenu texte'}
+                    </div>
+                  </div>
+
+                  {/* Interface Upload de fichiers */}
+                  {selectedKnowledgeType === 'files' && (
+                    <div className="max-w-2xl mx-auto">
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <h3 className="text-base font-semibold text-gray-900 mb-4 text-center">
+                          Télécharger vos documents
+                        </h3>
+                        
+                        <div 
+                          className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-300 cursor-pointer group ${
+                            isDragOver 
+                              ? 'border-blue-500 bg-blue-50' 
+                              : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                          }`}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <div className="flex flex-col items-center">
+                            <Upload className={`h-12 w-12 transition-colors duration-300 ${
+                              isDragOver 
+                                ? 'text-blue-600' 
+                                : pendingFile
+                                  ? 'text-blue-500'
+                                  : 'text-gray-400 group-hover:text-blue-500'
+                            }`} />
+                            <span className={`mt-3 text-sm font-medium transition-colors duration-300 ${
+                              isDragOver 
+                                ? 'text-blue-700' 
+                                : 'text-gray-900 group-hover:text-blue-700'
+                            }`}>
+                              {isDragOver
+                                ? 'Relâchez pour téléverser'
+                                : pendingFile
+                                  ? `Fichier sélectionné : ${pendingFile.name}`
+                                  : 'Glissez vos documents ici'}
+                            </span>
+                            <span className="mt-1 text-xs text-gray-500">
+                              {pendingFile ? 'Cliquez sur “Téléverser” pour lancer l’envoi' : 'ou cliquez pour parcourir vos fichiers'}
+                            </span>
+                            <span className="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                              {pendingFile
+                                ? `${formatFileSize(pendingFile.size)} • PDF, DOC, TXT, CSV, JSON`
+                                : 'PDF, DOC, TXT, CSV, JSON • Max 10MB'}
+                            </span>
+                          </div>
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            accept=".pdf,.doc,.docx,.txt,.csv,.json"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                            id="file-upload"
+                          />
+                        </div>
+
+                        {pendingFile && (
+                          <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-blue-100 bg-blue-50/60 rounded-lg p-4">
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">Fichier prêt à l’envoi</p>
+                              <p className="text-xs text-gray-600 mt-1">{pendingFile.name} • {formatFileSize(pendingFile.size)}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={handleCancelPendingFile}
+                                className="px-3 py-2 text-xs sm:text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                              >
+                                Annuler
+                              </button>
+                              <button
+                                onClick={handleConfirmFileUpload}
+                                disabled={isUploadingFile}
+                                className={`px-3 py-2 text-xs sm:text-sm rounded-md text-white focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                                  isUploadingFile ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                                }`}
+                              >
+                                {isUploadingFile ? 'Envoi...' : 'Téléverser'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Interface Pages Web */}
+                  {selectedKnowledgeType === 'webpages' && (
+                    <div className="max-w-2xl mx-auto">
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <h3 className="text-base font-semibold text-gray-900 mb-4 text-center">
+                          Ajouter des pages Web
+                        </h3>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Nom de la base de connaissances
+                            </label>
+                            <input
+                              type="text"
+                              value={newUrlTitle}
+                              onChange={(e) => setNewUrlTitle(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                              placeholder="Ex: Documentation API, Guide utilisateur..."
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              URL du site web
+                            </label>
+                            <input
+                              type="url"
+                              value={newUrl}
+                              onChange={(e) => setNewUrl(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                              placeholder="https://example.com/documentation"
+                            />
+                          </div>
+                          
+                          <div className="flex gap-3 pt-4">
+                            <button
+                              onClick={() => setSelectedKnowledgeType(null)}
+                              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-500 transition-colors cursor-pointer"
+                            >
+                              Annuler
+                            </button>
+                            <button
+                              onClick={handleAddUrl}
+                              className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer"
+                            >
+                              Ajouter
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Interface Contenu texte */}
+                  {selectedKnowledgeType === 'text' && (
+                    <div className="max-w-2xl mx-auto">
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <h3 className="text-base font-semibold text-gray-900 mb-4 text-center">
+                          Ajouter du contenu texte
+                        </h3>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Titre du contenu
+                            </label>
+                            <input
+                              type="text"
+                              value={newTextTitle}
+                              onChange={(e) => setNewTextTitle(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                              placeholder="Ex: FAQ, Procédures, Informations produits..."
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Contenu
+                            </label>
+                            <textarea
+                              value={newTextContent}
+                              onChange={(e) => setNewTextContent(e.target.value)}
+                              rows={6}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm"
+                              placeholder="Ajoutez des informations importantes : FAQ, procédures, politiques, descriptions de produits..."
+                            />
+                          </div>
+                          
+                          <div className="flex gap-3 pt-4">
+                            <button
+                              onClick={() => setSelectedKnowledgeType(null)}
+                              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-500 transition-colors cursor-pointer"
+                            >
+                              Annuler
+                            </button>
+                            <button
+                              onClick={handleAddTextContent}
+                              className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer"
+                            >
+                              Ajouter
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Liste des éléments de la base de connaissances */}
               <div className="mt-8 pt-8 border-t border-gray-200">
