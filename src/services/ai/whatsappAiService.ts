@@ -120,11 +120,15 @@ class WhatsAppAiService {
           .join('\n\n');
       }
 
-      // 5. Construire le prompt système dynamique
-      console.log('🔍 Construction du prompt système...');
-      const systemPrompt = this.buildSystemPrompt(agentConfig, context);
+      // 5. Récupérer l'historique de la conversation pour le contexte
+      console.log('🔍 Récupération de l\'historique de la conversation...');
+      const conversationHistory = await this.getConversationHistory(messageData.conversationId);
 
-      // 6. Générer la réponse avec OpenAI
+      // 6. Construire le prompt système dynamique avec l'historique
+      console.log('🔍 Construction du prompt système...');
+      const systemPrompt = this.buildSystemPrompt(agentConfig, context, conversationHistory);
+
+      // 7. Générer la réponse avec OpenAI
       console.log('🔍 Génération de la réponse IA...');
       const completion = await this.openai.chat.completions.create({
         model: 'gpt-4o-mini',
@@ -145,7 +149,7 @@ class WhatsAppAiService {
 
       console.log('✅ Réponse IA générée:', aiResponse.substring(0, 100) + '...');
 
-      // 7. Envoyer la réponse via WhatsApp
+      // 8. Envoyer la réponse via WhatsApp
       console.log('📤 Envoi de la réponse WhatsApp...');
       console.log('📤 Paramètres d\'envoi:', {
         instanceName: messageData.instanceName,
@@ -161,7 +165,7 @@ class WhatsAppAiService {
 
       console.log('✅ Réponse WhatsApp envoyée avec succès');
 
-      // 8. Sauvegarder la réponse IA dans la base de données
+      // 9. Sauvegarder la réponse IA dans la base de données
       console.log('💾 Sauvegarde de la réponse en base...');
       await this.saveAiResponse(messageData.conversationId, aiResponse);
 
@@ -177,9 +181,55 @@ class WhatsAppAiService {
   }
 
   /**
+   * Récupère l'historique récent de la conversation pour le contexte
+   */
+  private async getConversationHistory(conversationId: string, limit: number = 10): Promise<string> {
+    try {
+      console.log('🔍 Récupération des messages de la conversation:', conversationId);
+      
+      const messages = await prisma.message.findMany({
+        where: { conversationId },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        select: {
+          content: true,
+          isFromCustomer: true,
+          createdAt: true,
+        },
+      });
+
+      if (!messages || messages.length === 0) {
+        console.log('ℹ️ Aucun historique de conversation trouvé');
+        return '';
+      }
+
+      // Inverser l'ordre pour avoir les messages du plus ancien au plus récent
+      const orderedMessages = messages.reverse();
+      
+      // Formater l'historique pour le prompt
+      const historyText = orderedMessages
+        .map((msg) => {
+          const role = msg.isFromCustomer ? 'Client' : 'Assistant';
+          const timestamp = new Date(msg.createdAt).toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          return `[${timestamp}] ${role}: ${msg.content}`;
+        })
+        .join('\n');
+
+      console.log('✅ Historique récupéré:', orderedMessages.length, 'messages');
+      return historyText;
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération de l\'historique:', error);
+      return '';
+    }
+  }
+
+  /**
    * Construit le prompt système dynamique basé sur la configuration de l'agent
    */
-  private buildSystemPrompt(agentConfig: any, context: string): string {
+  private buildSystemPrompt(agentConfig: any, context: string, conversationHistory: string = ''): string {
     const shopInfo = agentConfig.shop;
     
     let prompt = `Tu es ${agentConfig.agentName}, l'assistant virtuel de ${shopInfo.name}.
@@ -204,6 +254,12 @@ INSTRUCTIONS:
 5. Si tu ne connais pas une information, dis-le honnêtement
 6. Reste dans le contexte de la boutique et de ses services
 7. Sois concis mais complet dans tes réponses (maximum 500 caractères)
+8. Utilise l'historique de la conversation pour maintenir la cohérence et le contexte
+
+${conversationHistory ? `HISTORIQUE DE LA CONVERSATION RÉCENTE:
+${conversationHistory}
+
+Utilise cet historique pour comprendre le contexte de la conversation en cours et maintenir la cohérence dans tes réponses.` : ''}
 
 ${context ? `CONTEXTE PERTINENT DE LA BASE DE CONNAISSANCES:
 ${context}

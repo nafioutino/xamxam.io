@@ -3,6 +3,56 @@ import { createClient } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
 import OpenAI from 'openai';
 
+/**
+ * Récupère l'historique récent de la conversation pour le contexte
+ */
+async function getConversationHistory(conversationId: string, limit: number = 10): Promise<string> {
+  try {
+    if (!conversationId) {
+      return '';
+    }
+
+    console.log('[API AI CHAT] Récupération de l\'historique de la conversation:', conversationId);
+    
+    const messages = await prisma.message.findMany({
+      where: { conversationId },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: {
+        content: true,
+        isFromCustomer: true,
+        createdAt: true,
+      },
+    });
+
+    if (!messages || messages.length === 0) {
+      console.log('[API AI CHAT] Aucun historique de conversation trouvé');
+      return '';
+    }
+
+    // Inverser l'ordre pour avoir les messages du plus ancien au plus récent
+    const orderedMessages = messages.reverse();
+    
+    // Formater l'historique pour le prompt
+    const historyText = orderedMessages
+      .map((msg) => {
+        const role = msg.isFromCustomer ? 'Utilisateur' : 'Assistant';
+        const timestamp = new Date(msg.createdAt).toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        return `[${timestamp}] ${role}: ${msg.content}`;
+      })
+      .join('\n');
+
+    console.log('[API AI CHAT] Historique récupéré:', orderedMessages.length, 'messages');
+    return historyText;
+  } catch (error) {
+    console.error('[API AI CHAT] Erreur lors de la récupération de l\'historique:', error);
+    return '';
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // 1. Authentification et Validation
@@ -21,7 +71,7 @@ export async function POST(request: NextRequest) {
       return new NextResponse('Shop not found', { status: 404 });
     }
 
-    const { message } = await request.json();
+    const { message, conversationId } = await request.json();
     
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return new NextResponse('Message is required', { status: 400 });
@@ -79,12 +129,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Récupérer la configuration de l'agent
+    // 5. Récupérer l'historique de la conversation pour le contexte
+    console.log('[API AI CHAT] Récupération de l\'historique de la conversation...');
+    const conversationHistory = await getConversationHistory(conversationId);
+
+    // 6. Récupérer la configuration de l'agent
     const agentConfig = await prisma.agentConfiguration.findUnique({
       where: { shopId: shop.id }
     });
 
-    // 6. Étape RAG #3 : Construire le Prompt pour la Génération
+    // 7. Étape RAG #3 : Construire le Prompt pour la Génération
     const contextText = matchingChunks && matchingChunks.length > 0 
       ? matchingChunks.map((chunk: any) => chunk.content).join('\n\n')
       : '';
@@ -108,17 +162,28 @@ INSTRUCTIONS :
 4. Si tu ne trouves pas d'information pertinente dans le contexte, dis-le clairement
 5. Sois utile, précis et bienveillant
 6. Adapte ton style de communication selon les préférences configurées
+7. Utilise l'historique de la conversation pour maintenir la cohérence et le contexte
+
+${conversationHistory ? `HISTORIQUE DE LA CONVERSATION RÉCENTE :
+${conversationHistory}
+
+Utilise cet historique pour comprendre le contexte de la conversation en cours et maintenir la cohérence dans tes réponses.` : ''}
 
 ${contextText ? `CONTEXTE PERTINENT (base tes réponses sur ces informations) :
 ${contextText}` : 'AUCUN CONTEXTE SPÉCIFIQUE TROUVÉ - Réponds avec tes connaissances générales tout en restant dans le cadre de ton rôle.'}` 
     : `Tu es un assistant IA professionnel. Réponds de manière utile et précise en français.
+
+${conversationHistory ? `HISTORIQUE DE LA CONVERSATION RÉCENTE :
+${conversationHistory}
+
+Utilise cet historique pour comprendre le contexte de la conversation en cours et maintenir la cohérence dans tes réponses.` : ''}
 
 ${contextText ? `CONTEXTE PERTINENT :
 ${contextText}` : 'Aucun contexte spécifique disponible.'}`;
 
     const userPrompt = `Question de l'utilisateur : ${message}`;
 
-    // 7. Étape RAG #4 : Générer la Réponse
+    // 8. Étape RAG #4 : Générer la Réponse
     console.log('[API AI CHAT] Generating AI response...');
     const chatResponse = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -143,7 +208,7 @@ ${contextText}` : 'Aucun contexte spécifique disponible.'}`;
       chunksUsed: matchingChunks?.length || 0
     });
 
-    // 8. Répondre au Frontend
+    // 9. Répondre au Frontend
     return NextResponse.json({ 
       reply: aiReply,
       metadata: {
