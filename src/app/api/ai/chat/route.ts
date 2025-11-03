@@ -88,7 +88,43 @@ export async function POST(request: NextRequest) {
       messageLength: message.length
     });
 
-    // 2. Initialiser OpenAI
+    // 2. Assurer l'existence de la conversation (playground)
+    let conversation: { id: string } | null = null;
+    if (conversationId && isValidUUID(conversationId)) {
+      conversation = await prisma.conversation.findUnique({
+        where: { id: conversationId },
+        select: { id: true }
+      });
+
+      if (!conversation) {
+        conversation = await prisma.conversation.create({
+          data: {
+            id: conversationId,
+            shopId: shop.id,
+            platform: 'WHATSAPP',
+            title: 'Playground Chat',
+            isActive: true,
+            lastMessageAt: new Date(),
+          },
+          select: { id: true }
+        });
+        console.log('[API AI CHAT] Conversation créée pour le playground:', conversation.id);
+      }
+    } else {
+      conversation = await prisma.conversation.create({
+        data: {
+          shopId: shop.id,
+          platform: 'WHATSAPP',
+          title: 'Playground Chat',
+          isActive: true,
+          lastMessageAt: new Date(),
+        },
+        select: { id: true }
+      });
+      console.warn('[API AI CHAT] conversationId invalide/manquant. Nouvelle conversation créée:', conversation.id);
+    }
+
+    // 3. Initialiser OpenAI
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -135,9 +171,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Récupérer l'historique de la conversation pour le contexte
+    // 6. Récupérer l'historique de la conversation pour le contexte
     console.log('[API AI CHAT] Récupération de l\'historique de la conversation...');
-    const conversationHistory = await getConversationHistory(conversationId);
+    const conversationHistory = await getConversationHistory(conversation!.id);
 
     // 6. Récupérer la configuration de l'agent
     const agentConfig = await prisma.agentConfiguration.findUnique({
@@ -189,7 +225,7 @@ ${contextText}` : 'Aucun contexte spécifique disponible.'}`;
 
     const userPrompt = `Question de l'utilisateur : ${message}`;
 
-    // 8. Étape RAG #4 : Générer la Réponse
+    // 9. Étape RAG #4 : Générer la Réponse
     console.log('[API AI CHAT] Generating AI response...');
     const chatResponse = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -214,7 +250,45 @@ ${contextText}` : 'Aucun contexte spécifique disponible.'}`;
       chunksUsed: matchingChunks?.length || 0
     });
 
-    // 9. Répondre au Frontend
+    // 10. Persister le message utilisateur et la réponse IA
+    try {
+      const savedUserMessage = await prisma.message.create({
+        data: {
+          conversationId: conversation!.id,
+          content: message,
+          messageType: 'TEXT',
+          isFromCustomer: true,
+          isRead: true,
+          metadata: { source: 'playground_user', timestamp: new Date().toISOString() },
+        },
+      });
+
+      const savedAiMessage = await prisma.message.create({
+        data: {
+          conversationId: conversation!.id,
+          content: aiReply,
+          messageType: 'TEXT',
+          isFromCustomer: false,
+          isRead: true,
+          metadata: { source: 'ai_agent', timestamp: new Date().toISOString() },
+        },
+      });
+
+      await prisma.conversation.update({
+        where: { id: conversation!.id },
+        data: { lastMessageAt: new Date(), updatedAt: new Date() },
+      });
+
+      console.log('[API AI CHAT] Messages persistés:', {
+        conversationId: conversation!.id,
+        userMessageId: savedUserMessage.id,
+        aiMessageId: savedAiMessage.id,
+      });
+    } catch (persistError) {
+      console.error('[API AI CHAT] Erreur lors de la persistance des messages:', persistError);
+    }
+
+    // 11. Répondre au Frontend
     return NextResponse.json({ 
       reply: aiReply,
       metadata: {
