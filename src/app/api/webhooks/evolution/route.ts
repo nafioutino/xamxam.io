@@ -266,7 +266,7 @@ async function handleMessageUpsert(payload: any) {
   });
 
   // 🤖 Déclencher l'agent IA pour les messages entrants des clients
-  if (!data.key.fromMe && messageContent && messageType === 'TEXT') {
+  if (!data.key.fromMe && messageContent && messageType === 'TEXT' && customer) {
     try {
       // Traitement asynchrone de l'agent IA (ne pas bloquer la réponse du webhook)
       setImmediate(async () => {
@@ -275,8 +275,8 @@ async function handleMessageUpsert(payload: any) {
           customerId: customer.id,
           conversationId: conversation.id,
           messageContent,
-          customerPhone: remoteJid.replace('@s.whatsapp.net', ''),
-          instanceName: channel.instanceName,
+          customerPhone: data.key.remoteJid.replace('@s.whatsapp.net', ''),
+          instanceName: instance,
         });
       });
     } catch (error) {
