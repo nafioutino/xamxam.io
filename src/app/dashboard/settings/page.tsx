@@ -173,30 +173,9 @@ export default function ShopSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center mb-4">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 mr-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Retour au dashboard
-            </Link>
-          </div>
-          <div className="flex items-center">
-            <Store className="h-8 w-8 text-blue-600 mr-3" />
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Paramètres de la Boutique</h1>
-              <p className="text-gray-600">Gérez les informations de votre boutique</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Formulaire */}
-        <div className="bg-white shadow-lg rounded-lg">
+    <div className="max-w-4xl mx-auto">
+      {/* Formulaire */}
+      <div className="bg-white shadow-lg rounded-lg">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 p-8">
             {/* Informations générales */}
             <div>
@@ -330,7 +309,6 @@ export default function ShopSettingsPage() {
             </div>
           </form>
         </div>
-      </div>
     </div>
   );
 }

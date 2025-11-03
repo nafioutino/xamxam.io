@@ -753,6 +753,7 @@ model AgentConfiguration {
   agentLanguage      String   @default("fr")
   agentResponseStyle String   @default("conversational")
   agentGreeting      String?
+  isWhatsAppEnabled  Boolean  @default(false)  // Activation de l'agent IA pour WhatsApp
 
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import type { EvolutionWebhookPayload } from '@/types/evolution-api';
 import { getWhatsAppUserInfo } from '@/lib/whatsapp-utils';
+import { whatsappAiService } from '@/services/ai/whatsappAiService';
 
 export async function POST(request: Request) {
   try {
@@ -250,7 +251,7 @@ async function handleMessageUpsert(payload: any) {
   }
 
   // Créer le message dans la DB
-  await prisma.message.create({
+  const newMessage = await prisma.message.create({
     data: {
       conversationId: conversation.id,
       content: messageContent,
@@ -263,6 +264,26 @@ async function handleMessageUpsert(payload: any) {
       createdAt: new Date(data.messageTimestamp * 1000),
     },
   });
+
+  // 🤖 Déclencher l'agent IA pour les messages entrants des clients
+  if (!data.key.fromMe && messageContent && messageType === 'TEXT') {
+    try {
+      // Traitement asynchrone de l'agent IA (ne pas bloquer la réponse du webhook)
+      setImmediate(async () => {
+        await whatsappAiService.processIncomingMessage({
+          shopId: channel.shopId,
+          customerId: customer.id,
+          conversationId: conversation.id,
+          messageContent,
+          customerPhone: remoteJid.replace('@s.whatsapp.net', ''),
+          instanceName: channel.instanceName,
+        });
+      });
+    } catch (error) {
+      console.error('Erreur lors du déclenchement de l\'agent IA:', error);
+      // Ne pas faire échouer le webhook si l'agent IA a un problème
+    }
+  }
 }
 
 async function handleMessageUpdate(payload: any) {

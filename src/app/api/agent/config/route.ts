@@ -19,35 +19,41 @@ export async function POST(request: NextRequest) {
       return new NextResponse('Shop not found', { status: 404 });
     }
 
-    const { agentPersonality } = await request.json();
+    const { agentSettings } = await request.json();
 
     // Validation des données requises
-    if (!agentPersonality) {
-      return new NextResponse('Missing agent personality data', { status: 400 });
+    if (!agentSettings) {
+      return new NextResponse('Missing agent settings data', { status: 400 });
     }
 
     // Upsert de la configuration de l'agent
     const agentConfig = await prisma.agentConfiguration.upsert({
       where: { shopId: shop.id },
       update: {
-        // Agent Personality - seulement les champs utilisés dans le frontend
-        agentName: agentPersonality.name || 'Assistant Virtuel',
-        agentTone: agentPersonality.tone || 'professional',
-        agentLanguage: agentPersonality.language || 'fr',
-        agentResponseStyle: agentPersonality.responseStyle || 'conversational',
-        agentGreeting: agentPersonality.greeting || '',
+        // Configuration générale de l'agent
+        agentName: agentSettings.name || 'Assistant Virtuel',
+        agentTone: agentSettings.personality || 'professional',
+        agentLanguage: agentSettings.language || 'fr',
+        agentResponseStyle: agentSettings.responseTime || 'conversational',
+        agentGreeting: agentSettings.welcomeMessage || '',
+        
+        // Activation WhatsApp
+        isWhatsAppEnabled: agentSettings.isWhatsAppEnabled || false,
         
         updatedAt: new Date(),
       },
       create: {
         shopId: shop.id,
         
-        // Agent Personality - seulement les champs utilisés dans le frontend
-        agentName: agentPersonality.name || 'Assistant Virtuel',
-        agentTone: agentPersonality.tone || 'professional',
-        agentLanguage: agentPersonality.language || 'fr',
-        agentResponseStyle: agentPersonality.responseStyle || 'conversational',
-        agentGreeting: agentPersonality.greeting || '',
+        // Configuration générale de l'agent
+        agentName: agentSettings.name || 'Assistant Virtuel',
+        agentTone: agentSettings.personality || 'professional',
+        agentLanguage: agentSettings.language || 'fr',
+        agentResponseStyle: agentSettings.responseTime || 'conversational',
+        agentGreeting: agentSettings.welcomeMessage || '',
+        
+        // Activation WhatsApp
+        isWhatsAppEnabled: agentSettings.isWhatsAppEnabled || false,
         
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -91,20 +97,32 @@ export async function GET(request: NextRequest) {
 
     // Formater les données pour le frontend
     const formattedData = agentConfig ? {
-      agentPersonality: {
-        name: agentConfig.agentName || 'Assistant Virtuel',
-        tone: agentConfig.agentTone || 'professional',
+      agentSettings: {
+        name: agentConfig.agentName || 'XAMXAM Assistant',
+        welcomeMessage: agentConfig.agentGreeting || 'Bonjour ! Je suis l\'assistant virtuel de la boutique. Comment puis-je vous aider aujourd\'hui ?',
+        transferMessage: 'Je vais transférer votre demande à un conseiller humain. Veuillez patienter un instant.',
+        responseTime: agentConfig.agentResponseStyle || 'fast',
+        personality: agentConfig.agentTone || 'professional',
         language: agentConfig.agentLanguage || 'fr',
-        responseStyle: agentConfig.agentResponseStyle || 'conversational',
-        greeting: agentConfig.agentGreeting || 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?'
+        autoRespond: true,
+        suggestProducts: true,
+        collectFeedback: true,
+        handoffThreshold: 3,
+        isWhatsAppEnabled: agentConfig.isWhatsAppEnabled || false,
       }
     } : {
-      agentPersonality: {
-        name: 'Assistant Virtuel',
-        tone: 'professional',
+      agentSettings: {
+        name: 'XAMXAM Assistant',
+        welcomeMessage: 'Bonjour ! Je suis l\'assistant virtuel de la boutique. Comment puis-je vous aider aujourd\'hui ?',
+        transferMessage: 'Je vais transférer votre demande à un conseiller humain. Veuillez patienter un instant.',
+        responseTime: 'fast',
+        personality: 'professional',
         language: 'fr',
-        responseStyle: 'conversational',
-        greeting: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?'
+        autoRespond: true,
+        suggestProducts: true,
+        collectFeedback: true,
+        handoffThreshold: 3,
+        isWhatsAppEnabled: false,
       }
     };
 

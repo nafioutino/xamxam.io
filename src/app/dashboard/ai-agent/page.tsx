@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { 
   Bot, 
@@ -18,8 +19,16 @@ import {
   X,
   Check,
   AlertCircle,
-  User
+  User,
+  Settings,
+  Languages,
+  Zap,
+  Globe,
+  Phone,
+  Camera,
+  Send,
 } from 'lucide-react';
+import { WhatsAppIcon, MessengerIcon, InstagramIcon } from '@/components/dashboard/ChannelIcons';
 
 interface KnowledgeItem {
   id: string;
@@ -43,6 +52,7 @@ interface AgentPersonality {
 }
 
 export default function AIAgentPage() {
+  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
 
@@ -55,6 +65,13 @@ export default function AIAgentPage() {
     greeting: 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?'
   });
 
+  // États pour l'activation des canaux
+  const [channelStates, setChannelStates] = useState({
+    whatsapp: false,
+    messenger: false,
+    instagram: false
+  });
+
   // Charger la configuration existante au démarrage
   React.useEffect(() => {
     const loadConfiguration = async () => {
@@ -62,8 +79,23 @@ export default function AIAgentPage() {
         const response = await fetch('/api/agent/config');
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.data.agentPersonality) {
-            setAgentPersonality(data.data.agentPersonality);
+          if (data.success && data.data.agentSettings) {
+            const settings = data.data.agentSettings;
+            
+            // Charger la personnalité de l'agent
+            setAgentPersonality({
+              name: settings.name || 'Assistant XAMXAM',
+              tone: settings.personality || 'professional',
+              language: settings.language || 'fr',
+              responseStyle: settings.responseTime || 'conversational',
+              greeting: settings.welcomeMessage || 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?'
+            });
+
+            // Charger les états des canaux
+            setChannelStates(prev => ({
+              ...prev,
+              whatsapp: settings.isWhatsAppEnabled || false
+            }));
           }
         }
       } catch (error) {
@@ -80,11 +112,33 @@ export default function AIAgentPage() {
   const [newTextTitle, setNewTextTitle] = useState('');
   const [newUrl, setNewUrl] = useState('');
   const [newUrlTitle, setNewUrlTitle] = useState('');
-  const [activeTab, setActiveTab] = useState<'personality' | 'knowledge'>('personality');
+  const [activeTab, setActiveTab] = useState<'personality' | 'knowledge' | 'configuration'>('personality');
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedKnowledgeType, setSelectedKnowledgeType] = useState<'files' | 'webpages' | 'text' | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
+
+  // Composants d'icônes professionnelles avec les vraies icônes des plateformes + Bot IA
+  const WhatsAppBotIcon = () => (
+    <div className="relative inline-flex items-center">
+      <WhatsAppIcon className="w-5 h-5 text-green-600" />
+      <Bot className="w-3 h-3 absolute -top-1 -right-1 text-blue-600 bg-white rounded-full p-0.5 shadow-sm" />
+    </div>
+  );
+
+  const MessengerBotIcon = () => (
+    <div className="relative inline-flex items-center">
+      <MessengerIcon className="w-5 h-5 text-blue-600" />
+      <Bot className="w-3 h-3 absolute -top-1 -right-1 text-blue-600 bg-white rounded-full p-0.5 shadow-sm" />
+    </div>
+  );
+
+  const InstagramBotIcon = () => (
+    <div className="relative inline-flex items-center">
+      <InstagramIcon className="w-5 h-5 text-pink-600" />
+      <Bot className="w-3 h-3 absolute -top-1 -right-1 text-blue-600 bg-white rounded-full p-0.5 shadow-sm" />
+    </div>
+  );
 
   // Fonctions de drag and drop
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -293,7 +347,16 @@ export default function AIAgentPage() {
       const response = await fetch('/api/agent/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentPersonality }),
+        body: JSON.stringify({ 
+          agentSettings: {
+            name: agentPersonality.name,
+            personality: agentPersonality.tone,
+            language: agentPersonality.language,
+            responseTime: agentPersonality.responseStyle,
+            welcomeMessage: agentPersonality.greeting,
+            isWhatsAppEnabled: channelStates.whatsapp
+          }
+        }),
       });
 
       if (!response.ok) {
@@ -305,6 +368,61 @@ export default function AIAgentPage() {
     } catch (error) {
       toast.error('Erreur lors de la sauvegarde.', { id: 'save-toast' });
       console.error('Save error:', error);
+    }
+  };
+
+  // Fonction pour gérer l'activation/désactivation des canaux
+  const handleToggleChannel = async (channel: 'whatsapp' | 'messenger' | 'instagram') => {
+    const newState = !channelStates[channel];
+    
+    // Mettre à jour l'état local immédiatement pour une meilleure UX
+    setChannelStates(prev => ({
+      ...prev,
+      [channel]: newState
+    }));
+
+    // Afficher un toast de chargement
+    toast.loading(`${newState ? 'Activation' : 'Désactivation'} de l'agent IA pour ${channel}...`, { 
+      id: `toggle-${channel}` 
+    });
+
+    try {
+      // Sauvegarder la configuration avec le nouvel état
+      const response = await fetch('/api/agent/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          agentSettings: {
+            name: agentPersonality.name,
+            personality: agentPersonality.tone,
+            language: agentPersonality.language,
+            responseTime: agentPersonality.responseStyle,
+            welcomeMessage: agentPersonality.greeting,
+            isWhatsAppEnabled: channel === 'whatsapp' ? newState : channelStates.whatsapp
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update channel configuration');
+      }
+
+      toast.success(
+        `Agent IA ${newState ? 'activé' : 'désactivé'} pour ${channel} !`, 
+        { id: `toggle-${channel}` }
+      );
+    } catch (error) {
+      // Revenir à l'état précédent en cas d'erreur
+      setChannelStates(prev => ({
+        ...prev,
+        [channel]: !newState
+      }));
+      
+      toast.error(
+        `Erreur lors de la ${newState ? 'activation' : 'désactivation'} pour ${channel}`, 
+        { id: `toggle-${channel}` }
+      );
+      console.error('Toggle channel error:', error);
     }
   };
 
@@ -378,6 +496,17 @@ export default function AIAgentPage() {
             >
               <Brain className="h-4 w-4" />
               <span>Base de connaissances</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('configuration')}
+              className={`${
+                activeTab === 'configuration'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              } flex-1 py-2.5 px-4 text-sm font-medium rounded-md transition-all duration-200 cursor-pointer flex items-center justify-center space-x-2`}
+            >
+              <Settings className="h-4 w-4" />
+              <span>Configuration</span>
             </button>
           </nav>
         </div>
@@ -908,6 +1037,141 @@ export default function AIAgentPage() {
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'configuration' && (
+          <div className="bg-white rounded-lg border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <Settings className="h-4 w-4 text-indigo-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Configuration</h2>
+                  <p className="text-sm text-gray-500">Paramètres et intégrations de votre agent IA</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Paramètres du modèle */}
+                <div className="space-y-6">
+                  <div className="border border-gray-200 rounded-lg p-6">
+                    <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center">
+                      <Zap className="h-5 w-5 mr-2 text-yellow-600" />
+                      Paramètres du modèle IA
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Modèle de langage
+                        </label>
+                        <select className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm cursor-pointer">
+                          <option value="gpt-4">GPT-4 (Recommandé)</option>
+                          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                          <option value="claude-3">Claude 3</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Intégrations */}
+                <div className="space-y-6">
+                  <div className="border border-gray-200 rounded-lg p-6">
+                    <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center">
+                      <Globe className="h-5 w-5 mr-2 text-green-600" />
+                      Canaux de communication
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <WhatsAppBotIcon />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Activer l'agent dans WhatsApp</p>
+                          </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={channelStates.whatsapp}
+                            onChange={() => handleToggleChannel('whatsapp')}
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <MessengerBotIcon />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Activer l'agent dans Messenger</p>
+                          </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={channelStates.messenger}
+                            onChange={() => handleToggleChannel('messenger')}
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <InstagramBotIcon />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">Activer l'agent dans Instagram</p>
+                          </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={channelStates.instagram}
+                            onChange={() => handleToggleChannel('instagram')}
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section de test */}
+              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h3 className="text-base font-semibold text-gray-900 mb-3 flex items-center">
+                  <Lightbulb className="h-5 w-5 mr-2 text-blue-600" />
+                  Test de configuration
+                </h3>
+                
+                <p className="text-sm text-gray-600 mb-4">
+                  Testez votre agent avec ces paramètres avant de sauvegarder.
+                </p>
+                
+                <button 
+                  onClick={() => router.push('/dashboard/ai-agent/playground')}
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors cursor-pointer"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Tester l'agent
+                </button>
               </div>
             </div>
           </div>
