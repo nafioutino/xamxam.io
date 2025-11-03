@@ -91,7 +91,7 @@ class WhatsAppAiService {
       console.log('🔍 Recherche de connaissances pertinentes...');
       console.log('🔍 Paramètres RPC:', {
         shop_id_param: messageData.shopId,
-        match_threshold: 0.7,
+        match_threshold: 0.5,
         match_count: 5,
         embedding_length: embedding.length
       });
@@ -100,7 +100,7 @@ class WhatsAppAiService {
         'match_knowledge_chunks',
         {
           query_embedding: embedding,
-          match_threshold: 0.7,
+          match_threshold: 0.5,
           match_count: 5,
           shop_id_param: messageData.shopId,
         }
