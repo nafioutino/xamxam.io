@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import prisma from '@/lib/prisma';
 import { evolutionApiService } from '@/services/whatsapp/evolutionApiService';
 
@@ -27,8 +27,13 @@ class WhatsAppAiService {
       apiKey: process.env.OPENAI_API_KEY,
     });
     
+    // Vérifier les variables d'environnement
+    console.log('🔧 Initialisation WhatsAppAiService...');
+    console.log('🔧 SUPABASE_URL présent:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log('🔧 SERVICE_ROLE_KEY présent:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    
     // Initialiser Supabase avec la service key pour les webhooks
-    this.supabase = createClient(
+    this.supabase = createSupabaseClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!, // Service key pour bypasser RLS
       {
@@ -38,6 +43,8 @@ class WhatsAppAiService {
         }
       }
     );
+    
+    console.log('✅ Client Supabase initialisé avec service key');
   }
 
   /**
@@ -82,6 +89,13 @@ class WhatsAppAiService {
 
       // 3. Récupérer les chunks de connaissance pertinents via Supabase RPC
       console.log('🔍 Recherche de connaissances pertinentes...');
+      console.log('🔍 Paramètres RPC:', {
+        shop_id_param: messageData.shopId,
+        match_threshold: 0.7,
+        match_count: 5,
+        embedding_length: embedding.length
+      });
+      
       const { data: knowledgeChunks, error: rpcError } = await this.supabase.rpc(
         'match_knowledge_chunks',
         {
