@@ -40,6 +40,9 @@ class WhatsAppAiService {
         auth: {
           autoRefreshToken: false,
           persistSession: false
+        },
+        db: {
+          schema: 'public'
         }
       }
     );
@@ -157,7 +160,7 @@ class WhatsAppAiService {
         responseLength: aiResponse.length
       });
       
-      await this.sendWhatsAppResponse(
+      const sendResult = await this.sendWhatsAppResponse(
         messageData.instanceName,
         messageData.customerPhone,
         aiResponse
@@ -167,7 +170,12 @@ class WhatsAppAiService {
 
       // 9. Sauvegarder la réponse IA dans la base de données
       console.log('💾 Sauvegarde de la réponse en base...');
-      await this.saveAiResponse(messageData.conversationId, aiResponse);
+      await this.saveAiResponse(
+        messageData.conversationId,
+        aiResponse,
+        sendResult?.key?.id,
+        sendResult || null
+      );
 
       console.log('✅ Réponse IA sauvegardée avec succès');
       console.log('✅ Traitement complet terminé avec succès');
@@ -278,7 +286,7 @@ Réponds maintenant au message du client de manière naturelle et utile.`;
     instanceName: string,
     customerPhone: string,
     response: string
-  ): Promise<void> {
+  ): Promise<import('@/types/evolution-api').SendMessageResponse> {
     try {
       console.log('📤 Tentative d\'envoi WhatsApp:', {
         instanceName,
@@ -292,6 +300,7 @@ Réponds maintenant au message du client de manière naturelle et utile.`;
       });
 
       console.log('✅ Réponse Evolution API:', result);
+      return result;
     } catch (error) {
       console.error('❌ Erreur lors de l\'envoi de la réponse WhatsApp:', error);
       console.error('❌ Détails de l\'erreur:', {
@@ -306,7 +315,12 @@ Réponds maintenant au message du client de manière naturelle et utile.`;
   /**
    * Sauvegarde la réponse IA dans la base de données
    */
-  private async saveAiResponse(conversationId: string, response: string): Promise<void> {
+  private async saveAiResponse(
+    conversationId: string,
+    response: string,
+    externalId?: string,
+    evolutionMetadata?: any
+  ): Promise<void> {
     try {
       await prisma.message.create({
         data: {
@@ -315,9 +329,11 @@ Réponds maintenant au message du client de manière naturelle et utile.`;
           messageType: 'TEXT',
           isFromCustomer: false,
           isRead: true,
+          externalId: externalId || undefined,
           metadata: {
             source: 'ai_agent',
             timestamp: new Date().toISOString(),
+            evolution: evolutionMetadata || undefined,
           },
         },
       });
