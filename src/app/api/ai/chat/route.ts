@@ -3,12 +3,18 @@ import { createClient } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
 import OpenAI from 'openai';
 
+// Valide qu'une chaîne est un UUID (v1–v5)
+function isValidUUID(value: string): boolean {
+  return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value);
+}
+
 /**
  * Récupère l'historique récent de la conversation pour le contexte
  */
 async function getConversationHistory(conversationId: string, limit: number = 10): Promise<string> {
   try {
-    if (!conversationId) {
+    if (!conversationId || !isValidUUID(conversationId)) {
+      console.warn('[API AI CHAT] conversationId invalide ou manquant, historique ignoré:', conversationId);
       return '';
     }
 

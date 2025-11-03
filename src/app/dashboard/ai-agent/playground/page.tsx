@@ -21,11 +21,26 @@ interface Message {
   timestamp: Date;
 }
 
+// Génère un UUID v4 valide (compatible Prisma)
+function generateUUID(): string {
+  // Utilise l'API Web Crypto si disponible
+  if (typeof crypto !== 'undefined' && typeof (crypto as any).randomUUID === 'function') {
+    return (crypto as any).randomUUID();
+  }
+  // Fallback v4 UUID
+  const template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+  return template.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export default function AIPlaygroundPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [conversationId] = useState<string>(() => `playground_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [conversationId] = useState<string>(() => generateUUID());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
