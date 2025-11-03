@@ -39,6 +39,7 @@ class WhatsAppAiService {
       });
 
       // 1. Vérifier si l'agent IA est activé pour cette boutique et pour WhatsApp
+      console.log('🔍 Vérification de la configuration de l\'agent IA...');
       const agentConfig = await prisma.agentConfiguration.findUnique({
         where: { shopId: messageData.shopId },
         include: { shop: true }
@@ -49,20 +50,25 @@ class WhatsAppAiService {
         return { success: false, error: 'Agent IA non configuré' };
       }
 
+      console.log('✅ Configuration trouvée. isWhatsAppEnabled:', agentConfig.isWhatsAppEnabled);
+
       if (!agentConfig.isWhatsAppEnabled) {
         console.log('❌ Agent IA désactivé pour WhatsApp sur la boutique:', messageData.shopId);
         return { success: false, error: 'Agent IA désactivé pour WhatsApp' };
       }
 
       // 2. Créer l'embedding du message utilisateur
+      console.log('🔍 Création de l\'embedding du message...');
       const embeddingResponse = await this.openai.embeddings.create({
         model: 'text-embedding-3-small',
         input: messageData.messageContent,
       });
 
       const embedding = embeddingResponse.data[0].embedding;
+      console.log('✅ Embedding créé avec succès');
 
       // 3. Récupérer les chunks de connaissance pertinents via Supabase RPC
+      console.log('🔍 Recherche de connaissances pertinentes...');
       const supabase = createClient();
       const { data: knowledgeChunks, error: rpcError } = await (await supabase).rpc(
         'match_knowledge_chunks',
@@ -75,7 +81,9 @@ class WhatsAppAiService {
       );
 
       if (rpcError) {
-        console.error('Erreur RPC Supabase:', rpcError);
+        console.error('❌ Erreur RPC Supabase:', rpcError);
+      } else {
+        console.log('✅ Connaissances trouvées:', knowledgeChunks?.length || 0, 'chunks');
       }
 
       // 4. Construire le contexte à partir des chunks de connaissance
@@ -87,9 +95,11 @@ class WhatsAppAiService {
       }
 
       // 5. Construire le prompt système dynamique
+      console.log('🔍 Construction du prompt système...');
       const systemPrompt = this.buildSystemPrompt(agentConfig, context);
 
       // 6. Générer la réponse avec OpenAI
+      console.log('🔍 Génération de la réponse IA...');
       const completion = await this.openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
@@ -103,24 +113,39 @@ class WhatsAppAiService {
       const aiResponse = completion.choices[0]?.message?.content;
 
       if (!aiResponse) {
+        console.log('❌ Aucune réponse générée par l\'IA');
         return { success: false, error: 'Aucune réponse générée par l\'IA' };
       }
 
+      console.log('✅ Réponse IA générée:', aiResponse.substring(0, 100) + '...');
+
       // 7. Envoyer la réponse via WhatsApp
+      console.log('📤 Envoi de la réponse WhatsApp...');
+      console.log('📤 Paramètres d\'envoi:', {
+        instanceName: messageData.instanceName,
+        customerPhone: messageData.customerPhone,
+        responseLength: aiResponse.length
+      });
+      
       await this.sendWhatsAppResponse(
         messageData.instanceName,
         messageData.customerPhone,
         aiResponse
       );
 
+      console.log('✅ Réponse WhatsApp envoyée avec succès');
+
       // 8. Sauvegarder la réponse IA dans la base de données
+      console.log('💾 Sauvegarde de la réponse en base...');
       await this.saveAiResponse(messageData.conversationId, aiResponse);
 
-      console.log('✅ Réponse IA envoyée avec succès');
+      console.log('✅ Réponse IA sauvegardée avec succès');
+      console.log('✅ Traitement complet terminé avec succès');
       return { success: true, response: aiResponse };
 
     } catch (error: any) {
       console.error('❌ Erreur lors du traitement du message par l\'agent IA:', error);
+      console.error('❌ Stack trace:', error.stack);
       return { success: false, error: error.message };
     }
   }
@@ -173,12 +198,25 @@ Réponds maintenant au message du client de manière naturelle et utile.`;
     response: string
   ): Promise<void> {
     try {
-      await evolutionApiService.sendTextMessage(instanceName, {
+      console.log('📤 Tentative d\'envoi WhatsApp:', {
+        instanceName,
+        customerPhone,
+        responseLength: response.length
+      });
+
+      const result = await evolutionApiService.sendTextMessage(instanceName, {
         number: customerPhone,
         text: response,
       });
+
+      console.log('✅ Réponse Evolution API:', result);
     } catch (error) {
-      console.error('Erreur lors de l\'envoi de la réponse WhatsApp:', error);
+      console.error('❌ Erreur lors de l\'envoi de la réponse WhatsApp:', error);
+      console.error('❌ Détails de l\'erreur:', {
+        instanceName,
+        customerPhone,
+        error: error instanceof Error ? error.message : error
+      });
       throw error;
     }
   }
