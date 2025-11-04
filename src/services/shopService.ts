@@ -23,6 +23,20 @@ export interface Shop {
   createdAt: string;
   updatedAt: string;
   ownerId: string;
+  // Inclus quand on appelle /api/shop/me (relation sélectionnée côté API)
+  owner?: {
+    id: string;
+    fullName?: string | null;
+    avatarUrl?: string | null;
+  };
+  // Comptages renvoyés par /api/shop/me
+  _count?: {
+    products: number;
+    orders: number;
+    customers: number;
+    categories: number;
+    channels: number;
+  };
 }
 
 export interface CreateShopData {
