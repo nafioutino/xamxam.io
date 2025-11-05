@@ -46,6 +46,28 @@ export default function ConnectWhatsAppPage() {
     if (!shopId || isLoading) return;
     
     setIsLoading(true);
+    
+    // Vérifier d'abord si un canal WhatsApp est déjà connecté pour ce shop
+    try {
+      const statusRes = await fetch('/api/channels/status');
+      if (statusRes.ok) {
+        const statusJson = await statusRes.json();
+        const alreadyConnected = !!statusJson?.connectedChannels?.whatsapp;
+        if (alreadyConnected) {
+          setIsConnected(true);
+          setStatus('Vous êtes déjà connecté à WhatsApp. Aucun scan nécessaire.');
+          toast.success('Compte WhatsApp déjà connecté');
+          setIsLoading(false);
+          // Optionnel: redirection rapide vers la liste des canaux
+          setTimeout(() => router.push('/dashboard/channels'), 1500);
+          return;
+        }
+      }
+    } catch (e) {
+      // Si la vérification échoue, on continue mais on log
+      console.error('Pré-vérification statut canaux échouée:', e);
+    }
+
     setStatus('Création de l\'instance WhatsApp...');
     
     try {
@@ -64,6 +86,16 @@ export default function ConnectWhatsAppPage() {
         throw new Error(errorMsg);
       }
       
+      // Si l'instance existe déjà et est connectée, ne pas générer de QR
+      if (createData.existing) {
+        setIsConnected(true);
+        setStatus('Vous êtes déjà connecté à WhatsApp. Aucun scan nécessaire.');
+        toast.success('Compte WhatsApp déjà connecté');
+        setIsLoading(false);
+        setTimeout(() => router.push('/dashboard/channels'), 1500);
+        return;
+      }
+
       const instanceId = createData.instanceName;
       setInstanceName(instanceId);
       
@@ -81,6 +113,10 @@ export default function ConnectWhatsAppPage() {
         toast.error('Le serveur Evolution API ne répond pas. Vérifiez votre configuration.');
       } else if (errorMessage.includes('not configured')) {
         toast.error('Evolution API non configuré. Contactez l\'administrateur.');
+      } else if (errorMessage.toLowerCase().includes('already connected')) {
+        setIsConnected(true);
+        toast.success('Compte WhatsApp déjà connecté');
+        setTimeout(() => router.push('/dashboard/channels'), 1500);
       } else {
         toast.error(`Erreur: ${errorMessage}`);
       }

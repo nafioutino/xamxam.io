@@ -142,6 +142,19 @@ export async function POST(request: Request) {
       }
       
       try {
+        // Ne pas générer de QR si l'instance est déjà connectée
+        try {
+          const currentStatus = await evolutionApiService.getInstanceStatus(instanceName);
+          if (currentStatus?.instance?.state === 'open') {
+            return NextResponse.json(
+              { success: false, error: 'Instance already connected' },
+              { status: 400 }
+            );
+          }
+        } catch (statusErr: any) {
+          // Si l'instance n'existe pas ou erreur 404, on continue la génération du QR
+        }
+
         const qrData = await evolutionApiService.connectInstance(instanceName);
         
         // Evolution API retourne { code, pairingCode, base64 }
