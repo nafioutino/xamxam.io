@@ -10,6 +10,7 @@ import { profileImages } from './profile-data';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/auth/AuthGuard';
 import LoadingTransition from '@/components/auth/LoadingTransition';
+import { useShop } from '@/hooks/useShop';
 
 import { Home, Package, Share2, MessagesSquare, Bot, Wand2, ShoppingCart, BarChart3, Settings } from 'lucide-react';
 
@@ -37,14 +38,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileImage, setProfileImage] = useState('');
   const [dashboardReady, setDashboardReady] = useState(false);
+  const { shop } = useShop();
   
   useEffect(() => {
-    // Sélectionner une image de profil aléatoire parmi les images disponibles
-    if (profileImages && profileImages.length > 0) {
+    // Utiliser l'avatar de l'utilisateur s'il existe, sinon une image générique
+    if (shop?.owner?.avatarUrl) {
+      setProfileImage(shop.owner.avatarUrl);
+    } else if (!profileImage && profileImages && profileImages.length > 0) {
       const randomIndex = Math.floor(Math.random() * profileImages.length);
       setProfileImage(profileImages[randomIndex].image);
     }
-  }, []);
+  }, [shop, profileImage]);
 
   // Indiquer que le dashboard est prêt après le montage
   useEffect(() => {
@@ -167,37 +171,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
             </nav>
           </div>
-
-          <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-            <div className="flex-shrink-0 group block">
-              <div className="flex items-center">
-                <div>
-                  {profileImage ? (
-                    <img
-                      className="inline-block h-10 w-10 rounded-full object-cover border-2 border-blue-200"
-                      src={profileImage}
-                      alt={user?.name || 'Profile'}
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-bold border-2 border-blue-200">
-                      {user?.name?.charAt(0) || 'U'}
-                    </div>
-                  )}
-                </div>
-                <div className="ml-3">
-                  <p className="text-base font-medium text-gray-700 group-hover:text-gray-900">
-                    {user?.name || 'Utilisateur'}
-                  </p>
-                  <button
-                    onClick={handleLogout}
-                    className="text-sm font-medium text-gray-500 group-hover:text-gray-700 hover:underline cursor-pointer"
-                  >
-                    Déconnexion
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="flex-shrink-0 w-14">{/* Force sidebar to shrink to fit close icon */}</div>
@@ -272,30 +245,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   Déconnexion
                 </button>
               </nav>
-            </div>
-            <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-              <div className="flex-shrink-0 w-full group block">
-                <div className="flex items-center">
-                  <div>
-                    <img
-                      className="inline-block h-12 w-12 rounded-full object-cover border-2 border-blue-200"
-                      src={profileImage || `https://ui-avatars.com/api/?name=${user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}&background=random`}
-                      alt={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Profile'}
-                    />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-base font-medium text-gray-700 group-hover:text-gray-900">
-                      {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
-                    </p>
-                    <button
-                      onClick={handleLogout}
-                      className="text-sm font-medium text-gray-500 group-hover:text-gray-700 hover:underline cursor-pointer"
-                    >
-                      Déconnexion
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

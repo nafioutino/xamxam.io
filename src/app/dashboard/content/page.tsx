@@ -1,7 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Send, FileText, Image, Video, Calendar, BarChart3, Link, Upload, Eye, Settings, Zap, Clock, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
+import {
+  Send,
+  FileText,
+  Image,
+  Video,
+  Calendar,
+  BarChart3,
+  Link,
+  Upload,
+  Eye,
+  Settings,
+  Zap,
+  Clock,
+  TrendingUp,
+  Loader2,
+  Sparkles,
+  BookOpen,
+  CheckCircle
+} from 'lucide-react';
 import { TikTokIcon, FacebookIcon, InstagramIcon } from '@/components/dashboard/ChannelIcons';
 import toast from 'react-hot-toast';
 
@@ -478,104 +496,94 @@ export default function ContentPage() {
 
   return (
     <div className="space-y-6">
-      {/* En-tête moderne */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-2xl p-8 text-white overflow-hidden">
-        {/* Motif de fond décoratif */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-4 right-4 w-32 h-32 bg-white rounded-full blur-3xl"></div>
-          <div className="absolute bottom-4 left-4 w-24 h-24 bg-white rounded-full blur-2xl"></div>
-        </div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/20">
-                <FileText className="h-10 w-10" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold mb-2">Création de Contenu</h1>
-                <p className="text-white/90 text-lg">
-                  Créez et publiez du contenu captivant sur toutes vos plateformes
-                </p>
+      {/* En-tête */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+              <FileText className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">Création de contenu</h1>
+              <p className="text-sm text-gray-500 mt-1">Créez et publiez du contenu captivant sur toutes vos plateformes.</p>
+              <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-gray-500">
+                <span className="inline-flex items-center gap-2">
+                  <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                  {availableChannelTypes.length} plateforme{availableChannelTypes.length > 1 ? 's' : ''} connectée{availableChannelTypes.length > 1 ? 's' : ''}
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Zap className="h-3.5 w-3.5 text-blue-500" />
+                  Prêt à publier
+                </span>
               </div>
             </div>
-            
-            {/* Badges des plateformes connectées */}
-            <div className="hidden lg:flex items-center space-x-2">
-              {availableChannelTypes.map((channelType) => {
+          </div>
+
+          {/* Badges des plateformes connectées */}
+          <div className="flex flex-wrap items-center gap-2">
+            {availableChannelTypes.length === 0 ? (
+              <span className="text-sm text-gray-500">Aucune plateforme connectée</span>
+            ) : (
+              availableChannelTypes.map((channelType) => {
                 const IconComponent = channelType.icon;
                 return (
                   <div
                     key={channelType.key}
-                    className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-full bg-gray-50 text-sm text-gray-600"
                   >
-                    <IconComponent className="h-5 w-5" />
-                    <span className="text-sm font-medium">{channelType.label}</span>
+                    <IconComponent className="h-4 w-4" />
+                    <span className="font-medium">{channelType.label}</span>
                   </div>
                 );
-              })}
-            </div>
-          </div>
-          
-          {/* Indicateur de progression */}
-          <div className="mt-6 flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-white/80">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm">
-                {availableChannelTypes.length} plateforme{availableChannelTypes.length > 1 ? 's' : ''} connectée{availableChannelTypes.length > 1 ? 's' : ''}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2 text-white/80">
-              <Zap className="h-4 w-4" />
-              <span className="text-sm">Prêt à publier</span>
-            </div>
+              })
+            )}
           </div>
         </div>
       </div>
 
       {/* Statistiques rapides */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Posts aujourd'hui</p>
-              <p className="text-3xl font-bold text-gray-900">0</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Posts aujourd'hui</p>
+              <p className="mt-2 text-2xl font-semibold text-gray-900">0</p>
             </div>
-            <div className="p-3 bg-blue-50 rounded-xl group-hover:bg-blue-100 transition-colors">
-              <FileText className="h-8 w-8 text-blue-600" />
+            <div className="w-10 h-10 rounded-md bg-blue-50 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-blue-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+        <div className="bg-white border border-gray-200 rounded-lg p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Engagement</p>
-              <p className="text-3xl font-bold text-gray-900">-</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Engagement</p>
+              <p className="mt-2 text-2xl font-semibold text-gray-900">-</p>
             </div>
-            <div className="p-3 bg-green-50 rounded-xl group-hover:bg-green-100 transition-colors">
-              <TrendingUp className="h-8 w-8 text-green-600" />
+            <div className="w-10 h-10 rounded-md bg-green-50 flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+        <div className="bg-white border border-gray-200 rounded-lg p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Programmés</p>
-              <p className="text-3xl font-bold text-gray-900">0</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Programmés</p>
+              <p className="mt-2 text-2xl font-semibold text-gray-900">0</p>
             </div>
-            <div className="p-3 bg-purple-50 rounded-xl group-hover:bg-purple-100 transition-colors">
-              <Calendar className="h-8 w-8 text-purple-600" />
+            <div className="w-10 h-10 rounded-md bg-purple-50 flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-purple-600" />
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+        <div className="bg-white border border-gray-200 rounded-lg p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Canaux actifs</p>
-              <p className="text-3xl font-bold text-gray-900">{availableChannelTypes.length}</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Canaux actifs</p>
+              <p className="mt-2 text-2xl font-semibold text-gray-900">{availableChannelTypes.length}</p>
             </div>
-            <div className="p-3 bg-orange-50 rounded-xl group-hover:bg-orange-100 transition-colors">
-              <Zap className="h-8 w-8 text-orange-600" />
+            <div className="w-10 h-10 rounded-md bg-orange-50 flex items-center justify-center">
+              <Zap className="h-5 w-5 text-orange-600" />
             </div>
           </div>
         </div>

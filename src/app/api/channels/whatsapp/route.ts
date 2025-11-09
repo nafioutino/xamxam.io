@@ -142,6 +142,19 @@ export async function POST(request: Request) {
       }
       
       try {
+        // Ne pas générer de QR si l'instance est déjà connectée
+        try {
+          const currentStatus = await evolutionApiService.getInstanceStatus(instanceName);
+          if (currentStatus?.instance?.state === 'open') {
+            return NextResponse.json(
+              { success: false, error: 'Instance already connected' },
+              { status: 400 }
+            );
+          }
+        } catch (statusErr: any) {
+          // Si l'instance n'existe pas ou erreur 404, on continue la génération du QR
+        }
+
         const qrData = await evolutionApiService.connectInstance(instanceName);
         
         // Evolution API retourne { code, pairingCode, base64 }
@@ -204,6 +217,64 @@ export async function POST(request: Request) {
         console.error('Error checking status:', error);
         return NextResponse.json(
           { success: false, error: error.message },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Déconnecter l'instance WhatsApp (logout) puis supprimer l'instance + mise à jour DB
+    if (action === 'disconnect_instance') {
+      try {
+        const computedInstanceName = `shop_${shopId}`;
+
+        // Tenter de déconnecter l'instance (logout)
+        try {
+          await evolutionApiService.logoutInstance(computedInstanceName);
+        } catch (logoutError: any) {
+          // Si l'instance n'existe pas ou déjà déconnectée, considérer comme succès logique
+          const code = logoutError?.response?.status || 0;
+          if (code !== 404) {
+            console.error('Error logging out instance:', logoutError);
+          }
+        }
+
+        // Supprimer l'instance EvolutionAPI pour forcer une reconnexion complète (QR/pairing) ensuite
+        let deleted = false;
+        try {
+          await evolutionApiService.deleteInstance(computedInstanceName);
+          deleted = true;
+        } catch (deleteError: any) {
+          const code = deleteError?.response?.status || 0;
+          // Ignorer 404: l'instance est déjà absente
+          if (code !== 404) {
+            console.error('Error deleting instance:', deleteError);
+          }
+        }
+
+        // Mettre à jour le canal en DB: isActive = false
+        const channel = await prisma.channel.findFirst({
+          where: { shopId, type: 'WHATSAPP', externalId: computedInstanceName }
+        });
+
+        if (channel) {
+          await prisma.channel.update({
+            where: { id: channel.id },
+            data: { isActive: false },
+          });
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: deleted 
+            ? 'Instance WhatsApp déconnectée et supprimée' 
+            : 'Instance WhatsApp déconnectée',
+          instanceName: computedInstanceName,
+          deleted,
+        });
+      } catch (error: any) {
+        console.error('Error disconnecting WhatsApp instance:', error);
+        return NextResponse.json(
+          { success: false, error: error.message || 'Failed to disconnect instance' },
           { status: 500 }
         );
       }

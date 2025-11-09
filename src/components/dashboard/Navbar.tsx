@@ -5,11 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { Menu, X, ChevronDown, LogOut, User, Settings, Home } from 'lucide-react';
+import { useShop } from '@/hooks/useShop';
 
 export default function DashboardNavbar() {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { shop } = useShop();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
@@ -61,9 +63,17 @@ export default function DashboardNavbar() {
                   onClick={toggleProfile}
                   className="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition duration-150 ease-in-out items-center"
                 >
-                  <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
-                    {(user?.user_metadata?.full_name || user?.email)?.charAt(0)?.toUpperCase() || 'U'}
-                  </div>
+                  {shop?.owner?.avatarUrl ? (
+                    <img
+                      src={shop.owner.avatarUrl}
+                      alt={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Avatar'}
+                      className="h-8 w-8 rounded-full object-cover border-2 border-blue-200"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                      {(user?.user_metadata?.full_name || user?.email)?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                  )}
                   <span className="ml-2 text-gray-700">
                     {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
                   </span>
@@ -150,9 +160,17 @@ export default function DashboardNavbar() {
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
             <div className="flex items-center px-4">
-              <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-bold">
-                {(user?.user_metadata?.full_name || user?.email)?.charAt(0)?.toUpperCase() || 'U'}
-              </div>
+              {shop?.owner?.avatarUrl ? (
+                <img
+                  src={shop.owner.avatarUrl}
+                  alt={user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Avatar'}
+                  className="h-10 w-10 rounded-full object-cover border-2 border-blue-200"
+                />
+              ) : (
+                <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-lg font-bold">
+                  {(user?.user_metadata?.full_name || user?.email)?.charAt(0)?.toUpperCase() || 'U'}
+                </div>
+              )}
               <div className="ml-3">
                 <div className="text-base font-medium text-gray-800">
                   {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
