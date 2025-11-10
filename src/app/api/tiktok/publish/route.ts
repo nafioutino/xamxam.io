@@ -28,6 +28,9 @@ export async function POST(request: NextRequest) {
     const title = formData.get('title') as string;
     const publishMode = formData.get('publishMode') as string || 'draft'; // 'direct' ou 'draft'
     const privacy = formData.get('privacy') as string || 'PUBLIC_TO_EVERYONE';
+    const allowCommentRaw = formData.get('allowComment') as string | null;
+    const allowDuetRaw = formData.get('allowDuet') as string | null;
+    const allowStitchRaw = formData.get('allowStitch') as string | null;
     const videoFile = formData.get('video') as File | null;
     const videoUrl = formData.get('videoUrl') as string | null;
 
@@ -74,7 +77,12 @@ export async function POST(request: NextRequest) {
       videoFile: videoFile!,
       description: title,
       privacy: (privacy as 'SELF_ONLY' | 'MUTUAL_FOLLOW_FRIENDS' | 'PUBLIC_TO_EVERYONE'),
-      isDraft: publishMode !== 'direct'
+      isDraft: publishMode !== 'direct',
+      interactions: {
+        allowComment: allowCommentRaw ? allowCommentRaw === 'true' : true,
+        allowDuet: allowDuetRaw ? allowDuetRaw === 'true' : true,
+        allowStitch: allowStitchRaw ? allowStitchRaw === 'true' : true,
+      }
     };
 
     let result;

@@ -435,6 +435,14 @@ export default function ChannelsPage() {
                       </div>
                     )}
                     <div className="mt-3 flex space-x-2">
+                      {channel.type === 'tiktok' && (
+                        <button
+                          onClick={() => (window.location.href = '/dashboard/tiktok/post')}
+                          className="text-xs px-3 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors shadow-sm cursor-pointer inline-flex items-center gap-1"
+                        >
+                          Publier sur TikTok
+                        </button>
+                      )}
                       <button
                         onClick={() => requestDisconnectChannel(channel.id)}
                         className="text-xs px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors shadow-sm cursor-pointer inline-flex items-center gap-1"
