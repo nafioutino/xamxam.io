@@ -464,6 +464,7 @@ export class TikTokPublishService {
   ): Promise<boolean> {
     try {
       let videoData: Blob;
+      let mimeType: string | undefined;
 
       if (typeof videoSource === 'string') {
         // Si c'est une URL, télécharger le fichier
@@ -472,15 +473,17 @@ export class TikTokPublishService {
           throw new Error('Impossible de télécharger la vidéo depuis l\'URL');
         }
         videoData = await response.blob();
+        mimeType = videoData.type || 'video/mp4';
       } else {
         // Si c'est un fichier
         videoData = videoSource;
+        mimeType = videoSource.type || 'video/mp4';
       }
 
       const response = await fetch(uploadUrl, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'video/mp4',
+          'Content-Type': mimeType || 'video/mp4',
           'Content-Range': `bytes 0-${videoData.size - 1}/${videoData.size}`
         },
         body: videoData
@@ -567,7 +570,8 @@ export class TikTokPublishService {
         return 'La vidéo est trop volumineuse (maximum 4GB)';
       }
 
-      const allowedTypes = ['video/mp4', 'video/webm', 'video/mov'];
+      // Inclure les MIME types standard pour MOV
+      const allowedTypes = ['video/mp4', 'video/webm', 'video/mov', 'video/quicktime'];
       if (!allowedTypes.includes(options.videoFile.type)) {
         return 'Format de vidéo non supporté (MP4, WebM, MOV uniquement)';
       }
@@ -602,7 +606,8 @@ export class TikTokPublishService {
         return 'La vidéo est trop volumineuse (maximum 4GB)';
       }
 
-      const allowedTypes = ['video/mp4', 'video/webm', 'video/mov'];
+      // Inclure les MIME types standard pour MOV
+      const allowedTypes = ['video/mp4', 'video/webm', 'video/mov', 'video/quicktime'];
       if (!allowedTypes.includes(options.videoFile.type)) {
         return 'Format de vidéo non supporté (MP4, WebM, MOV uniquement)';
       }
