@@ -337,7 +337,7 @@ export default function TikTokPostPage() {
             className="mt-1 cursor-pointer"
           />
           <label htmlFor="consent-music" className="text-sm text-gray-700 cursor-pointer">
-            By posting, you agree to TikTok's Music Usage Confirmation
+            En publiant, vous acceptez la Confirmation d’utilisation de la musique de TikTok.
           </label>
         </div>
 
