@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { PlusIcon, MagnifyingGlassIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { Plus, Search, RotateCcw } from 'lucide-react';
 
 type OrderStatus = 'pending' | 'paid' | 'processing' | 'shipping' | 'delivered' | 'cancelled';
 
@@ -271,7 +271,7 @@ export default function OrdersPage() {
           onClick={() => setIsCreateModalOpen(true)}
           className="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+          <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
           Nouvelle commande
         </button>
       </div>
@@ -285,7 +285,7 @@ export default function OrdersPage() {
               </label>
               <div className="relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                  <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
                 </div>
                 <input
                   type="text"
@@ -326,7 +326,7 @@ export default function OrdersPage() {
                 }}
                 className="inline-flex items-center px-5 py-3 border border-gray-300 shadow-sm text-base font-medium rounded-md text-gray-700 bg-white hover:bg-blue-50 hover:border-blue-300 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <ArrowPathIcon className="-ml-1 mr-2 h-5 w-5 text-gray-400" aria-hidden="true" />
+                <RotateCcw className="-ml-1 mr-2 h-5 w-5 text-gray-400" aria-hidden="true" />
                 Réinitialiser
               </button>
             </div>

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRightIcon, ChatBubbleLeftRightIcon, ShoppingBagIcon, CubeIcon, ChartBarIcon } from "@heroicons/react/24/outline";
+import { ArrowRight, MessageSquare, ShoppingBag, Package, BarChart3, Sparkles, Sliders } from "lucide-react";
 
 export default function Home() {
   return (
@@ -23,12 +23,13 @@ export default function Home() {
           <a href="#how-it-works" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition">Comment ça marche</a>
           <a href="#pricing" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition">Tarifs</a>
           <Link href="/auth/login" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition">Se connecter</Link>
-          <Link href="/auth/register" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition">
+          <Link href="/auth/register" className="relative group bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition shadow-lg">
             Essayer gratuitement
+            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" aria-hidden="true" />
           </Link>
         </div>
         <div className="md:hidden">
-          <button className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
+          <button className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white" aria-label="Ouvrir le menu">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -48,9 +49,10 @@ export default function Home() {
               XAMXAM transforme votre façon de vendre en ligne en intégrant messagerie, catalogue et IA dans une seule plateforme puissante.  
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <Link href="/auth/register" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md text-lg font-medium transition flex items-center justify-center">
+              <Link href="/auth/register" className="relative group bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md text-lg font-medium transition flex items-center justify-center shadow-lg">
                 Commencer maintenant
-                <ArrowRightIcon className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-5 w-5" />
+                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" aria-hidden="true" />
               </Link>
               <Link href="/auth/login" className="border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 px-6 py-3 rounded-md text-lg font-medium transition flex items-center justify-center">
                 Se connecter
@@ -88,7 +90,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl transition hover:shadow-md">
               <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-6">
-                <ChatBubbleLeftRightIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                <MessageSquare className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-xl font-bold mb-4">Messagerie unifiée</h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -98,7 +100,7 @@ export default function Home() {
             
             <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl transition hover:shadow-md">
               <div className="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-6">
-                <CubeIcon className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+                <Package className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
               </div>
               <h3 className="text-xl font-bold mb-4">Gestion de catalogue</h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -108,9 +110,7 @@ export default function Home() {
             
             <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl transition hover:shadow-md">
               <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+                <Sparkles className="h-8 w-8 text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="text-xl font-bold mb-4">Assistant IA</h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -120,7 +120,7 @@ export default function Home() {
             
             <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl transition hover:shadow-md">
               <div className="bg-green-100 dark:bg-green-900 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-6">
-                <ShoppingBagIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
+                <ShoppingBag className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
               <h3 className="text-xl font-bold mb-4">Suivi des commandes</h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -130,7 +130,7 @@ export default function Home() {
             
             <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl transition hover:shadow-md">
               <div className="bg-red-100 dark:bg-red-900 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-6">
-                <ChartBarIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
+                <BarChart3 className="h-8 w-8 text-red-600 dark:text-red-400" />
               </div>
               <h3 className="text-xl font-bold mb-4">Analyses et statistiques</h3>
               <p className="text-gray-600 dark:text-gray-300">
@@ -140,9 +140,7 @@ export default function Home() {
             
             <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl transition hover:shadow-md">
               <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                </svg>
+                <Sliders className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
               </div>
               <h3 className="text-xl font-bold mb-4">Personnalisation complète</h3>
               <p className="text-gray-600 dark:text-gray-300">

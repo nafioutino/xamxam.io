@@ -240,7 +240,7 @@ class WhatsAppAiService {
   private buildSystemPrompt(agentConfig: any, context: string, conversationHistory: string = ''): string {
     const shopInfo = agentConfig.shop;
     
-    let prompt = `Tu es ${agentConfig.agentName}, l'assistant virtuel de ${shopInfo.name}.
+    const prompt = `Tu es ${agentConfig.agentName}, l'assistant virtuel de ${shopInfo.name}.
 
 INFORMATIONS SUR LA BOUTIQUE:
 - Nom: ${shopInfo.name}

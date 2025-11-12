@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
-import { ChartBarIcon, ChatBubbleLeftRightIcon, ShoppingCartIcon, CurrencyEuroIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowUp, ArrowDown, BarChart3, MessagesSquare, ShoppingCart, Euro, RefreshCw } from 'lucide-react';
 
 // Types pour les données de statistiques
 type StatPeriod = 'day' | 'week' | 'month' | 'year';
@@ -143,9 +142,9 @@ export default function AnalyticsPage() {
   // Fonction pour obtenir l'icône en fonction de la variation
   const getChangeIcon = (change: number) => {
     return change >= 0 ? (
-      <ArrowUpIcon className="h-4 w-4 text-green-600" />
+      <ArrowUp className="h-4 w-4 text-green-600" />
     ) : (
-      <ArrowDownIcon className="h-4 w-4 text-red-600" />
+      <ArrowDown className="h-4 w-4 text-red-600" />
     );
   };
 
@@ -234,7 +233,7 @@ export default function AnalyticsPage() {
             disabled={isRefreshing}
             className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
           >
-            <ArrowPathIcon className={`-ml-1 mr-2 h-5 w-5 text-gray-400 ${isRefreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
+            <RefreshCw className={`-ml-1 mr-2 h-5 w-5 text-gray-400 ${isRefreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
             Actualiser
           </button>
         </div>
@@ -247,7 +246,7 @@ export default function AnalyticsPage() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ChatBubbleLeftRightIcon className="h-6 w-6 text-gray-400" aria-hidden="true" />
+                <MessagesSquare className="h-6 w-6 text-gray-400" aria-hidden="true" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -282,7 +281,7 @@ export default function AnalyticsPage() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ShoppingCartIcon className="h-6 w-6 text-gray-400" aria-hidden="true" />
+                <ShoppingCart className="h-6 w-6 text-gray-400" aria-hidden="true" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -317,7 +316,7 @@ export default function AnalyticsPage() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <CurrencyEuroIcon className="h-6 w-6 text-gray-400" aria-hidden="true" />
+                <Euro className="h-6 w-6 text-gray-400" aria-hidden="true" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -352,7 +351,7 @@ export default function AnalyticsPage() {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ChartBarIcon className="h-6 w-6 text-gray-400" aria-hidden="true" />
+                <BarChart3 className="h-6 w-6 text-gray-400" aria-hidden="true" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
