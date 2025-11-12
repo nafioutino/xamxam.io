@@ -4,7 +4,6 @@ import { PrismaClient } from "@/generated/prisma";
 
 // Cette structure "singleton" est cruciale pour les environnements serverless.
 declare global {
-  // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined;
 }
 

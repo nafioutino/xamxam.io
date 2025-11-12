@@ -9,7 +9,7 @@ import {
   ArrowLeft, 
   Link as LinkIcon, 
   Smile, 
-  Image, 
+  Image as ImageIcon, 
   Mic, 
   Play, 
   CheckCircle, 
@@ -537,7 +537,7 @@ export default function InboxPage() {
                     <Smile className="h-5 w-5" />
                   </button>
                   <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Envoyer une image">
-                    <Image className="h-5 w-5" />
+                    <ImageIcon className="h-5 w-5" />
                   </button>
                   <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Envoyer un audio">
                     <Mic className="h-5 w-5" />
@@ -691,7 +691,7 @@ export default function InboxPage() {
                     <Smile className="h-5 w-5" />
                   </button>
                   <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Envoyer une image">
-                    <Image className="h-5 w-5" />
+                    <ImageIcon className="h-5 w-5" />
                   </button>
                   <button className="text-gray-500 hover:text-gray-700 transition-colors" disabled={sendingMessage} aria-label="Envoyer un audio">
                     <Mic className="h-5 w-5" />

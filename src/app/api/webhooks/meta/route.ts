@@ -152,7 +152,7 @@ async function processMessage(event: any) {
     }
 
     // --- ÉTAPE 3: TROUVER OU CRÉER LE CLIENT ---
-    let customer = await prisma.customer.upsert({
+    const customer = await prisma.customer.upsert({
       where: { shopId_phone: { shopId, phone: senderId } },
       update: { name: userInfo.name, avatarUrl: userInfo.avatarUrl },
       create: { shopId, phone: senderId, name: userInfo.name, avatarUrl: userInfo.avatarUrl }

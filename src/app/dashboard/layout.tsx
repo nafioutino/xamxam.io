@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Toaster } from 'react-hot-toast';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Menu, X, LogOut } from 'lucide-react';
 import { profileImages } from './profile-data';
 // Icônes Heroicons pour la navigation remplacées par des icônes Lucide modernes
 import { useAuth } from '@/hooks/useAuth';
@@ -101,7 +101,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => setSidebarOpen(false)}
             >
               <span className="sr-only">Fermer le menu</span>
-              <XMarkIcon className="h-6 w-6 text-white" aria-hidden="true" />
+              <X className="h-6 w-6 text-white" aria-hidden="true" />
             </button>
           </div>
 
@@ -149,6 +149,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Link
                     key={item.name}
                     href={item.href}
+                    aria-current={isActive ? 'page' : undefined}
                     className={`group flex items-center px-3 py-3 text-base font-medium rounded-md cursor-pointer transition-colors ${isActive ? 'bg-blue-100 text-blue-600 border-r-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                   >
                     <item.icon
@@ -164,9 +165,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 onClick={handleLogout}
                 className="group flex items-center px-3 py-3 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full mt-8 cursor-pointer"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="mr-4 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
+                <LogOut className="mr-4 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
                 Déconnexion
               </button>
             </nav>
@@ -224,6 +223,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <Link
                       key={item.name}
                       href={item.href}
+                      aria-current={isActive ? 'page' : undefined}
                       className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer transition-colors ${isActive ? 'bg-blue-100 text-blue-600 border-r-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
                     >
                       <item.icon
@@ -258,7 +258,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             onClick={() => setSidebarOpen(true)}
           >
             <span className="sr-only">Ouvrir le menu</span>
-            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+            <Menu className="h-6 w-6" aria-hidden="true" />
           </button>
         </div>
 

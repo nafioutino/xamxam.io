@@ -242,7 +242,7 @@ class WhatsAppAiService {
     const languageMap: Record<string, string> = { fr: 'français', en: 'anglais', wo: 'wolof', ar: 'arabe' };
     const defaultLanguage = languageMap[agentConfig.agentLanguage] || agentConfig.agentLanguage;
     
-    let prompt = `Tu es ${agentConfig.agentName}, l'assistant virtuel de ${shopInfo.name}.
+    const prompt = `Tu es ${agentConfig.agentName}, l'assistant virtuel de ${shopInfo.name}.
 
 INFORMATIONS SUR LA BOUTIQUE:
 - Nom: ${shopInfo.name}

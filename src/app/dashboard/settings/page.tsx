@@ -11,46 +11,51 @@ import { Store, Clock, MapPin, FileText, Loader2, Save, User, Image as ImageIcon
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
+const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+const dayHoursSchema = z
+  .object({
+    closed: z.boolean(),
+    open: z.string().optional(),
+    close: z.string().optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (!val.closed) {
+      if (!val.open || !val.close) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Heures requises', path: ['open'] });
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Heures requises', path: ['close'] });
+        return;
+      }
+      if (!timeRegex.test(val.open)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Format HH:MM', path: ['open'] });
+      }
+      if (!timeRegex.test(val.close)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Format HH:MM', path: ['close'] });
+      }
+      const toMinutes = (t: string) => {
+        const [h, m] = t.split(':').map((x) => parseInt(x, 10));
+        return h * 60 + m;
+      };
+      if (timeRegex.test(val.open) && timeRegex.test(val.close)) {
+        if (toMinutes(val.open) >= toMinutes(val.close)) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Heure de début avant fin', path: ['open'] });
+        }
+      }
+    }
+  });
+
 const shopSettingsSchema = z.object({
   name: z.string().min(2, 'Le nom de la boutique doit contenir au moins 2 caractères'),
   description: z.string().optional(),
   address: z.string().optional(),
   openingHours: z.object({
-    monday: z.object({
-      closed: z.boolean(),
-      open: z.string().optional(),
-      close: z.string().optional(),
-    }).optional(),
-    tuesday: z.object({
-      closed: z.boolean(),
-      open: z.string().optional(),
-      close: z.string().optional(),
-    }).optional(),
-    wednesday: z.object({
-      closed: z.boolean(),
-      open: z.string().optional(),
-      close: z.string().optional(),
-    }).optional(),
-    thursday: z.object({
-      closed: z.boolean(),
-      open: z.string().optional(),
-      close: z.string().optional(),
-    }).optional(),
-    friday: z.object({
-      closed: z.boolean(),
-      open: z.string().optional(),
-      close: z.string().optional(),
-    }).optional(),
-    saturday: z.object({
-      closed: z.boolean(),
-      open: z.string().optional(),
-      close: z.string().optional(),
-    }).optional(),
-    sunday: z.object({
-      closed: z.boolean(),
-      open: z.string().optional(),
-      close: z.string().optional(),
-    }).optional(),
+    monday: dayHoursSchema.optional(),
+    tuesday: dayHoursSchema.optional(),
+    wednesday: dayHoursSchema.optional(),
+    thursday: dayHoursSchema.optional(),
+    friday: dayHoursSchema.optional(),
+    saturday: dayHoursSchema.optional(),
+    sunday: dayHoursSchema.optional(),
   }).optional(),
 });
 
@@ -578,6 +583,11 @@ export default function ShopSettingsPage() {
                                 className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               />
                             </div>
+                            {((errors as any)?.openingHours?.[day.key]?.open?.message || (errors as any)?.openingHours?.[day.key]?.close?.message) && (
+                              <p className="mt-1 text-xs text-red-600">
+                                {((errors as any)?.openingHours?.[day.key]?.open?.message) || ((errors as any)?.openingHours?.[day.key]?.close?.message)}
+                              </p>
+                            )}
                             <p className="mt-1 text-xs text-gray-500">Format 24h, ex: 09:00 à 18:00</p>
                           </div>
                         )}

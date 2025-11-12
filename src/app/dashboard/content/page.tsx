@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import {
   Send,
   FileText,
-  Image,
+  Image as ImageIcon,
   Video,
   Calendar,
   BarChart3,
@@ -1253,7 +1253,7 @@ export default function ContentPage() {
                       <div className={`p-3 rounded-xl transition-colors ${
                         contentType === 'image' ? 'bg-green-500' : 'bg-gray-100 group-hover:bg-green-100'
                       }`}>
-                        <Image className={`h-6 w-6 ${
+                        <ImageIcon className={`h-6 w-6 ${
                           contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
                         }`} />
                       </div>
@@ -1303,7 +1303,7 @@ export default function ContentPage() {
                       <div className={`p-3 rounded-xl transition-colors ${
                         contentType === 'image' ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-100 group-hover:bg-purple-100'
                       }`}>
-                        <Image className={`h-6 w-6 ${
+                        <ImageIcon className={`h-6 w-6 ${
                           contentType === 'image' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
                         }`} />
                       </div>
