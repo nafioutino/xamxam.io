@@ -10,6 +10,7 @@ import { profileImages } from './profile-data';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/auth/AuthGuard';
 import LoadingTransition from '@/components/auth/LoadingTransition';
+import { useShop } from '@/hooks/useShop';
 
 import { Home, Package, Share2, MessagesSquare, Bot, Wand2, ShoppingCart, BarChart3, Settings } from 'lucide-react';
 
@@ -37,14 +38,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileImage, setProfileImage] = useState('');
   const [dashboardReady, setDashboardReady] = useState(false);
+  const { shop } = useShop();
   
   useEffect(() => {
-    // Sélectionner une image de profil aléatoire parmi les images disponibles
-    if (profileImages && profileImages.length > 0) {
+    // Utiliser l'avatar de l'utilisateur s'il existe, sinon une image générique
+    if (shop?.owner?.avatarUrl) {
+      setProfileImage(shop.owner.avatarUrl);
+    } else if (!profileImage && profileImages && profileImages.length > 0) {
       const randomIndex = Math.floor(Math.random() * profileImages.length);
       setProfileImage(profileImages[randomIndex].image);
     }
-  }, []);
+  }, [shop, profileImage]);
 
   // Indiquer que le dashboard est prêt après le montage
   useEffect(() => {

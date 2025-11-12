@@ -239,6 +239,8 @@ class WhatsAppAiService {
    */
   private buildSystemPrompt(agentConfig: any, context: string, conversationHistory: string = ''): string {
     const shopInfo = agentConfig.shop;
+    const languageMap: Record<string, string> = { fr: 'français', en: 'anglais', wo: 'wolof', ar: 'arabe' };
+    const defaultLanguage = languageMap[agentConfig.agentLanguage] || agentConfig.agentLanguage;
     
     const prompt = `Tu es ${agentConfig.agentName}, l'assistant virtuel de ${shopInfo.name}.
 
@@ -250,19 +252,20 @@ INFORMATIONS SUR LA BOUTIQUE:
 
 CONFIGURATION DE PERSONNALITÉ:
 - Ton: ${agentConfig.agentTone}
-- Langue: ${agentConfig.agentLanguage}
+ - Langue par défaut: ${defaultLanguage}
 - Style de réponse: ${agentConfig.agentResponseStyle}
 ${agentConfig.agentGreeting ? `- Message d'accueil: ${agentConfig.agentGreeting}` : ''}
 
 INSTRUCTIONS:
-1. Réponds UNIQUEMENT en ${agentConfig.agentLanguage}
-2. Adopte un ton ${agentConfig.agentTone}
-3. Utilise un style ${agentConfig.agentResponseStyle}
-4. Sois utile et informatif concernant les produits et services de la boutique
-5. Si tu ne connais pas une information, dis-le honnêtement
-6. Reste dans le contexte de la boutique et de ses services
-7. Sois concis mais complet dans tes réponses (maximum 500 caractères)
-8. Utilise l'historique de la conversation pour maintenir la cohérence et le contexte
+1. Réponds dans la même langue que le message du client (wolof, arabe, anglais ou français).
+2. Si la langue du client n'est pas claire, réponds en ${defaultLanguage}.
+3. N'utilise qu'une seule langue par réponse (ne mélange pas).
+4. Adopte un ton ${agentConfig.agentTone} et un style ${agentConfig.agentResponseStyle}.
+5. Sois utile et informatif concernant les produits et services de la boutique.
+6. Si tu ne connais pas une information, dis-le honnêtement.
+7. Reste dans le contexte de la boutique et de ses services.
+8. Sois concis mais complet (maximum 500 caractères).
+9. Utilise l'historique de la conversation pour maintenir la cohérence et le contexte.
 
 ${conversationHistory ? `HISTORIQUE DE LA CONVERSATION RÉCENTE:
 ${conversationHistory}

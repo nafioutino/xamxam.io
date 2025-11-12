@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
+import { useShop } from '@/hooks/useShop';
 import { Plus, Zap, Settings, CheckCircle, XCircle, AlertCircle, MessageCircle } from 'lucide-react';
 import { 
   WhatsAppIcon, 
@@ -13,6 +14,8 @@ import {
   LinkedInIcon
 } from '@/components/dashboard/ChannelIcons';
 import SuccessNotification from '@/components/dashboard/SuccessNotification';
+import { toast } from 'react-hot-toast';
+import { Dialog, Transition } from '@headlessui/react';
 
 interface Channel {
   id: string;
@@ -150,6 +153,9 @@ export default function ChannelsPage() {
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [disconnectConfirmOpen, setDisconnectConfirmOpen] = useState(false);
+  const [pendingDisconnectChannelId, setPendingDisconnectChannelId] = useState<string | null>(null);
+  const { shop, isLoading: shopLoading } = useShop();
 
   // Vérifier les paramètres URL pour les messages de succès
   useEffect(() => {
@@ -201,11 +207,11 @@ export default function ChannelsPage() {
     window.location.href = `/dashboard/channels/connect/${channelId}`;
   };
 
-  const handleDisconnectChannel = async (channelId: string) => {
+  const handleDisconnectChannel = async (channelId: string): Promise<boolean> => {
     try {
       // Trouver le canal à déconnecter
       const channelToDisconnect = channels.find(c => c.id === channelId);
-      if (!channelToDisconnect) return;
+      if (!channelToDisconnect) return false;
 
       // Mettre à jour l'état local immédiatement
       setChannels(prev => prev.map(channel => 
@@ -214,11 +220,23 @@ export default function ChannelsPage() {
           : channel
       ));
 
-      // Appeler l'API pour déconnecter le canal (à implémenter si nécessaire)
-      // const response = await fetch(`/api/channels/${channelId}/disconnect`, {
-      //   method: 'POST'
-      // });
-      
+      // Appeler l'API pour déconnecter WhatsApp via Evolution API
+      if (channelToDisconnect.type === 'whatsapp') {
+        if (!shop || shopLoading) {
+          throw new Error('Boutique non prête. Réessayez dans un instant.');
+        }
+        const response = await fetch('/api/channels/whatsapp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ shopId: shop.id, action: 'disconnect_instance' })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data?.success === false) {
+          const errorMsg = data?.error || `Échec de la déconnexion (${response.status})`;
+          throw new Error(errorMsg);
+        }
+      }
+      return true;
     } catch (error) {
       console.error('Erreur lors de la déconnexion du canal:', error);
       // Restaurer l'état en cas d'erreur
@@ -227,7 +245,28 @@ export default function ChannelsPage() {
           ? { ...channel, status: 'connected' as const }
           : channel
       ));
+      return false;
     }
+  };
+
+  const requestDisconnectChannel = (channelId: string) => {
+    setPendingDisconnectChannelId(channelId);
+    setDisconnectConfirmOpen(true);
+  };
+
+  const confirmDisconnect = async () => {
+    if (!pendingDisconnectChannelId) return;
+    setDisconnectConfirmOpen(false);
+    const ok = await handleDisconnectChannel(pendingDisconnectChannelId);
+    if (ok) {
+      toast.success('Canal déconnecté');
+    }
+    setPendingDisconnectChannelId(null);
+  };
+
+  const cancelDisconnect = () => {
+    setDisconnectConfirmOpen(false);
+    setPendingDisconnectChannelId(null);
   };
 
   const connectedChannels = channels.filter(channel => channel.status === 'connected');
@@ -396,8 +435,16 @@ export default function ChannelsPage() {
                       </div>
                     )}
                     <div className="mt-3 flex space-x-2">
+                      {channel.type === 'tiktok' && (
+                        <button
+                          onClick={() => (window.location.href = '/dashboard/tiktok/post')}
+                          className="text-xs px-3 py-1 bg-black text-white rounded-md hover:bg-gray-800 transition-colors shadow-sm cursor-pointer inline-flex items-center gap-1"
+                        >
+                          Publier sur TikTok
+                        </button>
+                      )}
                       <button
-                        onClick={() => handleDisconnectChannel(channel.id)}
+                        onClick={() => requestDisconnectChannel(channel.id)}
                         className="text-xs px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors shadow-sm cursor-pointer inline-flex items-center gap-1"
                       >
                         <XCircle className="h-4 w-4" /> Déconnecter
@@ -490,6 +537,69 @@ export default function ChannelsPage() {
           </div>
         </div>
       </div>
+
+      {/* Modale de confirmation de déconnexion */}
+      <Transition.Root show={disconnectConfirmOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={cancelDisconnect}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                enterTo="opacity-100 translate-y-0 sm:scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              >
+                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md sm:p-6">
+                  <div className="sm:flex sm:items-start">
+                    <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                      <XCircle className="h-6 w-6 text-red-600" aria-hidden="true" />
+                    </div>
+                    <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                      <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                        Déconnecter le canal
+                      </Dialog.Title>
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-500">Voulez-vous vraiment déconnecter ce canal ?</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button
+                      type="button"
+                      onClick={confirmDisconnect}
+                      className="inline-flex w-full justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 sm:ml-3 sm:w-auto cursor-pointer"
+                    >
+                      Confirmer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelDisconnect}
+                      className="mt-3 inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 shadow-sm hover:bg-gray-50 sm:mt-0 sm:w-auto cursor-pointer"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition.Root>
     </div>
   );
 }

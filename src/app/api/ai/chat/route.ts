@@ -188,23 +188,26 @@ export async function POST(request: NextRequest) {
     console.log('[API AI CHAT] Context length:', contextText.length);
 
     // Construire le prompt système dynamique
+    const languageMap: Record<string, string> = { fr: 'français', en: 'anglais', wo: 'wolof', ar: 'arabe' };
+    const defaultLanguageLabel = agentConfig ? (languageMap[agentConfig.agentLanguage || 'fr'] || agentConfig.agentLanguage || 'français') : 'français';
     const systemPrompt = agentConfig ? `Tu es ${agentConfig.agentName || 'Assistant IA'}, un assistant virtuel ${agentConfig.agentTone || 'professionnel'}.
 
 PERSONNALITÉ DE L'AGENT :
 - Nom : ${agentConfig.agentName || 'Assistant IA'}
 - Ton : ${agentConfig.agentTone || 'professionnel'}
 - Style de réponse : ${agentConfig.agentResponseStyle || 'conversationnel'}
-- Langue : ${agentConfig.agentLanguage || 'fr'}
+- Langue par défaut : ${defaultLanguageLabel}
 - Message d'accueil : ${agentConfig.agentGreeting || 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?'}
 
 INSTRUCTIONS :
-1. Réponds uniquement en ${agentConfig.agentLanguage === 'fr' ? 'français' : agentConfig.agentLanguage} (sauf si demandé autrement)
-2. Utilise un ton ${agentConfig.agentTone || 'professionnel'} et un style ${agentConfig.agentResponseStyle || 'conversationnel'}
-3. Base tes réponses sur les informations fournies dans le contexte ci-dessous
-4. Si tu ne trouves pas d'information pertinente dans le contexte, dis-le clairement
-5. Sois utile, précis et bienveillant
-6. Adapte ton style de communication selon les préférences configurées
-7. Utilise l'historique de la conversation pour maintenir la cohérence et le contexte
+1. Réponds dans la même langue que le message de l'utilisateur (wolof, arabe, anglais ou français).
+2. Si la langue n'est pas claire, réponds en ${defaultLanguageLabel}.
+3. N'utilise qu'une seule langue par réponse (ne mélange pas).
+4. Utilise un ton ${agentConfig.agentTone || 'professionnel'} et un style ${agentConfig.agentResponseStyle || 'conversationnel'}.
+5. Base tes réponses sur les informations fournies dans le contexte ci-dessous.
+6. Si tu ne trouves pas d'information pertinente dans le contexte, dis-le clairement.
+7. Sois utile, précis et bienveillant.
+8. Utilise l'historique de la conversation pour maintenir la cohérence et le contexte.
 
 ${conversationHistory ? `HISTORIQUE DE LA CONVERSATION RÉCENTE :
 ${conversationHistory}

@@ -81,6 +81,7 @@ export default function ShopSettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState<string>('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [optimizeImage, setOptimizeImage] = useState(true);
 
   const {
     register,
@@ -159,6 +160,46 @@ export default function ShopSettingsPage() {
     }
   };
 
+  // Utilitaire: recadrer au centre et redimensionner l'image en carré 512x512
+  const processImageToSquare = async (file: File, targetSize = 512): Promise<File> => {
+    return new Promise<File>((resolve, reject) => {
+      try {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          const size = Math.min(img.naturalWidth, img.naturalHeight);
+          const sx = Math.max(0, Math.floor((img.naturalWidth - size) / 2));
+          const sy = Math.max(0, Math.floor((img.naturalHeight - size) / 2));
+
+          const canvas = document.createElement('canvas');
+          canvas.width = targetSize;
+          canvas.height = targetSize;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            URL.revokeObjectURL(url);
+            return reject(new Error('Contexte canvas introuvable'));
+          }
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, targetSize, targetSize);
+
+          canvas.toBlob((blob) => {
+            URL.revokeObjectURL(url);
+            if (!blob) return reject(new Error('Échec de la conversion image'));
+            const processedFile = new File([blob], `avatar-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            resolve(processedFile);
+          }, 'image/jpeg', 0.9);
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error('Impossible de charger l’image'));
+        };
+        img.src = url;
+      } catch (e) {
+        reject(e as Error);
+      }
+    });
+  };
+
   // Upload avatar vers Supabase Storage et mettre à jour l'URL locale
   const handleAvatarUpload = async (file: File) => {
     if (!file) return;
@@ -166,29 +207,42 @@ export default function ShopSettingsPage() {
       setIsUploading(true);
       const userId = shop?.owner?.id;
       if (!userId) {
-        toast.error('Utilisateur introuvable pour téléverser le logo');
+        toast.error('Utilisateur introuvable pour téléverser la photo');
         return;
       }
 
-      const fileExt = file.name.split('.').pop();
-      const filePath = `avatars/${userId}-${Date.now()}.${fileExt}`;
+      // Option d’optimisation: recadrer en carré et compresser en JPEG
+      const processed = optimizeImage ? await processImageToSquare(file, 512) : file;
+      const fileExt = optimizeImage ? 'jpg' : (file.name.split('.').pop() || 'png');
+      // Ne pas préfixer par "avatars/" car le bucket est déjà spécifié via .from('avatars')
+      const filePath = `${userId}-${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('public')
-        .upload(filePath, file, { upsert: true });
+        .from('avatars')
+        .upload(filePath, processed, { upsert: true });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
-        toast.error("Échec du téléversement. Veuillez saisir l'URL du logo.");
+        toast.error("Échec du téléversement. Veuillez saisir l'URL de la photo.");
         return;
       }
 
-      const { data } = supabase.storage.from('public').getPublicUrl(filePath);
-      if (data?.publicUrl) {
-        setAvatarUrl(data.publicUrl);
-        toast.success('Logo téléversé');
+      const { data: publicData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      if (publicData?.publicUrl) {
+        setAvatarUrl(publicData.publicUrl);
+        toast.success('Photo téléversée');
       } else {
-        toast.error("Impossible d'obtenir l'URL publique");
+        // Fallback: tenter une URL signée (si bucket non public)
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from('avatars')
+          .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 an
+
+        if (signedError || !signedData?.signedUrl) {
+          toast.error("Impossible d'obtenir l'URL de la photo");
+        } else {
+          setAvatarUrl(signedData.signedUrl);
+          toast.success('Photo téléversée (URL signée)');
+        }
       }
     } catch (e) {
       console.error(e);
@@ -332,7 +386,7 @@ export default function ShopSettingsPage() {
               <div className="mt-3">
                 <label className="inline-flex items-center px-3 py-2 text-sm rounded-md border bg-white hover:bg-gray-50 cursor-pointer">
                   <ImageIcon className="h-4 w-4 mr-2" />
-                  Téléverser un logo
+                  Téléverser une photo
                   <input
                     type="file"
                     accept="image/*"
@@ -343,9 +397,26 @@ export default function ShopSettingsPage() {
                     }}
                   />
                 </label>
+                <button
+                  type="button"
+                  onClick={() => setAvatarUrl('')}
+                  className="ml-2 inline-flex items-center px-3 py-2 text-xs rounded-md border bg-white hover:bg-gray-50"
+                >
+                  Supprimer
+                </button>
                 {isUploading && (
                   <p className="text-xs text-gray-500 mt-2">Téléversement en cours...</p>
                 )}
+                <div className="mt-2 flex items-center text-xs text-gray-600">
+                  <input
+                    id="optimizeImage"
+                    type="checkbox"
+                    className="mr-2"
+                    checked={optimizeImage}
+                    onChange={(e) => setOptimizeImage(e.target.checked)}
+                  />
+                  <label htmlFor="optimizeImage">Optimiser en 512x512 (recadrage centré)</label>
+                </div>
               </div>
             </div>
 
@@ -362,7 +433,7 @@ export default function ShopSettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">URL du logo</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">URL de l'avatar</label>
                 <input
                   type="url"
                   value={avatarUrl}
@@ -370,7 +441,7 @@ export default function ShopSettingsPage() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="https://..."
                 />
-                <p className="mt-1 text-xs text-gray-500">Astuce: carré 512x512 recommandé</p>
+                <p className="mt-1 text-xs text-gray-500">Astuce: carré 512x512 recommandé (optimisation automatique activable)</p>
               </div>
 
               <div className="flex justify-end">

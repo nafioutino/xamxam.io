@@ -17,6 +17,11 @@ export interface TikTokPublishOptions {
   description: string;
   privacy: 'SELF_ONLY' | 'MUTUAL_FOLLOW_FRIENDS' | 'PUBLIC_TO_EVERYONE';
   isDraft?: boolean;
+  interactions?: {
+    allowComment?: boolean;
+    allowDuet?: boolean;
+    allowStitch?: boolean;
+  };
 }
 
 /**
@@ -29,6 +34,11 @@ export interface TikTokPublishOptionsLegacy {
   videoFile?: File;     // Fichier vidéo à publier
   privacy?: 'PUBLIC_TO_EVERYONE' | 'MUTUAL_FOLLOW_FRIENDS' | 'SELF_ONLY'; // Niveau de confidentialité
   publishMode?: 'direct' | 'draft'; // Mode de publication
+  interactions?: {
+    allowComment?: boolean;
+    allowDuet?: boolean;
+    allowStitch?: boolean;
+  };
 }
 
 /**
@@ -151,7 +161,8 @@ export class TikTokPublishService {
         accessToken: accessToken,
         videoFile: options.videoFile,
         privacy: options.privacy,
-        publishMode: options.isDraft ? 'draft' : 'direct'
+        publishMode: options.isDraft ? 'draft' : 'direct',
+        interactions: options.interactions
       };
 
       if (options.isDraft) {
@@ -204,11 +215,12 @@ export class TikTokPublishService {
 
       // Étape 1: Initialiser l'upload (Mode LIVE - toutes les permissions disponibles)
       const initResult = await this.initializeVideoUpload(
-        accessToken, 
-        title, 
-        privacy, 
+        accessToken,
+        title,
+        privacy,
         false, // publication directe
-        videoSize
+        videoSize,
+        options.interactions
       );
       
       if (!initResult.success) {
@@ -264,11 +276,12 @@ export class TikTokPublishService {
 
       // Étape 1: Initialiser l'upload en mode brouillon
       const initResult = await this.initializeVideoUpload(
-        accessToken, 
-        title, 
-        privacy, 
+        accessToken,
+        title,
+        privacy,
         true, // draft mode
-        videoSize
+        videoSize,
+        options.interactions
       );
       if (!initResult.success) {
         return initResult;
@@ -306,7 +319,8 @@ export class TikTokPublishService {
     title: string,
     privacy: string,
     isDraft: boolean = false,
-    videoSize?: number
+    videoSize?: number,
+    interactions?: { allowComment?: boolean; allowDuet?: boolean; allowStitch?: boolean }
   ): Promise<TikTokUploadResult & { uploadUrl?: string }> {
     // Utiliser l'endpoint correct selon le mode
     const url = isDraft 
@@ -352,13 +366,16 @@ export class TikTokPublishService {
       };
     } else {
       // Pour la publication directe, structure complète
+      const disable_duet = interactions?.allowDuet === false;
+      const disable_comment = interactions?.allowComment === false;
+      const disable_stitch = interactions?.allowStitch === false;
       body = {
         post_info: {
           title: title.trim(),
           privacy_level: privacy,
-          disable_duet: false,
-          disable_comment: false,
-          disable_stitch: false,
+          disable_duet,
+          disable_comment,
+          disable_stitch,
           video_cover_timestamp_ms: 1000
         },
         source_info: {
@@ -447,6 +464,7 @@ export class TikTokPublishService {
   ): Promise<boolean> {
     try {
       let videoData: Blob;
+      let mimeType: string | undefined;
 
       if (typeof videoSource === 'string') {
         // Si c'est une URL, télécharger le fichier
@@ -455,15 +473,17 @@ export class TikTokPublishService {
           throw new Error('Impossible de télécharger la vidéo depuis l\'URL');
         }
         videoData = await response.blob();
+        mimeType = videoData.type || 'video/mp4';
       } else {
         // Si c'est un fichier
         videoData = videoSource;
+        mimeType = videoSource.type || 'video/mp4';
       }
 
       const response = await fetch(uploadUrl, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'video/mp4',
+          'Content-Type': mimeType || 'video/mp4',
           'Content-Range': `bytes 0-${videoData.size - 1}/${videoData.size}`
         },
         body: videoData
@@ -550,7 +570,8 @@ export class TikTokPublishService {
         return 'La vidéo est trop volumineuse (maximum 4GB)';
       }
 
-      const allowedTypes = ['video/mp4', 'video/webm', 'video/mov'];
+      // Inclure les MIME types standard pour MOV
+      const allowedTypes = ['video/mp4', 'video/webm', 'video/mov', 'video/quicktime'];
       if (!allowedTypes.includes(options.videoFile.type)) {
         return 'Format de vidéo non supporté (MP4, WebM, MOV uniquement)';
       }
@@ -585,7 +606,8 @@ export class TikTokPublishService {
         return 'La vidéo est trop volumineuse (maximum 4GB)';
       }
 
-      const allowedTypes = ['video/mp4', 'video/webm', 'video/mov'];
+      // Inclure les MIME types standard pour MOV
+      const allowedTypes = ['video/mp4', 'video/webm', 'video/mov', 'video/quicktime'];
       if (!allowedTypes.includes(options.videoFile.type)) {
         return 'Format de vidéo non supporté (MP4, WebM, MOV uniquement)';
       }
