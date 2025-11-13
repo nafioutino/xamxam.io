@@ -145,9 +145,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.info('Pages Meta retournées (diagnostic):', pagesData.data.map(p => ({ id: p.id, name: p.name, hasToken: !!p.access_token, tasks: p.tasks })));
-
-    const eligiblePages = pagesData.data.filter(page => !!page.access_token);
+    // Filtrer les pages qui ont les permissions nécessaires
+    const eligiblePages = pagesData.data.filter(page => {
+      // Vérifier que la page a les tâches nécessaires pour la messagerie
+      const requiredTasks = ['MESSAGING', 'MANAGE'];
+      return requiredTasks.some(task => page.tasks?.includes(task));
+    });
 
     if (eligiblePages.length === 0) {
       return NextResponse.redirect(
