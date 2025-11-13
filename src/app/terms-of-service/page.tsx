@@ -135,7 +135,7 @@ export default function TermsOfServicePage() {
                         <p className="text-gray-700 leading-relaxed text-lg">
                           XAMXAM est une plateforme de gestion de conversations clients qui permet aux 
                           entreprises de centraliser et gérer leurs communications avec leurs clients 
-                          via différents canaux, notamment Facebook Messenger.
+                          via différents canaux, notamment les pages Facebook (Messenger).
                         </p>
                       </div>
                     </div>

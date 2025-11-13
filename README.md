@@ -18,7 +18,7 @@ XAMXAM est une plateforme tout-en-un qui transforme la façon dont les entrepris
 - **Base de Données** : PostgreSQL avec PGVector pour la recherche vectorielle
 - **Authentification** : NextAuth.js avec support pour Google, Facebook
 - **IA** : OpenAI GPT-4/Mistral, DALL·E 3, Runway ML
-- **Messagerie** : Intégrations avec WhatsApp Business API, Facebook Messenger, Instagram Direct, Telegram, TikTok, Email
+- **Messagerie** : Intégrations avec WhatsApp Business API, Pages Facebook (Messenger), Instagram Direct, Telegram, TikTok, Email
 
 ## Prérequis
 

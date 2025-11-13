@@ -174,22 +174,22 @@ export default function SelectPagePage() {
                   </div>
                 </div>
 
-                {/* Facebook Messenger */}
+                {/* Page Facebook */}
                 <div className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white ring-1 ring-inset ring-blue-200">
                       <MessageSquare className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900">Facebook Messenger</h4>
-                      <p className="text-sm text-gray-600">Messages de votre page Facebook</p>
+                      <h4 className="font-medium text-gray-900">Page Facebook</h4>
+                      <p className="text-sm text-gray-600">Connexion de votre page Facebook (messages et publication)</p>
                     </div>
                   </div>
                   <button
                     onClick={() => handleConnectPage(page)}
                     disabled={connecting === page.id}
                     className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 cursor-pointer"
-                    aria-label="Connecter Facebook Messenger"
+                    aria-label="Connecter une page Facebook"
                   >
                     {connecting === page.id ? (
                       <>
@@ -199,7 +199,7 @@ export default function SelectPagePage() {
                     ) : (
                       <>
                         <MessageSquare className="w-4 h-4" />
-                        <span>Connecter Messenger</span>
+                        <span>Connecter la page Facebook</span>
                       </>
                     )}
                   </button>

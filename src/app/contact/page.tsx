@@ -308,7 +308,7 @@ export default function ContactPage() {
                       Quels canaux de communication sont supportés ?
                     </h3>
                     <p className="text-gray-700 leading-relaxed">
-                      XAMXAM supporte Facebook Messenger, WhatsApp Business, Instagram Direct, 
+                      XAMXAM supporte les pages Facebook (Messenger), WhatsApp Business, Instagram Direct, 
                       et d'autres plateformes populaires. Nous ajoutons régulièrement de nouveaux canaux selon les besoins de nos clients.
                     </p>
                   </div>

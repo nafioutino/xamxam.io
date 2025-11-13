@@ -6,7 +6,7 @@ import { Plus, Zap, Settings, CheckCircle, XCircle, AlertCircle, MessageCircle }
 import { 
   WhatsAppIcon, 
   TikTokIcon, 
-  MessengerIcon, 
+  FacebookIcon,
   // EmailIcon,  // Temporairement commenté
   // SMSIcon,    // Temporairement commenté
   InstagramIcon,
@@ -60,11 +60,11 @@ const availableChannels: Channel[] = [
   },
   {
     id: 'messenger',
-    name: 'Facebook Messenger',
+    name: 'Page Facebook',
     type: 'messenger',
     status: 'disconnected',
-    description: 'Connectez Facebook Messenger pour gérer les conversations',
-    icon: MessengerIcon,
+    description: 'Connectez votre page Facebook pour publier, recevoir et envoyer des messages sur cette page',
+    icon: FacebookIcon,
     color: 'text-blue-600',
     bgColor: 'bg-blue-50',
     borderColor: 'border-blue-200',
