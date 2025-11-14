@@ -136,7 +136,7 @@ export class TikTokPublishService {
       // Valider les nouvelles options
       const validationError = this.validateNewPublishOptions(options);
       if (validationError) {
-        return { success: false, error: validationError };
+        return { success: false, error: validationError, shareId: null, tikTokError: null };
       }
 
       // Obtenir un token d'accès valide (avec rafraîchissement automatique si nécessaire)
@@ -149,7 +149,9 @@ export class TikTokPublishService {
         }
         return { 
           success: false, 
-          error: tokenResult.error || 'Token TikTok invalide, reconnexion requise' 
+          error: tokenResult.error || 'Token TikTok invalide, reconnexion requise',
+          shareId: null,
+          tikTokError: null
         };
       }
 
@@ -170,21 +172,27 @@ export class TikTokPublishService {
         return {
           success: result.success,
           error: result.error,
-          publishId: result.publishId
+          publishId: result.publishId,
+          shareId: null,
+          tikTokError: null
         };
       } else {
         const result = await this.publishVideoLegacy(legacyOptions);
         return {
           success: result.success,
           error: result.error,
-          publishId: result.publishId
+          publishId: result.publishId,
+          shareId: result.shareId,
+          tikTokError: result.tikTokError
         };
       }
     } catch (error) {
       console.error('TikTok publish service error:', error);
       return {
         success: false,
-        error: 'Erreur lors de la publication sur TikTok'
+        error: 'Erreur lors de la publication sur TikTok',
+        shareId: null,
+        tikTokError: null
       };
     }
   }

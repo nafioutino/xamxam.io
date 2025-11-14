@@ -59,6 +59,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Vérifier que le customer existe
+    if (!conversation.customer) {
+      return NextResponse.json(
+        { success: false, error: 'Customer not found for this conversation' },
+        { status: 404 }
+      );
+    }
+
     // Extraire le numéro de téléphone (format: 5585988888888@s.whatsapp.net → 5585988888888)
     const phoneNumber = conversation.customer.phone;
 
@@ -107,7 +115,7 @@ export async function POST(request: Request) {
         isFromCustomer: false,
         isRead: true,
         externalId: evolutionResponse.key.id,
-        metadata: evolutionResponse,
+        metadata: evolutionResponse as any,
       },
     });
 

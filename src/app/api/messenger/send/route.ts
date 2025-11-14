@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
             mediaUrl: mediaUrl,
             isFromCustomer: false,
             externalId: evolutionResponse.key.id,
-            metadata: evolutionResponse,
+            metadata: evolutionResponse as any,
             isRead: true,
           },
         });
@@ -299,6 +299,14 @@ export async function POST(request: NextRequest) {
         default:
           messagePayload.message.text = message;
       }
+    }
+
+    // Vérifier que le token d'accès existe
+    if (!channel.accessToken) {
+      return NextResponse.json({
+        success: false,
+        error: 'Token d\'accès non configuré pour ce canal'
+      }, { status: 500 });
     }
 
     // Déchiffrer le token d'accès avant utilisation
