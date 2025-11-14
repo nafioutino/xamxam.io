@@ -135,7 +135,7 @@ export default function RegisterPage() {
     <UnauthGuard>
       <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-4 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Fond avec gradient et formes */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-indigo-950/20 dark:to-purple-950/10 z-0 overflow-hidden">
+        <div className="absolute inset-0 bg-slate-50 dark:bg-gray-900 z-0 overflow-hidden">
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-indigo-200/30 dark:bg-indigo-500/10 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
         </div>
@@ -144,7 +144,7 @@ export default function RegisterPage() {
         <div className={`w-full max-w-5xl h-full max-h-[95vh] transition-all duration-700 transform ${isPageLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
           <div className="flex flex-col lg:flex-row rounded-3xl shadow-2xl overflow-hidden h-full">
             {/* Colonne de gauche (image/branding) - visible uniquement sur desktop */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-600 to-purple-700 p-8 flex-col justify-between relative overflow-hidden">
+            <div className="hidden lg:flex lg:w-1/2 bg-blue-600 p-8 flex-col justify-between relative overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full filter blur-3xl animate-blob"></div>
                 <div className="absolute bottom-10 right-10 w-64 h-64 bg-white rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
@@ -196,19 +196,19 @@ export default function RegisterPage() {
             </div>
             
             {/* Colonne de droite (formulaire) */}
-            <div className="w-full lg:w-1/2 bg-white/70 dark:bg-gray-800/90 backdrop-blur-xl p-6 lg:p-8 overflow-y-auto">
+            <div className="w-full lg:w-1/2 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl p-6 lg:p-8 overflow-y-auto transition-all duration-300 hover:shadow-xl">
               <div className={`transition-all duration-500 transform ${isPageLoaded ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'}`}>
             {/* En-tête */}
             <div className="text-center mb-6">
               <div className="relative mx-auto w-20 h-20 mb-4 group">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl blur-lg opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-blue-600 rounded-2xl blur-lg opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-lg">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl">
                     <span className="text-2xl font-bold text-white">X</span>
                   </div>
                 </div>
               </div>
-              <h1 className="mt-4 text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h1 className="mt-4 text-3xl font-extrabold text-blue-600">
                 XAMXAM
               </h1>
               <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-3 mb-1">
@@ -273,7 +273,7 @@ export default function RegisterPage() {
                       <button
                         type="submit"
                         disabled={isFormLoading}
-                        className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200 transform hover:scale-[1.02] shadow-lg flex items-center justify-center"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-200 transform hover:scale-[1.02] shadow-lg flex items-center justify-center"
                       >
                         {isFormLoading ? (
                           <span className="flex items-center justify-center">

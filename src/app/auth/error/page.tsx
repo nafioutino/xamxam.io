@@ -33,7 +33,7 @@ function ErrorContent() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
       {/* Fond avec gradient et formes */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-indigo-950/20 dark:to-purple-950/10 z-0 overflow-hidden">
+      <div className="absolute inset-0 bg-slate-50 dark:bg-gray-900 z-0 overflow-hidden">
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 dark:bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-indigo-200/30 dark:bg-indigo-500/10 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
       </div>
@@ -42,7 +42,7 @@ function ErrorContent() {
       <div className="w-full max-w-6xl transition-all duration-700 transform translate-y-0 opacity-100">
         <div className="flex flex-col lg:flex-row rounded-3xl shadow-2xl overflow-hidden">
           {/* Colonne de gauche (image/branding) - visible uniquement sur desktop */}
-          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 p-12 flex-col justify-between relative overflow-hidden">
+          <div className="hidden lg:flex lg:w-1/2 bg-blue-600 p-12 flex-col justify-between relative overflow-hidden">
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full filter blur-3xl animate-blob"></div>
               <div className="absolute bottom-10 right-10 w-64 h-64 bg-white rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
@@ -90,7 +90,7 @@ function ErrorContent() {
           </div>
           
           {/* Colonne de droite (contenu d'erreur) */}
-          <div className="w-full lg:w-1/2 bg-white/70 dark:bg-gray-800/90 backdrop-blur-xl p-8 lg:p-12">
+          <div className="w-full lg:w-1/2 bg-white/70 dark:bg-gray-800/90 backdrop-blur-xl p-8 lg:p-12 transition-all duration-300 hover:shadow-xl">
             <div className="transition-all duration-500 transform translate-y-0 opacity-100 scale-100">
               <div className="text-center lg:hidden mb-6">
                 <div className="relative h-20 w-40 mx-auto">
@@ -109,7 +109,7 @@ function ErrorContent() {
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300 text-center mb-8">Problème d&apos;authentification</p>
               
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 mb-8">
+              <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 mb-8 transition-all duration-300 hover:shadow-xl">
                 <div className="flex justify-center mb-6">
                   <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-red-500 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
