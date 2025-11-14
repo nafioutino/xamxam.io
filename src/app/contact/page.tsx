@@ -9,23 +9,23 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <Link href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors duration-200">
                 XAMXAM
               </Link>
               <span className="text-gray-400">|</span>
               <span className="text-gray-600">Contact</span>
             </div>
             <div className="flex items-center space-x-6">
-              <a href="/privacy-policy" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <a href="/privacy-policy" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
                 Politique de confidentialité
               </a>
-              <a href="/terms-of-service" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <a href="/terms-of-service" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
                 Conditions d'utilisation
               </a>
             </div>
@@ -34,7 +34,7 @@ export default function ContactPage() {
       </header>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-16">
+      <div className="bg-blue-600 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Contactez-nous
@@ -48,7 +48,7 @@ export default function ContactPage() {
       {/* Progress Bar */}
       <div className="bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+          <div className="h-1 bg-blue-500"></div>
         </div>
       </div>
 
@@ -61,7 +61,7 @@ export default function ContactPage() {
                 {/* Informations de contact */}
                 <div>
                   <div className="flex items-center mb-8">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
                       <span className="text-white font-bold">1</span>
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
@@ -70,9 +70,9 @@ export default function ContactPage() {
                   </div>
                   
                   <div className="space-y-6">
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+                    <div className="bg-blue-50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                       <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
+                        <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
                           <Mail className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -86,9 +86,9 @@ export default function ContactPage() {
                       </p>
                     </div>
                     
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+                    <div className="bg-blue-50 rounded-xl p-6">
                       <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
+                        <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
                           <Phone className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -102,9 +102,9 @@ export default function ContactPage() {
                       </p>
                     </div>
                     
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6">
+                    <div className="bg-green-50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                       <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mr-4">
+                        <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mr-4">
                           <MapPin className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -120,9 +120,9 @@ export default function ContactPage() {
                       </p>
                     </div>
                     
-                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-6">
+                    <div className="bg-orange-50 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                       <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg flex items-center justify-center mr-4">
+                        <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center mr-4">
                           <Clock className="w-6 h-6 text-white" />
                         </div>
                         <div>

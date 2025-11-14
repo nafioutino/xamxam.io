@@ -9,21 +9,21 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header avec navigation */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
                 XAMXAM
               </h1>
             </div>
             <nav className="flex space-x-6">
-              <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
                 Accueil
               </Link>
-              <a href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <a href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
                 Contact
               </a>
             </nav>
@@ -32,9 +32,9 @@ export default function PrivacyPolicyPage() {
       </div>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 py-16">
+      <div className="bg-blue-600 py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-blue-500/20 rounded-full text-blue-100 text-sm font-medium mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-blue-500/20 rounded-full text-blue-100 text-sm font-medium mb-6 animate-pulse">
             <Shield className="w-4 h-4 mr-2" />
             Transparence et protection des données
           </div>
@@ -52,38 +52,38 @@ export default function PrivacyPolicyPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
             {/* Barre de progression */}
-            <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+            <div className="h-1 bg-blue-500"></div>
             
             <div className="p-8 md:p-12">
           
               {/* Table des matières */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-12">
+              <div className="bg-blue-50 rounded-xl p-6 mb-12 hover:shadow-lg transition-shadow duration-300">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                   <BookOpen className="w-5 h-5 mr-2 text-blue-600" />
                   Table des matières
                 </h2>
                 <div className="grid md:grid-cols-2 gap-3">
-                  <a href="#introduction" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#introduction" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Introduction
                   </a>
-                  <a href="#collecte" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#collecte" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Collecte d'informations
                   </a>
-                  <a href="#utilisation" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#utilisation" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Utilisation des données
                   </a>
-                  <a href="#partage" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#partage" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Partage des données
                   </a>
-                  <a href="#securite" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#securite" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Sécurité des données
                   </a>
-                  <a href="#droits" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#droits" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Vos droits
                   </a>
@@ -97,7 +97,7 @@ export default function PrivacyPolicyPage() {
 
                 <section id="introduction" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
                       <Shield className="w-5 h-5 text-white" />
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
@@ -116,7 +116,7 @@ export default function PrivacyPolicyPage() {
 
                 <section id="collecte" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
                       <Database className="w-5 h-5 text-white" />
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
@@ -125,7 +125,7 @@ export default function PrivacyPolicyPage() {
                   </div>
                   
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
+                    <div className="bg-blue-50 rounded-xl p-6 hover:shadow-md transition-shadow duration-300">
                       <div className="flex items-center mb-4">
                         <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
                           <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -156,7 +156,7 @@ export default function PrivacyPolicyPage() {
                       </ul>
                     </div>
                     
-                    <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-6">
+                    <div className="bg-indigo-50 rounded-xl p-6 hover:shadow-md transition-shadow duration-300">
                       <div className="flex items-center mb-4">
                         <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center mr-3">
                           <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -191,7 +191,7 @@ export default function PrivacyPolicyPage() {
 
                 <section id="utilisation" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
                       <span className="text-white font-bold">3</span>
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
@@ -199,7 +199,7 @@ export default function PrivacyPolicyPage() {
                     </h2>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6">
+                  <div className="bg-green-50 rounded-xl p-6 hover:shadow-md transition-shadow duration-300">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div className="flex items-start">
@@ -370,7 +370,7 @@ export default function PrivacyPolicyPage() {
 
                 <section id="contact" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
                       <span className="text-white font-bold">10</span>
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
@@ -378,7 +378,7 @@ export default function PrivacyPolicyPage() {
                     </h2>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-8">
+                  <div className="bg-blue-50 rounded-xl p-8">
                     <p className="text-gray-700 text-lg mb-6">
                       Pour toute question concernant cette politique de confidentialité ou vos données personnelles, 
                       vous pouvez nous contacter à :

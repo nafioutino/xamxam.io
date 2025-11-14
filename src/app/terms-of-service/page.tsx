@@ -9,24 +9,24 @@ export const metadata: Metadata = {
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header avec navigation */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors duration-200">
                  XAMXAM
                </h1>
             </div>
             <nav className="flex space-x-6">
-              <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
                 Accueil
               </Link>
-              <a href="/privacy-policy" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <a href="/privacy-policy" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
                 Confidentialité
               </a>
-              <a href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <a href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
                 Contact
               </a>
             </nav>
@@ -35,9 +35,9 @@ export default function TermsOfServicePage() {
       </div>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16">
+      <div className="bg-blue-600 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-blue-500/20 rounded-full text-blue-100 text-sm font-medium mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-blue-500/20 rounded-full text-blue-100 text-sm font-medium mb-6 animate-pulse">
             <Check className="w-4 h-4 mr-2" />
             Conditions légales et d'utilisation
           </div>
@@ -55,38 +55,38 @@ export default function TermsOfServicePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
             {/* Barre de progression */}
-            <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+            <div className="h-1 bg-blue-500"></div>
             
             <div className="p-8 md:p-12">
           
               {/* Table des matières */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-12">
+              <div className="bg-blue-50 rounded-xl p-6 mb-12 hover:shadow-lg transition-shadow duration-300">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                   <BookOpen className="w-5 h-5 mr-2 text-blue-600" />
                   Table des matières
                 </h2>
                 <div className="grid md:grid-cols-2 gap-3">
-                  <a href="#acceptation" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#acceptation" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Acceptation des conditions
                   </a>
-                  <a href="#utilisation" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#utilisation" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Description du service
                   </a>
-                  <a href="#services" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#services" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Compte utilisateur
                   </a>
-                  <a href="#introduction" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#introduction" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Utilisation acceptable
                   </a>
-                  <a href="#compte" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#compte" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Propriété intellectuelle
                   </a>
-                  <a href="#responsabilite" className="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <a href="#responsabilite" className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200 hover:translate-x-1">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
                     Limitation de responsabilité
                   </a>
@@ -100,14 +100,14 @@ export default function TermsOfServicePage() {
 
                 <section id="acceptation" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
                     <Check className="w-5 h-5 text-white" />
                   </div>
                     <h2 className="text-3xl font-bold text-gray-900">
                       Acceptation des conditions
                     </h2>
                   </div>
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+                  <div className="bg-blue-50 rounded-xl p-6">
                     <p className="text-gray-700 leading-relaxed text-lg">
                       En accédant et en utilisant XAMXAM ("le Service"), vous acceptez d'être lié par 
                       ces conditions d'utilisation ("les Conditions"). Si vous n'acceptez pas ces 
@@ -118,14 +118,14 @@ export default function TermsOfServicePage() {
 
                 <section id="description" className="scroll-mt-24">
                   <div className="flex items-center mb-6">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mr-4">
                       <FileText className="w-5 h-5 text-white" />
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">
                       Description du service
                     </h2>
                   </div>
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6">
+                  <div className="bg-blue-50 rounded-xl p-6">
                     <div className="flex items-start">
                       <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
                         <Mail className="w-6 h-6 text-white" />

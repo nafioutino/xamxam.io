@@ -134,12 +134,12 @@ export default function Home() {
               <div className="relative w-10 h-10 group">
                 <div className="absolute inset-0 bg-slate-800 rounded-lg opacity-10 group-hover:opacity-20 transition-opacity duration-200"></div>
                 <div className="relative bg-white rounded-lg p-1.5 shadow-sm border border-slate-200">
-                  <div className="inline-flex items-center justify-center w-7 h-7 bg-slate-800 rounded-md">
+                  <div className="inline-flex items-center justify-center w-7 h-7 bg-blue-600 rounded-md">
                     <span className="text-base font-bold text-white">X</span>
                   </div>
                 </div>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">XAMXAM</span>
+              <span className="text-xl font-bold text-blue-600">XAMXAM</span>
             </div>
 
             {/* Navigation desktop */}
